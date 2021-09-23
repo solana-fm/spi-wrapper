@@ -141,7 +141,7 @@ pub async fn fragment_instruction(
         // If the instruction parsing is failing, bail out
         event!(Level::ERROR, format!(
             "[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to {}.",
-            instruction.program, bpf_loader_dr.into_err()));
+            instruction.program, bpf_loader_dr.into_err().to_string()));
 
         None
     }
