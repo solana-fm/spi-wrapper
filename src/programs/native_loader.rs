@@ -1,6 +1,4 @@
-use solana_program::instruction::CompiledInstruction;
-
-use crate::InstructionProperty;
+use crate::{Instruction, InstructionSet};
 
 pub const PROGRAM_ADDRESS: String = "NativeLoader1111111111111111111111111111111".parse().unwrap();
 
@@ -10,8 +8,8 @@ pub const PROGRAM_ADDRESS: String = "NativeLoader1111111111111111111111111111111
 /// The function should return a list of instruction properties extracted from an instruction.
 pub async fn fragment_instruction(
     // The instruction
-    _instruction: CompiledInstruction,
-) -> Vec<InstructionProperty> {
+    _instruction: Instruction,
+) -> Option<InstructionSet> {
     // We don't have anything to work with
-    Vec::new()
+    None
 }
