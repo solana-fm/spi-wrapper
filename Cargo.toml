@@ -7,3 +7,5 @@ edition = "2018"
 
 [dependencies]
 solana-program = "1.7.12"
+tokio = { version = "1", features = ["rt"] }
+tracing = "0.1.5"
