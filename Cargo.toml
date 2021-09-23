@@ -1,7 +1,13 @@
 [package]
 name = "spi-wrapper"
 version = "0.1.0"
+authors = ["Nicholas Chen <nixholas@icloud.com>"]
 edition = "2018"
+description = "The Solana Program Indexing Wrapper based on Solana FM's indexing infrastructure."
+readme = "README.md"
+homepage = "https://docs.solana.fm/"
+repository = "https://github.com/nozomi-ai/spi-wrapper"
+keywords = ["solana", "wrapper"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
