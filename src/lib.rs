@@ -67,10 +67,12 @@ pub async fn process(
                 match instruction.program {
                     programs::native_loader::PROGRAM_ADDRESS => {
                         crate::programs::native_loader::fragment_instruction(instruction)
+                            .await
                     },
                     programs::bpf_loader::PROGRAM_ADDRESS |
                     programs::bpf_loader::PROGRAM_ADDRESS_2 => {
                         crate::programs::bpf_loader::fragment_instruction(instruction)
+                            .await
                     },
                     _ => {
                         event!(Level::INFO,
