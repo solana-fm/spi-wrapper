@@ -64,15 +64,15 @@ pub async fn process(
     let instruction_jobs: Vec<_> = instructions.into_iter()
         .map(|instruction| {
             tokio::spawn(async {
-                match &instruction.program {
-                    &programs::native_loader::PROGRAM_ADDRESS => {
+                match instruction.program {
+                    programs::native_loader::PROGRAM_ADDRESS => {
                         crate::programs::native_loader::fragment_instruction(instruction)
                     },
-                    &programs::bpf_loader::PROGRAM_ADDRESS |
-                    &programs::bpf_loader::PROGRAM_ADDRESS_2 => {
+                    programs::bpf_loader::PROGRAM_ADDRESS |
+                    programs::bpf_loader::PROGRAM_ADDRESS_2 => {
                         crate::programs::bpf_loader::fragment_instruction(instruction)
                     },
-                    &_ => {
+                    _ => {
                         event!(Level::INFO,
                         format!("Looks like this program ({}) is an unsupported one.",
                             instruction.program));
