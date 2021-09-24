@@ -1,13 +1,11 @@
 use bincode::deserialize;
 use solana_sdk::loader_instruction::LoaderInstruction;
-use solana_program::instruction::CompiledInstruction;
-use solana_transaction_status::parse_instruction::ParsedInstructionEnum;
-use tracing::{event, Level};
+use tracing::error;
 
 use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
 
-pub const PROGRAM_ADDRESS: String = "BPFLoader1111111111111111111111111111111111".parse().unwrap();
-pub const PROGRAM_ADDRESS_2: String = "BPFLoader2111111111111111111111111111111111".parse().unwrap();
+pub const PROGRAM_ADDRESS: &str = "BPFLoader1111111111111111111111111111111111";
+pub const PROGRAM_ADDRESS_2: &str = "BPFLoader2111111111111111111111111111111111";
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
@@ -23,15 +21,14 @@ pub async fn fragment_instruction(
     if let Ok(deserialized_bpf_loader) = bpf_loader_dr {
         return match deserialized_bpf_loader {
             LoaderInstruction::Write { offset, bytes } => {
-                /// How things would look like
-                /// let write_li = ParsedInstructionEnum {
-                ///     instruction_type: "write".to_string(),
-                ///     info: json!({
-                ///         "offset": offset,
-                ///         "bytes": base64::encode(&bytes),
-                ///         "account": &program_hash.to_string()}),
-                /// };
-
+                // How things would look like
+                // let write_li = ParsedInstructionEnum {
+                //     instruction_type: "write".to_string(),
+                //     info: json!({
+                //         "offset": offset,
+                //         "bytes": base64::encode(&bytes),
+                //         "account": &program_hash.to_string()}),
+                // };
                 Option::from(InstructionSet {
                     function: InstructionFunction {
                         tx_instruction_id: _instruction.tx_instruction_id.clone(),
@@ -139,9 +136,8 @@ pub async fn fragment_instruction(
         }
     } else {
         // If the instruction parsing is failing, bail out
-        event!(Level::ERROR, format!(
-            "[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to {}.",
-            instruction.program, bpf_loader_dr.into_err().to_string()));
+        error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to \
+        {}.", _instruction.program, bpf_loader_dr.unwrap_err());
 
         None
     }

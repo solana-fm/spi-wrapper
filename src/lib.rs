@@ -2,7 +2,7 @@ mod programs;
 
 use chrono::NaiveDateTime;
 use tokio::spawn;
-use tracing::{event, Level};
+use tracing::info;
 
 #[derive(Clone)]
 pub struct Instruction {
@@ -63,8 +63,8 @@ pub async fn process(
 ) -> Vec<InstructionSet> {
     let instruction_jobs: Vec<_> = instructions.into_iter()
         .map(|instruction| {
-            tokio::spawn(async {
-                match instruction.program {
+            spawn(async {
+                match instruction.program.as_str() {
                     programs::native_loader::PROGRAM_ADDRESS => {
                         crate::programs::native_loader::fragment_instruction(instruction)
                             .await
@@ -75,9 +75,9 @@ pub async fn process(
                             .await
                     },
                     _ => {
-                        event!(Level::INFO,
-                        format!("Looks like this program ({}) is an unsupported one.",
-                            instruction.program));
+                        info!("Looks like this program ({}) is an unsupported one.",
+                            instruction.program.to_string());
+
                         None
                     }
                 }

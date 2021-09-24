@@ -1,6 +1,6 @@
 use crate::{Instruction, InstructionSet};
 
-pub const PROGRAM_ADDRESS: String = "NativeLoader1111111111111111111111111111111".parse().unwrap();
+pub const PROGRAM_ADDRESS: &str = "NativeLoader1111111111111111111111111111111";
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
