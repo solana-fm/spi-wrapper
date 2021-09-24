@@ -1,6 +1,6 @@
 [package]
 name = "spi-wrapper"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Nicholas Chen <nixholas@icloud.com>"]
 edition = "2018"
 description = "The Solana Program Indexing Wrapper based on Solana FM's indexing infrastructure."
