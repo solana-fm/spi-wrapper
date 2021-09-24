@@ -4,6 +4,7 @@ use solana_account_decoder::parse_bpf_loader::{
 use tracing::error;
 
 use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
+use solana_account_decoder::parse_account_data::{ParseAccountError, ParsableAccount};
 
 pub const PROGRAM_ADDRESS: &str = "BPFLoaderUpgradeab1e11111111111111111111111";
 
@@ -16,14 +17,14 @@ pub async fn fragment_instruction(
     instruction: Instruction,
 ) -> Option<InstructionSet> {
     let bpf_loader_upgradeable_dr =
-        parse_bpf_upgradeable_loader(data.as_slice());
+        parse_bpf_upgradeable_loader(instruction.data.as_slice());
 
     return if let Ok(bpf_loader_upgradeable_i) = bpf_loader_upgradeable_dr {
         return match bpf_loader_upgradeable_i {
             BpfUpgradeableLoaderAccountType::Uninitialized => {
                 Some(InstructionSet {
                     function: InstructionFunction {
-                        tx_instruction_id: instruction.instruction_index.clone(),
+                        tx_instruction_id: instruction.tx_instruction_id.clone(),
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
@@ -36,7 +37,7 @@ pub async fn fragment_instruction(
             BpfUpgradeableLoaderAccountType::Buffer(buffer) => {
                 Some(InstructionSet {
                     function: InstructionFunction {
-                        tx_instruction_id: instruction.instruction_index.clone(),
+                        tx_instruction_id: instruction.tx_instruction_id.clone(),
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
@@ -72,7 +73,7 @@ pub async fn fragment_instruction(
             BpfUpgradeableLoaderAccountType::Program(program) => {
                 Some(InstructionSet {
                     function: InstructionFunction {
-                        tx_instruction_id: instruction.instruction_index.clone(),
+                        tx_instruction_id: instruction.tx_instruction_id.clone(),
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
@@ -98,7 +99,7 @@ pub async fn fragment_instruction(
                 // program_data.slot;
                 Some(InstructionSet {
                     function: InstructionFunction {
-                        tx_instruction_id: instruction.instruction_index.clone(),
+                        tx_instruction_id: instruction.tx_instruction_id.clone(),
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
@@ -143,8 +144,41 @@ pub async fn fragment_instruction(
         }
     } else {
         // If the instruction parsing is failing, bail out
-        error!("[spi-wrapper/bpf_loader_upgradeable] Attempt to parse instruction from program {} failed due to \
-        {}.", _instruction.program, bpf_loader_dr.unwrap_err());
+        let instruction_err = bpf_loader_upgradeable_dr.unwrap_err();
+        match instruction_err {
+            ParseAccountError::AccountNotParsable(parseable_account) => {
+                let account_involved = match parseable_account {
+                    ParsableAccount::BpfUpgradeableLoader => "BpfUpgradeableLoader",
+                    ParsableAccount::Config => "Config",
+                    ParsableAccount::Nonce => "Nonce",
+                    ParsableAccount::SplToken => "SplToken",
+                    ParsableAccount::Stake => "Stake",
+                    ParsableAccount::Sysvar => "Sysvar",
+                    ParsableAccount::Vote => "Vote",
+                };
+
+                error!("[spi-wrapper/bpf_loader_upgradeable] Attempt to parse instruction from \
+                program {} failed as the account was not parsable ({} was not parseable).",
+                    instruction.program, account_involved);
+            }
+            ParseAccountError::ProgramNotParsable => {
+                error!("[spi-wrapper/bpf_loader_upgradeable] Attempt to parse instruction from \
+                program {} failed as it was not parsable.", instruction.program);
+            }
+            ParseAccountError::AdditionalDataMissing(missing) => {
+                error!("[spi-wrapper/bpf_loader_upgradeable] Attempt to parse instruction from \
+                program {} failed as it was missing data for {}.", instruction.program, missing);
+            }
+            ParseAccountError::InstructionError(_err) => {
+                // TODO: Tell us what instruction error it exactly is.
+                error!("[spi-wrapper/bpf_loader_upgradeable] Attempt to parse instruction from \
+                program {} failed as there was an instruction error.", instruction.program);
+            }
+            ParseAccountError::SerdeJsonError(err) => {
+                error!("[spi-wrapper/bpf_loader_upgradeable] Attempt to parse instruction from \
+                program {} failed as there was serde json error: {}.", instruction.program, err);
+            }
+        }
 
         None
     }

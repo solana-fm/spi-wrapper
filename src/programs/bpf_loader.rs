@@ -16,7 +16,7 @@ pub async fn fragment_instruction(
     _instruction: Instruction,
 ) -> Option<InstructionSet> {
     let bpf_loader_dr = deserialize::<LoaderInstruction>(
-        &_instruction.data.as_bytes());
+        &_instruction.data);
 
     if let Ok(deserialized_bpf_loader) = bpf_loader_dr {
         return match deserialized_bpf_loader {

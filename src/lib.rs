@@ -13,7 +13,7 @@ pub struct Instruction {
     // The name of the program invoking this instruction.
     pub program: String,
     // The data contained from invoking this instruction.
-    pub data: String,
+    pub data: Vec<u8>,
     // If this is an inner instruction, we should depend on this
     pub parent_index: i16,
     // The time this log was created in our time
@@ -74,6 +74,10 @@ pub async fn process(
                         crate::programs::bpf_loader::fragment_instruction(instruction)
                             .await
                     },
+                    programs::bpf_loader_upgradeable::PROGRAM_ADDRESS => {
+                        crate::programs::bpf_loader_upgradeable::fragment_instruction(instruction)
+                            .await
+                    }
                     _ => {
                         info!("Looks like this program ({}) is an unsupported one.",
                             instruction.program.to_string());
