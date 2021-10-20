@@ -78,6 +78,14 @@ pub async fn process(
                         crate::programs::bpf_loader_upgradeable::fragment_instruction(instruction)
                             .await
                     }
+                    programs::native_token_lending::PROGRAM_ADDRESS => {
+                        crate::programs::bpf_loader_upgradeable::fragment_instruction(instruction)
+                            .await
+                    }
+                    programs::native_token_swap::PROGRAM_ADDRESS => {
+                        crate::programs::bpf_loader_upgradeable::fragment_instruction(instruction)
+                            .await
+                    }
                     _ => {
                         info!("Looks like this program ({}) is an unsupported one.",
                             instruction.program.to_string());

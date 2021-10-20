@@ -5,6 +5,8 @@ use tracing::error;
 
 use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
 
+pub const PROGRAM_ADDRESS: &str = "LendZqTs8gn5CTSJU1jWKhKuVpjJGom45nnwPb2AMTi";
+
 pub async fn process_native_token_lending_instruction(
     // The transaction that has this instruction.
     transaction_hash: &String,

@@ -5,6 +5,8 @@ use tracing::error;
 
 use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
 
+pub const PROGRAM_ADDRESS: &str = "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8";
+
 pub async fn process_native_token_swap_instruction(
     // The instruction in question.
     instruction: Instruction
