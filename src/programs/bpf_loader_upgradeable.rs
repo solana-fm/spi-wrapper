@@ -28,7 +28,7 @@ pub async fn fragment_instruction(
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
-                        function_name: "Uninitialized".to_string(),
+                        function_name: "uninitialized".to_string(),
                         timestamp: instruction.timestamp
                     },
                     properties: vec![]
@@ -41,7 +41,7 @@ pub async fn fragment_instruction(
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
-                        function_name: "Buffer".to_string(),
+                        function_name: "buffer".to_string(),
                         timestamp: instruction.timestamp
                     },
                     properties: vec![
@@ -49,13 +49,13 @@ pub async fn fragment_instruction(
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
                             parent_index: instruction.parent_index.clone(),
-                            key: "authority_address".to_string(),
+                            key: "authority".to_string(),
                             value: if let Some(ba) = buffer.authority {
                                 ba
                             } else {
                                 "".to_string()
                             },
-                            parent_key: "".to_string(),
+                            parent_key: "buffer".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
@@ -64,7 +64,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             key: "data".to_string(),
                             value: serde_json::to_string(&buffer.data).unwrap().to_string(),
-                            parent_key: "".to_string(),
+                            parent_key: "buffer".to_string(),
                             timestamp: instruction.timestamp,
                         },
                     ]
@@ -77,7 +77,7 @@ pub async fn fragment_instruction(
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
-                        function_name: "Program".to_string(),
+                        function_name: "program".to_string(),
                         timestamp: instruction.timestamp
                     },
                     properties: vec![
@@ -87,23 +87,20 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             key: "program_data".to_string(),
                             value: serde_json::to_string(&program.program_data).unwrap().to_string(),
-                            parent_key: "".to_string(),
+                            parent_key: "program".to_string(),
                             timestamp: instruction.timestamp,
                         }
                     ]
                 })
             }
             BpfUpgradeableLoaderAccountType::ProgramData(program_data) => {
-                // program_data.data;
-                // program_data.authority;
-                // program_data.slot;
                 Some(InstructionSet {
                     function: InstructionFunction {
                         tx_instruction_id: instruction.tx_instruction_id.clone(),
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
-                        function_name: "ProgramData".to_string(),
+                        function_name: "program-data".to_string(),
                         timestamp: instruction.timestamp
                     },
                     properties: vec![
@@ -117,16 +114,16 @@ pub async fn fragment_instruction(
                             } else {
                                 "".to_string()
                             },
-                            parent_key: "".to_string(),
+                            parent_key: "program_data".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
                             parent_index: instruction.parent_index.clone(),
-                            key: "program_data".to_string(),
+                            key: "data".to_string(),
                             value: serde_json::to_string(&program_data.data).unwrap().to_string(),
-                            parent_key: "".to_string(),
+                            parent_key: "program_data".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
@@ -135,7 +132,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             key: "slot".to_string(),
                             value: program_data.slot.to_string(),
-                            parent_key: "".to_string(),
+                            parent_key: "program_data".to_string(),
                             timestamp: instruction.timestamp,
                         },
                     ]
