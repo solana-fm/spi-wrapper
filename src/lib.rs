@@ -79,11 +79,11 @@ pub async fn process(
                             .await
                     }
                     programs::native_token_lending::PROGRAM_ADDRESS => {
-                        crate::programs::bpf_loader_upgradeable::fragment_instruction(instruction)
+                        crate::programs::native_token_lending::fragment_instruction(instruction)
                             .await
                     }
                     programs::native_token_swap::PROGRAM_ADDRESS => {
-                        crate::programs::bpf_loader_upgradeable::fragment_instruction(instruction)
+                        crate::programs::native_token_swap::fragment_instruction(instruction)
                             .await
                     }
                     _ => {

@@ -1,4 +1,3 @@
-use chrono::NaiveDateTime;
 use spl_token_swap::curve::base::CurveType;
 use spl_token_swap::instruction::{unpack, SwapInstruction};
 use tracing::error;
@@ -7,7 +6,7 @@ use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSe
 
 pub const PROGRAM_ADDRESS: &str = "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8";
 
-pub async fn process_native_token_swap_instruction(
+pub async fn fragment_instruction(
     // The instruction in question.
     instruction: Instruction
 ) -> Option<InstructionSet> {
@@ -34,7 +33,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "host_fee_numerator".to_string(),
                             value: (&initialize_instruction.fees.host_fee_numerator).to_string(),
                             parent_key: "fees".to_string(),
@@ -43,7 +42,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner_trade_fee_numerator".to_string(),
                             value: (&initialize_instruction.fees.owner_trade_fee_numerator).to_string(),
                             parent_key: "fees".to_string(),
@@ -52,7 +51,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner_trade_fee_denominator".to_string(),
                             value:
                             (&initialize_instruction.fees.owner_trade_fee_denominator)
@@ -63,7 +62,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner_withdraw_fee_numerator".to_string(),
                             value:
                             (&initialize_instruction.fees.owner_withdraw_fee_numerator)
@@ -74,7 +73,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner_withdraw_fee_denominator".to_string(),
                             value:
                             (&initialize_instruction.fees.owner_withdraw_fee_denominator)
@@ -85,7 +84,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "trade_fee_numerator".to_string(),
                             value:
                             (&initialize_instruction.fees.trade_fee_numerator).to_string(),
@@ -95,7 +94,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "nonce".to_string(),
                             value: (&initialize_instruction.nonce).to_string(),
                             parent_key: "initialize_instruction".to_string(),
@@ -104,7 +103,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "trade_fee_denominator".to_string(),
                             value:
                             (&initialize_instruction.fees.trade_fee_denominator).to_string(),
@@ -114,36 +113,36 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "curve_type".to_string(),
                             value: match initialize_instruction.swap_curve.curve_type {
                                 CurveType::ConstantProduct => "ConstantProduct".to_string(),
-                                /// Flat line, always providing 1:1 from one token to another
+                                // Flat line, always providing 1:1 from one token to another
                                 CurveType::ConstantPrice => "ConstantPrice".to_string(),
-                                /// Stable, like uniswap, but with wide zone of 1:1 instead of one point
+                                // Stable, like uniswap, but with wide zone of 1:1 instead of one point
                                 CurveType::Stable => "Stable".to_string(),
-                                /// Offset curve, like Uniswap, but the token B side has a faked offset
+                                // Offset curve, like Uniswap, but the token B side has a faked offset
                                 CurveType::Offset => "Offset".to_string(),
                             },
                             parent_key: "swap_curve".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
-                        InstructionProperty {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
-                            key: "calculator".to_string(),
-                            value: initialize_instruction.swap_curve.calculator.to_string(),
-                            parent_key: "swap_curve".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
+                        // InstructionProperty {
+                        //     tx_instruction_id: instruction.tx_instruction_id.clone(),
+                        //     transaction_hash: instruction.transaction_hash.clone(),
+                        //     parent_index: instruction.parent_index.clone(),
+                        //     key: "calculator".to_string(),
+                        //     value: initialize_instruction.swap_curve.calculator.to_string(),
+                        //     parent_key: "swap_curve".to_string(),
+                        //     timestamp: instruction.timestamp.clone(),
+                        // },
                     ],
                 })
             }
             SwapInstruction::Swap(swap) => {
                 Option::from(InstructionSet {
                     function: InstructionFunction {
-                        tx_instruction_id: instruction_index.clone(),
+                        tx_instruction_id: instruction.tx_instruction_id.clone(),
                         transaction_hash: instruction.transaction_hash.clone(),
                         parent_index: instruction.parent_index.clone(),
                         program: instruction.program.clone(),
@@ -154,7 +153,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "amount_in".to_string(),
                             value: swap.amount_in.to_string(),
                             parent_key: "".to_string(),
@@ -163,7 +162,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "minimum_amount_out".to_string(),
                             value: swap.minimum_amount_out.to_string(),
                             parent_key: "".to_string(),
@@ -186,7 +185,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "pool_token_amount".to_string(),
                             value: datt.pool_token_amount.to_string(),
                             parent_key: "".to_string(),
@@ -195,7 +194,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "maximum_token_a_amount".to_string(),
                             value: datt.maximum_token_a_amount.to_string(),
                             parent_key: "".to_string(),
@@ -204,7 +203,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "maximum_token_b_amount".to_string(),
                             value: datt.maximum_token_b_amount.to_string(),
                             parent_key: "".to_string(),
@@ -227,7 +226,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "pool_token_amount".to_string(),
                             value: watt.pool_token_amount.to_string(),
                             parent_key: "".to_string(),
@@ -236,7 +235,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "minimum_token_a_amount".to_string(),
                             value: watt.minimum_token_a_amount.to_string(),
                             parent_key: "".to_string(),
@@ -245,7 +244,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "minimum_token_b_amount".to_string(),
                             value: watt.minimum_token_b_amount.to_string(),
                             parent_key: "".to_string(),
@@ -268,7 +267,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "minimum_pool_token_amount".to_string(),
                             value: dstteai.minimum_pool_token_amount.to_string(),
                             parent_key: "".to_string(),
@@ -277,7 +276,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "source_token_amount".to_string(),
                             value: dstteai.source_token_amount.to_string(),
                             parent_key: "".to_string(),
@@ -300,7 +299,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "maximum_pool_token_amount".to_string(),
                             value: wstteao.maximum_pool_token_amount.to_string(),
                             parent_key: "".to_string(),
@@ -309,7 +308,7 @@ pub async fn process_native_token_swap_instruction(
                         InstructionProperty {
                             tx_instruction_id: instruction.tx_instruction_id.clone(),
                             transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "destination_token_amount".to_string(),
                             value: wstteao.destination_token_amount.to_string(),
                             parent_key: "".to_string(),
@@ -318,11 +317,6 @@ pub async fn process_native_token_swap_instruction(
                     ],
                 })
             }
-            _ => {
-                error!("{}",
-                    "[processors/programs/native_token_swap] FATAL: Instruction not supported yet."
-                        .to_owned())
-            },
         };
     }
 

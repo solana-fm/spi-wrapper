@@ -1,14 +1,15 @@
 use chrono::NaiveDateTime;
 use serum_dex::instruction::MarketInstruction;
-use solana_sdk::pubkey::Pubkey;
+use tracing::error;
 
 use crate::{InstructionFunction, InstructionSet, InstructionProperty, Instruction};
 
-pub async fn process_market_instruction(
+pub async fn fragment_instruction(
     instruction: Instruction
 ) -> Option<InstructionSet> {
     // Unpack the instruction via the spl_token_swap library
-    let unpack_result = MarketInstruction::unpack(data);
+    let unpack_result = MarketInstruction::unpack(
+        instruction.data.as_slice());
 
     if let Some(market_instruction) = unpack_result {
         return match market_instruction {
@@ -34,45 +35,45 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "coin_lot_size".to_string(),
                             value: imi.coin_lot_size.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "fee_rate_bps".to_string(),
                             value: imi.fee_rate_bps.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "pc_dust_threshold".to_string(),
                             value: imi.pc_dust_threshold.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "pc_lot_size".to_string(),
                             value: imi.pc_lot_size.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "vault_signer_nonce".to_string(),
                             value: imi.vault_signer_nonce.to_string(),
                             parent_key: "".to_string(),
@@ -103,45 +104,45 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "client_id".to_string(),
                             value: noiv1.client_id.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "limit_price".to_string(),
                             value: noiv1.limit_price.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "max_qty".to_string(),
                             value: noiv1.max_qty.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "order_type".to_string(),
                             value: (noiv1.order_type as u8).to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index,
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "side".to_string(),
                             value: (noiv1.side as u8).to_string(),
                             parent_key: "".to_string(),
@@ -169,9 +170,9 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "orders".to_string(),
                             value: orders.to_string(),
                             parent_key: "".to_string(),
@@ -197,9 +198,9 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "events".to_string(),
                             value: count.to_string(),
                             parent_key: "".to_string(),
@@ -235,32 +236,32 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "side".to_string(),
                             value: (coi.side as u8).to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "order_id".to_string(),
                             value: coi.order_id.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner_slot".to_string(),
                             value: coi.owner_slot.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
-                        }
+                        },
                     ],
                 })
             }
@@ -303,9 +304,9 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "client_id".to_string(),
                             value: client_id.to_string(),
                             parent_key: "".to_string(),
@@ -370,27 +371,27 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "client_id".to_string(),
                             value: order.client_id.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "limit_price".to_string(),
                             value: order.limit_price.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "max_qty".to_string(),
                             value: order.max_qty.to_string(),
                             parent_key: "".to_string(),
@@ -402,9 +403,9 @@ pub async fn process_market_instruction(
                         //     AbortTransaction = 2,
                         // }
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "self_trade_behavior".to_string(),
                             value: (order.self_trade_behavior as u8).to_string(),
                             parent_key: "".to_string(),
@@ -416,9 +417,9 @@ pub async fn process_market_instruction(
                         //     PostOnly = 2,
                         // }
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "order_type".to_string(),
                             value: (order.order_type as u8).to_string(),
                             parent_key: "".to_string(),
@@ -429,14 +430,14 @@ pub async fn process_market_instruction(
                         //     Ask = 1,
                         // }
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "side".to_string(),
                             value: (order.side as u8).to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
-                        }
+                        },
                     ],
                 })
             }
@@ -465,36 +466,36 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "client_order_id".to_string(),
                             value: order.client_order_id.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "limit_price".to_string(),
                             value: order.limit_price.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "limit".to_string(),
                             value: order.limit.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "max_coin_qty".to_string(),
                             value: order.max_coin_qty.to_string(),
                             parent_key: "".to_string(),
@@ -506,9 +507,9 @@ pub async fn process_market_instruction(
                         //     AbortTransaction = 2,
                         // }
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "self_trade_behavior".to_string(),
                             value: (order.self_trade_behavior as u8).to_string(),
                             parent_key: "".to_string(),
@@ -520,9 +521,9 @@ pub async fn process_market_instruction(
                         //     PostOnly = 2,
                         // }
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "order_type".to_string(),
                             value: (order.order_type as u8).to_string(),
                             parent_key: "".to_string(),
@@ -533,23 +534,23 @@ pub async fn process_market_instruction(
                         //     Ask = 1,
                         // }
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "side".to_string(),
                             value: (order.side as u8).to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "max_native_pc_qty_including_fees".to_string(),
                             value: order.max_native_pc_qty_including_fees.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
-                        }
+                        },
                     ],
                 })
             }
@@ -571,9 +572,9 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "order_id".to_string(),
                             value: order.order_id.to_string(),
                             parent_key: "".to_string(),
@@ -584,14 +585,14 @@ pub async fn process_market_instruction(
                         //     Ask = 1,
                         // }
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "side".to_string(),
                             value: (order.side as u8).to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
-                        }
+                        },
                     ],
                 })
             }
@@ -613,9 +614,9 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "client_id".to_string(),
                             value: client_id.to_string(),
                             parent_key: "".to_string(),
@@ -641,74 +642,65 @@ pub async fn process_market_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "side".to_string(),
                             value: (sti.side as u8).to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "max_native_pc_qty_including_fees".to_string(),
                             value: sti.max_native_pc_qty_including_fees.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "max_coin_qty".to_string(),
                             value: sti.max_coin_qty.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "limit".to_string(),
                             value: sti.limit.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "limit_price".to_string(),
                             value: sti.limit_price.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "min_coin_qty".to_string(),
                             value: sti.min_coin_qty.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "min_native_pc_qty".to_string(),
                             value: sti.min_native_pc_qty.to_string(),
-                            parent_key: "".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
-                            key: "bids".to_string(),
-                            value: account_keys[account_indices[1] as usize].to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp.clone(),
                         }
@@ -749,8 +741,32 @@ pub async fn process_market_instruction(
                     properties: vec![],
                 })
             }
+            MarketInstruction::Prune(limit) => {
+                Some(InstructionSet {
+                    function: InstructionFunction {
+                        tx_instruction_id: instruction.tx_instruction_id.clone(),
+                        transaction_hash: instruction.transaction_hash.clone(),
+                        parent_index: instruction.parent_index.clone(),
+                        program: instruction.program.clone(),
+                        timestamp: instruction.timestamp,
+                        function_name: "prune".to_string(),
+                    },
+                    properties: vec![
+                        InstructionProperty {
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
+                            key: "limit".to_string(),
+                            value: limit.to_string(),
+                            parent_key: "".to_string(),
+                            timestamp: instruction.timestamp.clone(),
+                        }
+                    ],
+                })
+            }
         };
     }
 
-    Err("[processors/programs/serum/market] FATAL: Unrecognised instruction.".to_string())
+    error!("{}", "[processors/programs/serum/market] FATAL: Unrecognised instruction.".to_string());
+    None
 }
