@@ -21,14 +21,6 @@ pub async fn fragment_instruction(
     if let Ok(deserialized_bpf_loader) = bpf_loader_dr {
         return match deserialized_bpf_loader {
             LoaderInstruction::Write { offset, bytes } => {
-                // How things would look like
-                // let write_li = ParsedInstructionEnum {
-                //     instruction_type: "write".to_string(),
-                //     info: json!({
-                //         "offset": offset,
-                //         "bytes": base64::encode(&bytes),
-                //         "account": &program_hash.to_string()}),
-                // };
                 Option::from(InstructionSet {
                     function: InstructionFunction {
                         tx_instruction_id: _instruction.tx_instruction_id.clone(),
@@ -43,27 +35,9 @@ pub async fn fragment_instruction(
                             tx_instruction_id: _instruction.tx_instruction_id.clone(),
                             transaction_hash: _instruction.transaction_hash.clone(),
                             parent_index: _instruction.parent_index.clone(),
-                            key: "instruction_type".to_string(),
-                            value: "write".to_string(),
-                            parent_key: "".to_string(),
-                            timestamp: _instruction.timestamp,
-                        },
-                        InstructionProperty {
-                            tx_instruction_id: _instruction.tx_instruction_id.clone(),
-                            transaction_hash: _instruction.transaction_hash.clone(),
-                            parent_index: _instruction.parent_index.clone(),
-                            key: "info".to_string(),
-                            value: "".to_string(),
-                            parent_key: "".to_string(),
-                            timestamp: _instruction.timestamp,
-                        },
-                        InstructionProperty {
-                            tx_instruction_id: _instruction.tx_instruction_id.clone(),
-                            transaction_hash: _instruction.transaction_hash.clone(),
-                            parent_index: _instruction.parent_index.clone(),
                             key: "offset".to_string(),
                             value: offset.to_string(),
-                            parent_key: "info".to_string(),
+                            parent_key: "".to_string(),
                             timestamp: _instruction.timestamp,
                         },
                         InstructionProperty {
@@ -74,25 +48,11 @@ pub async fn fragment_instruction(
                             value: base64::encode(&bytes),
                             parent_key: "info".to_string(),
                             timestamp: _instruction.timestamp,
-                        },
-                        InstructionProperty {
-                            tx_instruction_id: _instruction.tx_instruction_id.clone(),
-                            transaction_hash: _instruction.transaction_hash.clone(),
-                            parent_index: _instruction.parent_index.clone(),
-                            key: "account".to_string(),
-                            value: _instruction.program.clone(),
-                            parent_key: "info".to_string(),
-                            timestamp: _instruction.timestamp,
-                        },
+                        }
                     ],
                 })
             }
             LoaderInstruction::Finalize => {
-                // let finalize_li = ParsedInstructionEnum {
-                //     instruction_type: "finalize".to_string(),
-                //     info: json!({"account": &program_hash.to_string()}),
-                // };
-
                 Option::from(InstructionSet {
                     function: InstructionFunction {
                         tx_instruction_id: _instruction.tx_instruction_id.clone(),
@@ -102,35 +62,7 @@ pub async fn fragment_instruction(
                         function_name: "finalize".to_string(),
                         timestamp: _instruction.timestamp,
                     },
-                    properties: vec![
-                        InstructionProperty {
-                            tx_instruction_id: _instruction.tx_instruction_id.clone(),
-                            transaction_hash: _instruction.transaction_hash.clone(),
-                            parent_index: _instruction.parent_index.clone(),
-                            key: "instruction_type".to_string(),
-                            value: "finalize".to_string(),
-                            parent_key: "".to_string(),
-                            timestamp: _instruction.timestamp,
-                        },
-                        InstructionProperty {
-                            tx_instruction_id: _instruction.tx_instruction_id.clone(),
-                            transaction_hash: _instruction.transaction_hash.clone(),
-                            parent_index: _instruction.parent_index.clone(),
-                            key: "info".to_string(),
-                            value: "".to_string(),
-                            parent_key: "".to_string(),
-                            timestamp: _instruction.timestamp,
-                        },
-                        InstructionProperty {
-                            tx_instruction_id: _instruction.tx_instruction_id.clone(),
-                            transaction_hash: _instruction.transaction_hash.clone(),
-                            parent_index: _instruction.parent_index.clone(),
-                            key: "account".to_string(),
-                            value: _instruction.program.clone(),
-                            parent_key: "info".to_string(),
-                            timestamp: _instruction.timestamp,
-                        },
-                    ],
+                    properties: vec![],
                 })
             }
         }
