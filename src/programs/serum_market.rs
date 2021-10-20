@@ -4,6 +4,10 @@ use tracing::error;
 
 use crate::{InstructionFunction, InstructionSet, InstructionProperty, Instruction};
 
+pub const PROGRAM_ADDRESS_V1: &str = "BJ3jrUzddfuSrZHXSCxMUUQsjKEyLmuuyZebkcaFp2fg";
+pub const PROGRAM_ADDRESS_V2: &str = "EUqojwWA2rd19FZrzeBncJsm38Jm1hEhE3zsmX3bRc2o";
+pub const PROGRAM_ADDRESS_V3: &str = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin";
+
 pub async fn fragment_instruction(
     instruction: Instruction
 ) -> Option<InstructionSet> {

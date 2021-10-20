@@ -86,6 +86,12 @@ pub async fn process(
                         crate::programs::native_token_swap::fragment_instruction(instruction)
                             .await
                     }
+                    programs::serum_market::PROGRAM_ADDRESS_V1
+                        | programs::serum_market::PROGRAM_ADDRESS_V2
+                        | programs::serum_market::PROGRAM_ADDRESS_V3 => {
+                        crate::programs::serum_market::fragment_instruction(instruction)
+                            .await
+                    }
                     _ => {
                         info!("Looks like this program ({}) is an unsupported one.",
                             instruction.program.to_string());
