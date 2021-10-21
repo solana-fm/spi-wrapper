@@ -21,8 +21,9 @@ solana-account-decoder = "1.7.12"
 solana-program = "1.7.12"
 solana-sdk = "1.7.12"
 solana-transaction-status = "1.7.12"
+#solend-token-lending = { path = "submodules/solend-program-library/token-lending/program", features = ["no-entrypoint"] }
 spl-token = { version = "3.2.0", features = ["no-entrypoint"] }
-spl-token-lending = { path = "submodules/solana-program-library/token-lending/program", version = "=0.1.0"}
+spl-token-lending = { path = "submodules/solana-program-library/token-lending/program", version = "=0.1.0", features = ["no-entrypoint"]}
 spl-token-swap = "2.1.0"
 tokio = { version = "1", features = ["rt"] }
 tracing = "0.1.5"
