@@ -1,3 +1,6 @@
 [submodule "submodules/solana-program-library"]
 	path = submodules/solana-program-library
 	url = https://github.com/solana-labs/solana-program-library.git
+[submodule "submodules/solend-program-library"]
+	path = submodules/solend-program-library
+	url = https://github.com/nozomi-ai/solend-program-library.git
