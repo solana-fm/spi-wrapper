@@ -6,3 +6,4 @@ pub mod native_token_swap;
 pub mod native_token_lending;
 pub mod serum_market;
 pub mod native_vote;
+pub mod solend_token_lending;
