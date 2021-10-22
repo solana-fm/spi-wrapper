@@ -12,6 +12,7 @@ keywords = ["solana", "wrapper"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bs58 = "0.4.0"
 base64 = "0.13.0"
 bincode = "1.3.3"
 chrono = "0.4.19"
@@ -21,7 +22,8 @@ solana-account-decoder = "1.7.12"
 solana-program = "1.7.12"
 solana-sdk = "1.7.12"
 solana-transaction-status = "1.7.12"
-#solend-token-lending = { path = "submodules/solend-program-library/token-lending/program", features = ["no-entrypoint"] }
+solend-token-lending = { path = "submodules/solend-program-library/token-lending/program", features = ["no-entrypoint"] }
+solana-vote-program = "1.7.12"
 spl-token = { version = "3.2.0", features = ["no-entrypoint"] }
 spl-token-lending = { path = "submodules/solana-program-library/token-lending/program", version = "=0.1.0", features = ["no-entrypoint"]}
 spl-token-swap = "2.1.0"
