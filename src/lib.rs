@@ -100,6 +100,10 @@ pub async fn process(
                         crate::programs::native_vote::fragment_instruction(instruction)
                             .await
                     }
+                    programs::solend_token_lending::PROGRAM_ADDRESS => {
+                        crate::programs::solend_token_lending::fragment_instruction(instruction)
+                            .await
+                    }
                     _ => {
                         info!("Looks like this program ({}) is an unsupported one.",
                             instruction.program.to_string());
