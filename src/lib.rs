@@ -96,6 +96,10 @@ pub async fn process(
                         crate::programs::serum_market::fragment_instruction(instruction)
                             .await
                     }
+                    programs::native_vote::PROGRAM_ADDRESS => {
+                        crate::programs::native_vote::fragment_instruction(instruction)
+                            .await
+                    }
                     _ => {
                         info!("Looks like this program ({}) is an unsupported one.",
                             instruction.program.to_string());
