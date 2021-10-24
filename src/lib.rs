@@ -82,6 +82,10 @@ pub async fn process(
                         crate::programs::bpf_loader_upgradeable::fragment_instruction(instruction)
                             .await
                     }
+                    programs::native_system::PROGRAM_ADDRESS => {
+                        crate::programs::native_system::fragment_instruction(instruction)
+                            .await
+                    }
                     programs::native_token::PROGRAM_ADDRESS => {
                         crate::programs::native_token::fragment_instruction(instruction)
                             .await
