@@ -1,7 +1,6 @@
 use bincode::deserialize;
 use solana_program::{
-    instruction::CompiledInstruction, pubkey::Pubkey, stake::instruction::StakeInstruction,
-    system_instruction::SystemInstruction,
+    instruction::CompiledInstruction, pubkey::Pubkey, system_instruction::SystemInstruction,
 };
 use solana_sdk::loader_instruction::LoaderInstruction;
 use tracing::error;
