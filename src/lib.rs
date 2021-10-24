@@ -65,6 +65,10 @@ pub async fn process(
         .map(|instruction| {
             spawn(async {
                 match instruction.program.as_str() {
+                    programs::native_associated_token_account::PROGRAM_ADDRESS => {
+                        crate::programs::native_associated_token_account::fragment_instruction(
+                            instruction).await
+                    },
                     programs::native_loader::PROGRAM_ADDRESS => {
                         crate::programs::native_loader::fragment_instruction(instruction)
                             .await
