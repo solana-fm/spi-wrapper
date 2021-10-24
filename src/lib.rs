@@ -69,6 +69,10 @@ pub async fn process(
                         crate::programs::native_associated_token_account::fragment_instruction(
                             instruction).await
                     },
+                    programs::native_config::PROGRAM_ADDRESS => {
+                        crate::programs::native_config::fragment_instruction(instruction)
+                            .await
+                    },
                     programs::native_loader::PROGRAM_ADDRESS => {
                         crate::programs::native_loader::fragment_instruction(instruction)
                             .await

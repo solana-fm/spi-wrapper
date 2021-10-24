@@ -1,8 +1,5 @@
 use bincode::deserialize;
-use solana_program::{
-    instruction::CompiledInstruction, pubkey::Pubkey, system_instruction::SystemInstruction,
-};
-use solana_sdk::loader_instruction::LoaderInstruction;
+use solana_program::system_instruction::SystemInstruction;
 use tracing::error;
 
 use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
@@ -15,9 +12,10 @@ pub const PROGRAM_ADDRESS: &str = "11111111111111111111111111111111";
 /// The function should return a list of instruction properties extracted from an instruction.
 pub async fn fragment_instruction(
     // The instruction
-    _instruction: Instruction
+    instruction: Instruction
 ) -> Option<InstructionSet> {
-    let sdr = deserialize::<SystemInstruction>(&data);
+    let sdr = deserialize::<SystemInstruction>(
+        &instruction.data.as_slice());
 
     return if let Ok(si) = sdr {
         match si {
@@ -48,27 +46,27 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "lamports".to_string(),
                             value: lamports.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner".to_string(),
                             value: owner.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "space".to_string(),
                             value: space.to_string(),
                             parent_key: "".to_string(),
@@ -97,9 +95,9 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner".to_string(),
                             value: owner.to_string(),
                             parent_key: "".to_string(),
@@ -130,9 +128,9 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "lamports".to_string(),
                             value: lamports.to_string(),
                             parent_key: "".to_string(),
@@ -172,50 +170,50 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "base".to_string(),
                             value: base.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "seed".to_string(),
                             value: seed.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "lamports".to_string(),
                             value: lamports.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "space".to_string(),
                             value: space.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner".to_string(),
                             value: owner.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
-                        }
+                        },
                     ],
                 })
             }
@@ -265,9 +263,9 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "lamports".to_string(),
                             value: lamports.to_string(),
                             parent_key: "".to_string(),
@@ -298,9 +296,9 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "authority".to_string(),
                             value: authority.to_string(),
                             parent_key: "".to_string(),
@@ -330,9 +328,9 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "authority".to_string(),
                             value: authority.to_string(),
                             parent_key: "".to_string(),
@@ -361,9 +359,9 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "space".to_string(),
                             value: space.to_string(),
                             parent_key: "".to_string(),
@@ -400,41 +398,41 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "base".to_string(),
                             value: base.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "seed".to_string(),
                             value: seed.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "space".to_string(),
                             value: space.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner".to_string(),
                             value: owner.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
-                        }
+                        },
                     ],
                 })
             }
@@ -460,32 +458,32 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "base".to_string(),
                             value: base.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "seed".to_string(),
                             value: seed.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "owner".to_string(),
                             value: owner.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
-                        }
+                        },
                     ],
                 })
             }
@@ -517,32 +515,32 @@ pub async fn fragment_instruction(
                     },
                     properties: vec![
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "lamports".to_string(),
                             value: lamports.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "from_seed".to_string(),
                             value: from_seed.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
                         },
                         InstructionProperty {
-                            tx_instruction_id: instruction_index.clone(),
-                            transaction_hash: transaction_hash.clone(),
-                            parent_index: parent_index.clone(),
+                            tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            transaction_hash: instruction.transaction_hash.clone(),
+                            parent_index: instruction.parent_index.clone(),
                             key: "from_owner".to_string(),
                             value: from_owner.to_string(),
                             parent_key: "".to_string(),
                             timestamp: instruction.timestamp,
-                        }
+                        },
                     ],
                 })
             }
