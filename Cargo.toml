@@ -27,7 +27,7 @@ solana-program = "1.7.12"
 solana-sdk = "1.7.12"
 #solana-stake-program = "=1.7.10"
 solana-transaction-status = "1.7.12"
-solend-token-lending = "0.1.0"
+solend-token-lending = "0.1.1"
 solana-vote-program = "1.7.12"
 spl-token = { version = "3.2.0", features = ["no-entrypoint"] }
 spl-token-lending = { path = "submodules/solana-program-library/token-lending/program", version = "=0.1.0", features = ["no-entrypoint"]}
