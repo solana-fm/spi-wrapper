@@ -3,6 +3,7 @@ pub mod bpf_loader_upgradeable;
 pub mod native_associated_token_account;
 pub mod native_config;
 pub mod native_loader;
+pub mod native_secp256k1;
 pub mod native_stake;
 pub mod native_system;
 pub mod native_token;
