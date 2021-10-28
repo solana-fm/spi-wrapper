@@ -107,8 +107,8 @@ pub async fn fragment_instruction(
         })
     } else {
         // If the instruction parsing is failing, bail out
-        error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to \
-        {}.", instruction.program, atadr.unwrap_err());
+        error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {}.",
+            instruction.program);
 
         None
     }
