@@ -19,10 +19,10 @@ pub async fn fragment_instruction(
     let bpf_loader_upgradeable_dr =
         parse_bpf_upgradeable_loader(instruction.data.as_slice());
 
-    match bpf_loader_upgradeable_dr {
+    return match bpf_loader_upgradeable_dr {
         Ok(ref blu) => {
             let bpf_loader_upgradeable_i = blu.clone();
-            
+
             match bpf_loader_upgradeable_i {
                 BpfUpgradeableLoaderAccountType::Uninitialized => {
                     Some(InstructionSet {
