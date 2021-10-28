@@ -16,7 +16,7 @@ pub async fn fragment_instruction(
     let atadr = deserialize::<solana_program::instruction::Instruction>(
         &instruction.data.as_slice());
 
-    return if !atadr.is_err() {
+    return if !&atadr.is_err() {
         let associated_token_instruction = atadr.unwrap();
         // Create an associated token account for the given wallet address and token mint
         //
