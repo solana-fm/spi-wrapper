@@ -16,21 +16,22 @@ pub async fn fragment_instruction(
     let atadr = deserialize::<solana_program::instruction::Instruction>(
         &instruction.data.as_slice());
 
-    return if !&atadr.is_err() {
-        let associated_token_instruction = atadr.unwrap();
-        // Create an associated token account for the given wallet address and token mint
-        //
-        // Accounts expected by this instruction:
-        //
-        //   0. `[writeable,signer]` Funding account (must be a system account)
-        //   1. `[writeable]` Associated token account address to be created
-        //   2. `[]` Wallet address for the new associated token account
-        //   3. `[]` The token mint for the new associated token account
-        //   4. `[]` System program
-        //   5. `[]` SPL Token program
-        //   6. `[]` Rent sysvar
-        let account_sets: Vec<Vec<InstructionProperty>> = associated_token_instruction.accounts
-            .into_iter().map(|am| {
+    return match atadr {
+        Ok(ref ati) => {
+            let associated_token_instruction = ati.clone();
+            // Create an associated token account for the given wallet address and token mint
+            //
+            // Accounts expected by this instruction:
+            //
+            //   0. `[writeable,signer]` Funding account (must be a system account)
+            //   1. `[writeable]` Associated token account address to be created
+            //   2. `[]` Wallet address for the new associated token account
+            //   3. `[]` The token mint for the new associated token account
+            //   4. `[]` System program
+            //   5. `[]` SPL Token program
+            //   6. `[]` Rent sysvar
+            let account_sets: Vec<Vec<InstructionProperty>> = associated_token_instruction.accounts
+                .into_iter().map(|am| {
                 vec![
                     InstructionProperty {
                         tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -70,7 +71,7 @@ pub async fn fragment_instruction(
                 ]
             }).collect();
 
-        let mut properties = vec![
+            let mut properties = vec![
                 InstructionProperty {
                     tx_instruction_id: instruction.tx_instruction_id.clone(),
                     transaction_hash: instruction.transaction_hash.clone(),
@@ -91,26 +92,28 @@ pub async fn fragment_instruction(
                 }
             ];
 
-        for ac in account_sets {
-            properties.extend(ac);
+            for ac in account_sets {
+                properties.extend(ac);
+            }
+
+            Some(InstructionSet {
+                function: InstructionFunction {
+                    tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    transaction_hash: instruction.transaction_hash.clone(),
+                    parent_index: instruction.parent_index.clone(),
+                    program: instruction.program.clone(),
+                    function_name: "".to_string(),
+                    timestamp: instruction.timestamp
+                },
+                properties
+            })
         }
+        Err(err) => {
+            // If the instruction parsing is failing, bail out
+            error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to \
+        {}.", instruction.program, err);
 
-        Some(InstructionSet {
-            function: InstructionFunction {
-                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                transaction_hash: instruction.transaction_hash.clone(),
-                parent_index: instruction.parent_index.clone(),
-                program: instruction.program.clone(),
-                function_name: "".to_string(),
-                timestamp: instruction.timestamp
-            },
-            properties
-        })
-    } else {
-        // If the instruction parsing is failing, bail out
-        error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to \
-        {}.", instruction.program, atadr.unwrap_err());
-
-        None
+            None
+        }
     }
 }
