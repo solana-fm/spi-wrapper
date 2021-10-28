@@ -16,7 +16,8 @@ pub async fn fragment_instruction(
     let atadr = deserialize::<solana_program::instruction::Instruction>(
         &instruction.data.as_slice());
 
-    return if let Ok(associated_token_instruction) = atadr {
+    return if !atadr.is_err() {
+        let associated_token_instruction = atadr.unwrap();
         // Create an associated token account for the given wallet address and token mint
         //
         // Accounts expected by this instruction:
@@ -107,8 +108,8 @@ pub async fn fragment_instruction(
         })
     } else {
         // If the instruction parsing is failing, bail out
-        error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {}.",
-            instruction.program);
+        error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to \
+        {}.", instruction.program, atadr.unwrap_err());
 
         None
     }
