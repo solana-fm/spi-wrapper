@@ -18,59 +18,63 @@ pub async fn fragment_instruction(
     let bpf_loader_dr = deserialize::<LoaderInstruction>(
         &_instruction.data);
 
-    if let Ok(deserialized_bpf_loader) = bpf_loader_dr {
-        return match deserialized_bpf_loader {
-            LoaderInstruction::Write { offset, bytes } => {
-                Option::from(InstructionSet {
-                    function: InstructionFunction {
-                        tx_instruction_id: _instruction.tx_instruction_id.clone(),
-                        transaction_hash: _instruction.transaction_hash.clone(),
-                        parent_index: _instruction.parent_index.clone(),
-                        program: _instruction.program.clone(),
-                        function_name: "write".to_string(),
-                        timestamp: _instruction.timestamp,
-                    },
-                    properties: vec![
-                        InstructionProperty {
+    return match bpf_loader_dr {
+        Ok(ref bld) => {
+            let deserialized_bpf_loader = bld.clone();
+            return match deserialized_bpf_loader {
+                LoaderInstruction::Write { offset, bytes } => {
+                    Option::from(InstructionSet {
+                        function: InstructionFunction {
                             tx_instruction_id: _instruction.tx_instruction_id.clone(),
                             transaction_hash: _instruction.transaction_hash.clone(),
                             parent_index: _instruction.parent_index.clone(),
-                            key: "offset".to_string(),
-                            value: offset.to_string(),
-                            parent_key: "".to_string(),
+                            program: _instruction.program.clone(),
+                            function_name: "write".to_string(),
                             timestamp: _instruction.timestamp,
                         },
-                        InstructionProperty {
+                        properties: vec![
+                            InstructionProperty {
+                                tx_instruction_id: _instruction.tx_instruction_id.clone(),
+                                transaction_hash: _instruction.transaction_hash.clone(),
+                                parent_index: _instruction.parent_index.clone(),
+                                key: "offset".to_string(),
+                                value: offset.to_string(),
+                                parent_key: "".to_string(),
+                                timestamp: _instruction.timestamp,
+                            },
+                            InstructionProperty {
+                                tx_instruction_id: _instruction.tx_instruction_id.clone(),
+                                transaction_hash: _instruction.transaction_hash.clone(),
+                                parent_index: _instruction.parent_index.clone(),
+                                key: "bytes".to_string(),
+                                value: base64::encode(&bytes),
+                                parent_key: "info".to_string(),
+                                timestamp: _instruction.timestamp,
+                            }
+                        ],
+                    })
+                }
+                LoaderInstruction::Finalize => {
+                    Option::from(InstructionSet {
+                        function: InstructionFunction {
                             tx_instruction_id: _instruction.tx_instruction_id.clone(),
                             transaction_hash: _instruction.transaction_hash.clone(),
                             parent_index: _instruction.parent_index.clone(),
-                            key: "bytes".to_string(),
-                            value: base64::encode(&bytes),
-                            parent_key: "info".to_string(),
+                            program: _instruction.program.clone(),
+                            function_name: "finalize".to_string(),
                             timestamp: _instruction.timestamp,
-                        }
-                    ],
-                })
-            }
-            LoaderInstruction::Finalize => {
-                Option::from(InstructionSet {
-                    function: InstructionFunction {
-                        tx_instruction_id: _instruction.tx_instruction_id.clone(),
-                        transaction_hash: _instruction.transaction_hash.clone(),
-                        parent_index: _instruction.parent_index.clone(),
-                        program: _instruction.program.clone(),
-                        function_name: "finalize".to_string(),
-                        timestamp: _instruction.timestamp,
-                    },
-                    properties: vec![],
-                })
+                        },
+                        properties: vec![],
+                    })
+                }
             }
         }
-    } else {
-        // If the instruction parsing is failing, bail out
-        error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to \
-        {}.", _instruction.program, bpf_loader_dr.unwrap_err());
+        Err(err) => {
+            // If the instruction parsing is failing, bail out
+            error!("[spi-wrapper/bpf_loader] Attempt to parse instruction from program {} failed due to \
+        {}.", _instruction.program, err);
 
-        None
+            None
+        }
     }
 }
