@@ -1,6 +1,7 @@
 mod programs;
 
 use chrono::NaiveDateTime;
+use serde::{Serialize, Deserialize};
 use tokio::spawn;
 use tracing::info;
 
