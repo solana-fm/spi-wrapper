@@ -4,7 +4,7 @@ use chrono::NaiveDateTime;
 use tokio::spawn;
 use tracing::info;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Instruction {
     // The local unique identifier of the instruction according to the transaction (not based on solana)
     pub tx_instruction_id: i16,
@@ -20,7 +20,7 @@ pub struct Instruction {
     pub timestamp: NaiveDateTime,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct InstructionFunction {
     // The local unique identifier of the instruction according to the transaction (not based on solana)
     pub tx_instruction_id: i16,
@@ -36,7 +36,7 @@ pub struct InstructionFunction {
     pub timestamp: NaiveDateTime
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct InstructionProperty {
     // The local unique identifier of the instruction according to the transaction (not based on solana)
     pub tx_instruction_id: i16,
@@ -50,7 +50,7 @@ pub struct InstructionProperty {
     pub timestamp: NaiveDateTime,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct InstructionSet {
     pub function: InstructionFunction,
     pub properties: Vec<InstructionProperty>
