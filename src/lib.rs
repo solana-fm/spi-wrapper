@@ -2,6 +2,7 @@ mod programs;
 
 use chrono::NaiveDateTime;
 use serde::{Serialize, Deserialize};
+use solana_sdk::instruction::CompiledInstruction;
 use tokio::spawn;
 use tracing::info;
 
@@ -61,7 +62,7 @@ pub struct InstructionSet {
 /// into a database and json-compatible format based on Solana FM's instruction properties.
 pub async fn process(
     instructions: Vec<Instruction>,
-    og_instructions: Option<Vec<solana_program::instruction::Instruction>>
+    og_instructions: Option<Vec<CompiledInstruction>>
 ) -> Vec<InstructionSet> {
     let instruction_jobs: Vec<_> = instructions.into_iter()
         .map(|instruction| {

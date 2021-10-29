@@ -1,5 +1,6 @@
 use sha3::Digest;
 use libsecp256k1::PublicKey;
+use solana_program::instruction::CompiledInstruction;
 use solana_sdk::secp256k1_instruction::{
     construct_eth_pubkey, Secp256k1Error, SecpSignatureOffsets, HASHED_PUBKEY_SERIALIZED_SIZE,
     SIGNATURE_OFFSETS_SERIALIZED_SIZE, SIGNATURE_SERIALIZED_SIZE,
@@ -18,7 +19,7 @@ pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction,
     // The instructions that were part of the transaction, in order.
-    instructions: &[solana_program::instruction::Instruction]
+    instructions: &[CompiledInstruction]
 ) -> Option<InstructionSet> {
     // The first element within data slice tells us the number of signatures.
     let count = instruction.data[0] as usize;
