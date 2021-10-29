@@ -1,4 +1,3 @@
-use bincode::deserialize;
 use sha3::Digest;
 use libsecp256k1::PublicKey;
 use solana_sdk::secp256k1_instruction::{

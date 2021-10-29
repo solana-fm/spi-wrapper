@@ -60,11 +60,18 @@ pub struct InstructionSet {
 /// Derive a simple, singular function that 'decompiles' support program instruction invocations
 /// into a database and json-compatible format based on Solana FM's instruction properties.
 pub async fn process(
-    instructions: Vec<Instruction>
+    instructions: Vec<Instruction>,
+    og_instructions: Option<Vec<solana_program::instruction::Instruction>>
 ) -> Vec<InstructionSet> {
     let instruction_jobs: Vec<_> = instructions.into_iter()
         .map(|instruction| {
-            spawn(async {
+            let ogi = if let Some(res) = og_instructions.clone() {
+                Some(res)
+            } else {
+                None
+            };
+
+            spawn(async move {
                 match instruction.program.as_str() {
                     programs::native_associated_token_account::PROGRAM_ADDRESS => {
                         crate::programs::native_associated_token_account::fragment_instruction(
@@ -86,6 +93,15 @@ pub async fn process(
                     programs::bpf_loader_upgradeable::PROGRAM_ADDRESS => {
                         crate::programs::bpf_loader_upgradeable::fragment_instruction(instruction)
                             .await
+                    }
+                    programs::native_secp256k1::PROGRAM_ADDRESS => {
+                        if let Some(og_instructs) = ogi {
+                            crate::programs::native_secp256k1::fragment_instruction(instruction,
+                                                                                    og_instructs.as_slice())
+                                .await
+                        } else {
+                            None
+                        }
                     }
                     programs::native_stake::PROGRAM_ADDRESS => {
                         crate::programs::native_stake::fragment_instruction(instruction)
