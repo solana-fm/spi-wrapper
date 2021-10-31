@@ -514,7 +514,7 @@ impl Pack for Obligation {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::math::TryAdd;
+    use crate::programs::solend::math::TryAdd;
     use proptest::prelude::*;
 
     const MAX_COMPOUNDED_INTEREST: u64 = 100; // 10,000%

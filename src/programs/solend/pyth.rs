@@ -1,10 +1,8 @@
 #![allow(missing_docs)]
 /// Derived from https://github.com/project-serum/anchor/blob/9224e0fa99093943a6190e396bccbc3387e5b230/examples/pyth/programs/pyth/src/pc.rs
 use bytemuck::{
-    cast_slice, cast_slice_mut, from_bytes, from_bytes_mut, try_cast_slice, try_cast_slice_mut,
-    Pod, PodCastError, Zeroable,
+    Pod, Zeroable,
 };
-use std::mem::size_of;
 
 pub const MAGIC: u32 = 0xa1b2c3d4;
 pub const VERSION_2: u32 = 2;
@@ -119,17 +117,3 @@ unsafe impl Zeroable for Product {}
 
 #[cfg(target_endian = "little")]
 unsafe impl Pod for Product {}
-
-pub fn load<T: Pod>(data: &[u8]) -> Result<&T, PodCastError> {
-    let size = size_of::<T>();
-    Ok(from_bytes(cast_slice::<u8, u8>(try_cast_slice(
-        &data[0..size],
-    )?)))
-}
-
-pub fn load_mut<T: Pod>(data: &mut [u8]) -> Result<&mut T, PodCastError> {
-    let size = size_of::<T>();
-    Ok(from_bytes_mut(cast_slice_mut::<u8, u8>(
-        try_cast_slice_mut(&mut data[0..size])?,
-    )))
-}

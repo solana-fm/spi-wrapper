@@ -963,7 +963,7 @@ impl Pack for Reserve {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::math::{PERCENT_SCALER, WAD};
+    use crate::programs::solend::math::{PERCENT_SCALER, WAD};
     use proptest::prelude::*;
     use std::cmp::Ordering;
 
