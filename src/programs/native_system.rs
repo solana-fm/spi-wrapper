@@ -1,4 +1,4 @@
-use bincode::{deserialize, Error};
+use bincode::{deserialize};
 use solana_program::system_instruction::SystemInstruction;
 use tracing::error;
 
