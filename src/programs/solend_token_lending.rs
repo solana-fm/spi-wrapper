@@ -1,6 +1,6 @@
 use solana_program::program_error::ProgramError;
 use solana_sdk::pubkey::Pubkey;
-use solend_token_lending::instruction::LendingInstruction;
+use crate::programs::solend::instruction::LendingInstruction;
 use tracing::error;
 
 use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
