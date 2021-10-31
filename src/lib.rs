@@ -19,7 +19,7 @@ pub struct Instruction {
     // If this is an inner instruction, we should depend on this
     pub parent_index: i16,
     // The time this log was created in our time
-    pub timestamp: NaiveDateTime,
+    pub timestamp: i64,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -35,7 +35,7 @@ pub struct InstructionFunction {
     // Which function is this function? (Well duh)
     pub function_name: String,
     // Like what it means dude.
-    pub timestamp: NaiveDateTime
+    pub timestamp: i64
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -49,7 +49,7 @@ pub struct InstructionProperty {
     pub key: String,
     pub value: String,
     pub parent_key: String,
-    pub timestamp: NaiveDateTime,
+    pub timestamp: i64,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
