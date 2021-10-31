@@ -223,19 +223,19 @@ pub async fn fragment_instruction(
                                 parent_key: "vote".to_string(),
                                 timestamp: instruction.timestamp.clone(),
                             },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "timestamp".to_string(),
-                                value: if let Some(ts) = vote.timestamp {
-                                    ts.to_string()
-                                } else {
-                                    "".to_string()
-                                },
-                                parent_key: "vote".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
+                            // InstructionProperty {
+                            //     tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            //     transaction_hash: instruction.transaction_hash.clone(),
+                            //     parent_index: instruction.parent_index.clone(),
+                            //     key: "timestamp".to_string(),
+                            //     value: if let Some(ts) = vote.timestamp {
+                            //         ts.to_string()
+                            //     } else {
+                            //         "".to_string()
+                            //     },
+                            //     parent_key: "vote".to_string(),
+                            //     timestamp: instruction.timestamp.clone(),
+                            // },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
                                 transaction_hash: instruction.transaction_hash.clone(),
@@ -285,19 +285,19 @@ pub async fn fragment_instruction(
                                 parent_key: "vote".to_string(),
                                 timestamp: instruction.timestamp.clone(),
                             },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "timestamp".to_string(),
-                                value: if let Some(ts) = vote.timestamp {
-                                    ts.to_string()
-                                } else {
-                                    "".to_string()
-                                },
-                                parent_key: "vote".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            }
+                            // InstructionProperty {
+                            //     tx_instruction_id: instruction.tx_instruction_id.clone(),
+                            //     transaction_hash: instruction.transaction_hash.clone(),
+                            //     parent_index: instruction.parent_index.clone(),
+                            //     key: "timestamp".to_string(),
+                            //     value: if let Some(ts) = vote.timestamp {
+                            //         ts.to_string()
+                            //     } else {
+                            //         "".to_string()
+                            //     },
+                            //     parent_key: "vote".to_string(),
+                            //     timestamp: instruction.timestamp.clone(),
+                            // }
                         ],
                     })
                 }
