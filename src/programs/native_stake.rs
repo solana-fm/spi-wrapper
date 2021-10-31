@@ -36,7 +36,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "initialize".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -46,7 +46,7 @@ pub async fn fragment_instruction(
                                 key: "staker".to_string(),
                                 value: authorized.staker.to_string(),
                                 parent_key: "authorized".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -55,7 +55,7 @@ pub async fn fragment_instruction(
                                 key: "withdrawer".to_string(),
                                 value: authorized.withdrawer.to_string(),
                                 parent_key: "authorized".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -64,7 +64,7 @@ pub async fn fragment_instruction(
                                 key: "epoch".to_string(),
                                 value: lockup.epoch.to_string(),
                                 parent_key: "lockup".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -73,7 +73,7 @@ pub async fn fragment_instruction(
                                 key: "custodian".to_string(),
                                 value: lockup.custodian.to_string(),
                                 parent_key: "lockup".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -82,7 +82,7 @@ pub async fn fragment_instruction(
                                 key: "unix_timestamp".to_string(),
                                 value: lockup.unix_timestamp.to_string(),
                                 parent_key: "lockup".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -95,7 +95,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "initialize-checked".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![],
                     })
@@ -139,7 +139,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "authorize".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -149,7 +149,7 @@ pub async fn fragment_instruction(
                                 key: "authorized_pubkey".to_string(),
                                 value: authorized_pubkey.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -161,7 +161,7 @@ pub async fn fragment_instruction(
                                     StakeAuthorize::Withdrawer => "withdrawer".to_string()
                                 },
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -175,7 +175,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "authorize-checked".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -188,7 +188,7 @@ pub async fn fragment_instruction(
                                     StakeAuthorize::Withdrawer => "withdrawer".to_string()
                                 },
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -202,7 +202,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "authorize-checked-with-seed".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -212,7 +212,7 @@ pub async fn fragment_instruction(
                                 key: "authority_seed".to_string(),
                                 value: authorize_checked_with_seed_args.authority_seed.to_string(),
                                 parent_key: "authorize_checked_with_seed_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -221,7 +221,7 @@ pub async fn fragment_instruction(
                                 key: "authority_owner".to_string(),
                                 value: authorize_checked_with_seed_args.authority_owner.to_string(),
                                 parent_key: "authorize_checked_with_seed_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -233,7 +233,7 @@ pub async fn fragment_instruction(
                                     StakeAuthorize::Withdrawer => "withdrawer".to_string()
                                 },
                                 parent_key: "authorize_checked_with_seed_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -281,7 +281,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "authorize-with-seed".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -291,7 +291,7 @@ pub async fn fragment_instruction(
                                 key: "authority_seed".to_string(),
                                 value: authorize_with_seed_args.authority_seed.to_string(),
                                 parent_key: "authorize_with_seed_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -300,7 +300,7 @@ pub async fn fragment_instruction(
                                 key: "authority_owner".to_string(),
                                 value: authorize_with_seed_args.authority_owner.to_string(),
                                 parent_key: "authorize_with_seed_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -312,7 +312,7 @@ pub async fn fragment_instruction(
                                     StakeAuthorize::Withdrawer => "withdrawer".to_string()
                                 },
                                 parent_key: "authorize_checked_with_seed_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -321,7 +321,7 @@ pub async fn fragment_instruction(
                                 key: "new_authorized_pubkey".to_string(),
                                 value: authorize_with_seed_args.new_authorized_pubkey.to_string(),
                                 parent_key: "authorize_checked_with_seed_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -348,7 +348,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "delegate-stake".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![],
                     })
@@ -363,7 +363,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "split".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -373,7 +373,7 @@ pub async fn fragment_instruction(
                                 key: "lamports".to_string(),
                                 value: lamports.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -399,7 +399,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "merge".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![],
                     })
@@ -425,7 +425,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "withdraw".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -435,7 +435,7 @@ pub async fn fragment_instruction(
                                 key: "lamports".to_string(),
                                 value: lamports.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -452,7 +452,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "deactivate".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![],
                     })
@@ -473,7 +473,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "set-lockup".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -487,7 +487,7 @@ pub async fn fragment_instruction(
                                     "".to_string()
                                 },
                                 parent_key: "lockup_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -500,7 +500,7 @@ pub async fn fragment_instruction(
                                     "".to_string()
                                 },
                                 parent_key: "lockup_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -513,7 +513,7 @@ pub async fn fragment_instruction(
                                     "".to_string()
                                 },
                                 parent_key: "lockup_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -527,7 +527,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "set-lockup-checked".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -541,7 +541,7 @@ pub async fn fragment_instruction(
                                     "".to_string()
                                 },
                                 parent_key: "lockup_checked_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -555,7 +555,7 @@ pub async fn fragment_instruction(
                                     "".to_string()
                                 },
                                 parent_key: "lockup_checked_args".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })

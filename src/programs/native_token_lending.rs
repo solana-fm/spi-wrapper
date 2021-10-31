@@ -29,7 +29,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "init-lending-market".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -61,7 +61,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "set-lending-market-owner".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -87,7 +87,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "init-reserve".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -191,7 +191,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "refresh-reserve".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![]
                     })
@@ -204,7 +204,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "deposit-reserve-liquidity".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -227,7 +227,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "redeem-reserve-collateral".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -250,7 +250,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "init-obligation".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![]
                     })
@@ -263,7 +263,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "refresh-obligation".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![]
                     })
@@ -276,7 +276,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "deposit-obligation-collateral".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -299,7 +299,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "withdraw-obligation-collateral".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -322,7 +322,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "borrow-obligation-liquidity".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -345,7 +345,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "repay-obligation-liquidity".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -368,7 +368,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "liquidate-obligation".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -391,7 +391,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "flash-loan".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {

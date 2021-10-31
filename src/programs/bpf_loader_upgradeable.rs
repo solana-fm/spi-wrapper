@@ -32,7 +32,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "uninitialized".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![]
                     })
@@ -45,7 +45,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "buffer".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -59,7 +59,7 @@ pub async fn fragment_instruction(
                                     "".to_string()
                                 },
                                 parent_key: "buffer".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -68,7 +68,7 @@ pub async fn fragment_instruction(
                                 key: "data".to_string(),
                                 value: serde_json::to_string(&buffer.data).unwrap().to_string(),
                                 parent_key: "buffer".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ]
                     })
@@ -81,7 +81,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "program".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -91,7 +91,7 @@ pub async fn fragment_instruction(
                                 key: "program_data".to_string(),
                                 value: serde_json::to_string(&program.program_data).unwrap().to_string(),
                                 parent_key: "program".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ]
                     })
@@ -104,7 +104,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "program-data".to_string(),
-                            timestamp: instruction.timestamp
+                            timestamp: instruction.timestamp.clone()
                         },
                         properties: vec![
                             InstructionProperty {
@@ -118,7 +118,7 @@ pub async fn fragment_instruction(
                                     "".to_string()
                                 },
                                 parent_key: "program_data".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -127,7 +127,7 @@ pub async fn fragment_instruction(
                                 key: "data".to_string(),
                                 value: serde_json::to_string(&program_data.data).unwrap().to_string(),
                                 parent_key: "program_data".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -136,7 +136,7 @@ pub async fn fragment_instruction(
                                 key: "slot".to_string(),
                                 value: program_data.slot.to_string(),
                                 parent_key: "program_data".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ]
                     })

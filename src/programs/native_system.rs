@@ -44,7 +44,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "create-account".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -54,7 +54,7 @@ pub async fn fragment_instruction(
                                 key: "lamports".to_string(),
                                 value: lamports.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -63,7 +63,7 @@ pub async fn fragment_instruction(
                                 key: "owner".to_string(),
                                 value: owner.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -72,7 +72,7 @@ pub async fn fragment_instruction(
                                 key: "space".to_string(),
                                 value: space.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -93,7 +93,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "assign".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -103,7 +103,7 @@ pub async fn fragment_instruction(
                                 key: "owner".to_string(),
                                 value: owner.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -126,7 +126,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "transfer".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -136,7 +136,7 @@ pub async fn fragment_instruction(
                                 key: "lamports".to_string(),
                                 value: lamports.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -168,7 +168,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "create-account-with-seed".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -178,7 +178,7 @@ pub async fn fragment_instruction(
                                 key: "base".to_string(),
                                 value: base.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -187,7 +187,7 @@ pub async fn fragment_instruction(
                                 key: "seed".to_string(),
                                 value: seed.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -196,7 +196,7 @@ pub async fn fragment_instruction(
                                 key: "lamports".to_string(),
                                 value: lamports.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -205,7 +205,7 @@ pub async fn fragment_instruction(
                                 key: "space".to_string(),
                                 value: space.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -214,7 +214,7 @@ pub async fn fragment_instruction(
                                 key: "owner".to_string(),
                                 value: owner.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -236,7 +236,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "advance-nonce-account".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![],
                     })
@@ -261,7 +261,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "withdraw-nonce-account".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -271,7 +271,7 @@ pub async fn fragment_instruction(
                                 key: "lamports".to_string(),
                                 value: lamports.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -294,7 +294,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "initialize-nonce-account".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -304,7 +304,7 @@ pub async fn fragment_instruction(
                                 key: "authority".to_string(),
                                 value: authority.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -326,7 +326,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "authorize-nonce-account".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -336,7 +336,7 @@ pub async fn fragment_instruction(
                                 key: "authority".to_string(),
                                 value: authority.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -357,7 +357,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "allocate".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -367,7 +367,7 @@ pub async fn fragment_instruction(
                                 key: "space".to_string(),
                                 value: space.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -396,7 +396,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "allocate-with-seed".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -406,7 +406,7 @@ pub async fn fragment_instruction(
                                 key: "base".to_string(),
                                 value: base.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -415,7 +415,7 @@ pub async fn fragment_instruction(
                                 key: "seed".to_string(),
                                 value: seed.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -424,7 +424,7 @@ pub async fn fragment_instruction(
                                 key: "space".to_string(),
                                 value: space.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -433,7 +433,7 @@ pub async fn fragment_instruction(
                                 key: "owner".to_string(),
                                 value: owner.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -456,7 +456,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "assign-with-seed".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -466,7 +466,7 @@ pub async fn fragment_instruction(
                                 key: "base".to_string(),
                                 value: base.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -475,7 +475,7 @@ pub async fn fragment_instruction(
                                 key: "seed".to_string(),
                                 value: seed.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -484,7 +484,7 @@ pub async fn fragment_instruction(
                                 key: "owner".to_string(),
                                 value: owner.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })
@@ -513,7 +513,7 @@ pub async fn fragment_instruction(
                             parent_index: instruction.parent_index.clone(),
                             program: instruction.program.clone(),
                             function_name: "transfer-with-seed".to_string(),
-                            timestamp: instruction.timestamp,
+                            timestamp: instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -523,7 +523,7 @@ pub async fn fragment_instruction(
                                 key: "lamports".to_string(),
                                 value: lamports.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -532,7 +532,7 @@ pub async fn fragment_instruction(
                                 key: "from_seed".to_string(),
                                 value: from_seed.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: instruction.tx_instruction_id.clone(),
@@ -541,7 +541,7 @@ pub async fn fragment_instruction(
                                 key: "from_owner".to_string(),
                                 value: from_owner.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: instruction.timestamp,
+                                timestamp: instruction.timestamp.clone(),
                             },
                         ],
                     })

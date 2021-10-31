@@ -30,7 +30,7 @@ pub async fn fragment_instruction(
                             parent_index: _instruction.parent_index.clone(),
                             program: _instruction.program.clone(),
                             function_name: "write".to_string(),
-                            timestamp: _instruction.timestamp,
+                            timestamp: _instruction.timestamp.clone(),
                         },
                         properties: vec![
                             InstructionProperty {
@@ -40,7 +40,7 @@ pub async fn fragment_instruction(
                                 key: "offset".to_string(),
                                 value: offset.to_string(),
                                 parent_key: "".to_string(),
-                                timestamp: _instruction.timestamp,
+                                timestamp: _instruction.timestamp.clone(),
                             },
                             InstructionProperty {
                                 tx_instruction_id: _instruction.tx_instruction_id.clone(),
@@ -49,7 +49,7 @@ pub async fn fragment_instruction(
                                 key: "bytes".to_string(),
                                 value: base64::encode(&bytes),
                                 parent_key: "info".to_string(),
-                                timestamp: _instruction.timestamp,
+                                timestamp: _instruction.timestamp.clone(),
                             }
                         ],
                     })
@@ -62,7 +62,7 @@ pub async fn fragment_instruction(
                             parent_index: _instruction.parent_index.clone(),
                             program: _instruction.program.clone(),
                             function_name: "finalize".to_string(),
-                            timestamp: _instruction.timestamp,
+                            timestamp: _instruction.timestamp.clone(),
                         },
                         properties: vec![],
                     })

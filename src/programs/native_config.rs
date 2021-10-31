@@ -29,7 +29,7 @@ pub async fn fragment_instruction(
                     parent_index: instruction.parent_index.clone(),
                     program: instruction.program.clone(),
                     function_name: "".to_string(),
-                    timestamp: instruction.timestamp,
+                    timestamp: instruction.timestamp.clone(),
                 },
                 properties: vec![],
             };
