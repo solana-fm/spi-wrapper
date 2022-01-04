@@ -2,6 +2,7 @@ use avro_rs::schema::Schema;
 use std::collections::HashMap;
 use bincode::deserialize;
 use itertools::Itertools;
+use serde::Serialize;
 use solana_sdk::loader_instruction::LoaderInstruction;
 use tracing::error;
 
@@ -43,7 +44,7 @@ pub struct NativeBpfWrite {
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction(
+pub async fn fragment_instruction<T: Serialize>(
     // The instruction
     _instruction: Instruction
 ) -> Option<HashMap<(String, Schema), Vec<T>>> {
