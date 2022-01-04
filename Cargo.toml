@@ -27,23 +27,26 @@ overflow-checks = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+avro-rs = "0.13.0"
 bs58 = "0.4.0"
 base64 = "0.13.0"
 bincode = "1.3.3"
 hex = "0.4.3"
+itertools = "0.10.3"
+lazy_static = "1.4.0"
 libsecp256k1 = "0.5.0"
 proptest = "1.0.0"
 serde = "1.0.130"
 serde_json = "1.0.68"
-serum_dex = "0.4.0"
+serum_dex = "0.5.0"
 sha3 = "0.9.1"
-solana-account-decoder = "1.7.12"
-solana-config-program = "1.7.12"
-solana-program = "1.7.12"
-solana-sdk = "1.7.12"
+solana-account-decoder = "1.9.2"
+solana-config-program = "1.9.2"
+solana-program = "1.9.2"
+solana-sdk = "1.9.2"
 #solana-stake-program = "=1.7.10"
-solana-transaction-status = "1.7.12"
-solana-vote-program = "1.7.12"
+solana-transaction-status = "1.9.2"
+solana-vote-program = "1.9.2"
 spl-token = { version = "3.2.0", features = ["no-entrypoint"] }
 spl-token-lending = { path = "submodules/solana-program-library/token-lending/program", version = "=0.1.0", features = ["no-entrypoint"]}
 spl-token-swap = "2.1.0"
