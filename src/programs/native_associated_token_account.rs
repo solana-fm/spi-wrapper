@@ -68,9 +68,15 @@ pub async fn fragment_instruction<T: Serialize>(
                 (NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(), *NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA);
             let associated_token_account = NewAssociatedTokenAccount {
                 transaction_hash: instruction.transaction_hash.to_string(),
-                ata_address: associated_token_instruction.accounts[1].to_string(),
-                wallet_address: associated_token_instruction.accounts[2].to_string(),
-                mint: associated_token_instruction.accounts[3].to_string(),
+                ata_address: associated_token_instruction.account_instructions.into_iter()
+                    .filter(|ai| ai.index == 1)
+                    .collect(),
+                wallet_address: associated_token_instruction.account_instructions.into_iter()
+                    .filter(|ai| ai.index == 2)
+                    .collect(),
+                mint: associated_token_instruction.account_instructions.into_iter()
+                    .filter(|ai| ai.index == 3)
+                    .collect(),
                 timestamp: associated_token_instruction.timestamp
             };
             if response.contains(&key) {
