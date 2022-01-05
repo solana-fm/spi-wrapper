@@ -99,6 +99,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_lending_obligation",
         "fields": [
+            {"name": "obligation_type", "type": "int"},
             {"name": "source", "type": "string"},
             {"name": "destination", "type": "string"},
             {"name": "amount", "type": "long"},
@@ -188,7 +189,7 @@ pub enum ObligationType {
 
 #[derive(Serialize)]
 pub struct Obligation {
-    pub obligation_type: ObligationType,
+    pub obligation_type: i16,
     /// If this is a withdraw, this will be the Source borrow reserve liquidity supply SPL Token account.
     /// If this is a borrow, this will be the Obligation owner.
     pub source: String,
@@ -445,7 +446,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let obligation_key =
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
-                        obligation_type: ObligationType::Deposit,
+                        obligation_type: ObligationType::Deposit as i16,
                         source: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 0)
                             .collect(),
@@ -472,7 +473,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let obligation_key =
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
-                        obligation_type: ObligationType::Deposit,
+                        obligation_type: ObligationType::Deposit as i16,
                         source: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 6)
                             .collect(),
@@ -498,7 +499,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let obligation_key =
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
-                        obligation_type: ObligationType::Withdraw,
+                        obligation_type: ObligationType::Withdraw as i16,
                         source: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 0)
                             .collect(),
@@ -524,7 +525,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let obligation_key =
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
-                        obligation_type: ObligationType::Borrow,
+                        obligation_type: ObligationType::Borrow as i16,
                         source: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 0)
                             .collect(),
@@ -550,7 +551,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let obligation_key =
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
-                        obligation_type: ObligationType::Repay,
+                        obligation_type: ObligationType::Repay as i16,
                         source: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 5)
                             .collect(),
@@ -576,7 +577,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let obligation_key =
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
-                        obligation_type: ObligationType::Liquidate,
+                        obligation_type: ObligationType::Liquidate as i16,
                         source: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 6)
                             .collect(),
@@ -602,7 +603,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let obligation_key =
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
-                        obligation_type: ObligationType::Liquidate,
+                        obligation_type: ObligationType::Liquidate as i16,
                         source: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 0)
                             .collect(),
