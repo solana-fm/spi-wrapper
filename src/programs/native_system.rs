@@ -92,7 +92,7 @@ lazy_static! {
 }
 
 /// Records the state changes of the account at the time.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct AccountCreation {
     /// Current lamport change in the account (+ve for deposit, -ve for withdraw)
     pub lamports: i64,
@@ -102,7 +102,7 @@ pub struct AccountCreation {
     pub timestamp: i64
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct AccountAssignment {
     /// The account that is assigned to the program.
     pub account: String,
@@ -112,7 +112,7 @@ pub struct AccountAssignment {
     pub timestamp: i64
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct AccountTransfer {
     /// The source of the transfer
     pub source: String,
@@ -124,7 +124,7 @@ pub struct AccountTransfer {
     pub timestamp: i64
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct NonceAdvancement {
     /// The nonce account involved
     pub nonce_account: String,
@@ -134,7 +134,7 @@ pub struct NonceAdvancement {
     pub timestamp: i64
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct NonceWithdrawal {
     /// The nonce account involved
     pub nonce_account: String,

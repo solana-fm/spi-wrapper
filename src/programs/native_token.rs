@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use avro_rs::Schema;
+use itertools::Itertools;
 use serde::Serialize;
 use solana_program::program_error::ProgramError;
 use spl_token::instruction::TokenInstruction;
@@ -138,6 +139,7 @@ pub async fn fragment_instruction<T: Serialize>(
 
     return match tdr {
         Ok(ref tir) => {
+            let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
             let dti = tir.clone();
             match dti {
                 TokenInstruction::InitializeMint {
@@ -376,7 +378,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     // msg!("Instruction: Burn");
                     // Self::process_burn(program_id, accounts, amount, None)
                     let key =
-                        (NATIVE_TOKEN_MINT_BURN_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
+                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
                     let mint_to = MintInflation {
                         account: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 1)
@@ -404,7 +406,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     // msg!("Instruction: Burn");
                     // Self::process_burn(program_id, accounts, amount, None)
                     let key =
-                        (NATIVE_TOKEN_MINT_BURN_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
+                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
                     let mint_burn = MintInflation {
                         account: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 0)
@@ -533,7 +535,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     // msg!("Instruction: MintToChecked");
                     // Self::process_mint_to(program_id, accounts, amount, Some(decimals))
                     let key =
-                        (NATIVE_TOKEN_MINT_BURN_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
+                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
                     let mint_to = MintInflation {
                         account: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 1)
