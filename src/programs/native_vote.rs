@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use avro_rs::Schema;
+use serde::Serialize;
 use solana_program::instruction::InstructionError;
 use solana_sdk::program_utils::limited_deserialize;
 use solana_vote_program::vote_instruction::VoteInstruction;
@@ -8,14 +11,47 @@ use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSe
 
 pub const PROGRAM_ADDRESS: &str = "Vote111111111111111111111111111111111111111";
 
+pub const NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME: &str = "native_vote_node_commissions";
+
+lazy_static! {
+    pub static ref NATIVE_VOTE_NODE_COMMISSION_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "native_vote_node_commission",
+        "fields": [
+            {"name": "node_pubkey", "type": "string"},
+            {"name": "commission", "type": "int"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+}
+
+pub struct NodeCommission {
+    pub node_pubkey: String,
+    pub commission: i16,
+    pub timestamp: i64,
+}
+
+pub struct VoteAccountWithdrawal {
+    pub account: String,
+    pub amount: i64,
+    pub recipient: String,
+    pub withdraw_authority: String,
+    pub timestamp: i64,
+}
+
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction(
+pub async fn fragment_instruction<T: Serialize>(
     // The instruction
-    instruction: Instruction,
-) -> Option<InstructionSet> {
+    instruction: Instruction
+) -> Option<HashMap<(String, Schema), Vec<T>>> {
     // Deserialize the instruction
     let vdr: Result<VoteInstruction, InstructionError> = limited_deserialize(
         instruction.data.as_slice());
@@ -24,6 +60,7 @@ pub async fn fragment_instruction(
         Ok(ref di) => {
             let deserialized_instruction = di.clone();
             match deserialized_instruction {
+                // TODO: Consider indexing the vote account initialisation.
                 VoteInstruction::InitializeAccount(vote_init) => {
                     // Source code
                     // verify_rent_exemption(me, next_keyed_account(keyed_accounts)?)?;
@@ -35,56 +72,24 @@ pub async fn fragment_instruction(
                     //     invoke_context
                     //         .is_feature_active(&feature_set::check_init_vote_data::id()),
                     // );
-                    Some(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "initialize-account".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "node_pubkey".to_string(),
-                                value: vote_init.node_pubkey.to_string(),
-                                parent_key: "vote_init".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "commission".to_string(),
-                                value: vote_init.commission.to_string(),
-                                parent_key: "vote_init".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "authorized_withdrawer".to_string(),
-                                value: vote_init.authorized_withdrawer.to_string(),
-                                parent_key: "vote_init".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "authorized_voter".to_string(),
-                                value: vote_init.authorized_voter.to_string(),
-                                parent_key: "vote_init".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                        ],
-                    })
+                    let key =
+                        (NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(), *NATIVE_VOTE_NODE_COMMISSION_SCHEMA);
+                    let node_commission = NodeCommission {
+                        node_pubkey: vote_init.node_pubkey.to_string(),
+                        commission: vote_init.commission as i16,
+                        timestamp: instruction.timestamp,
+                    };
+
+                    if response.contains(&key) {
+                        response[&key].push(node_commission);
+                    } else {
+                        response[&key] = vec![node_commission];
+                    }
+
+                    Some(response)
                 }
-                VoteInstruction::Authorize(voter_pubkey, vote_authorize) => {
+                // TODO: To consider Vote spam attacks if it happens, should do so if we need to track the number of voters specific to each validator.
+                VoteInstruction::Authorize(_, _) => {
                     // vote_state::authorize(
                     //     me,
                     //     &voter_pubkey,
@@ -92,163 +97,45 @@ pub async fn fragment_instruction(
                     //     &signers,
                     //     &from_keyed_account::<Clock>(next_keyed_account(keyed_accounts)?)?,
                     // )
-                    Some(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "authorize".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "voter_pubkey".to_string(),
-                                value: voter_pubkey.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "vote_authorize".to_string(),
-                                value: match vote_authorize {
-                                    VoteAuthorize::Voter => "voter".to_string(),
-                                    VoteAuthorize::Withdrawer => "withdrawer".to_string()
-                                },
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            }
-                        ],
-                    })
+                    None
                 }
-                VoteInstruction::AuthorizeChecked(vote_authorize) => {
-                    Some(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "vote-authorize".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "vote_authorize".to_string(),
-                                value: match vote_authorize {
-                                    VoteAuthorize::Voter => "voter".to_string(),
-                                    VoteAuthorize::Withdrawer => "withdrawer".to_string()
-                                },
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            }
-                        ],
-                    })
+                // TODO: To consider Vote spam attacks if it happens, should do so if we need to track the number of voters specific to each validator.
+                VoteInstruction::AuthorizeChecked(_) => {
+                    None
                 }
+                // TODO: To consider Vote spam attacks if it happens, should do so if we need to track the number of voters specific to each validator.
                 VoteInstruction::UpdateValidatorIdentity => {
                     // vote_state::update_validator_identity(
                     //     me,
                     //     next_keyed_account(keyed_accounts)?.unsigned_key(),
                     //     &signers,
                     // )
-                    Some(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "update-validator-identity".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![],
-                    })
+                    None
                 }
                 VoteInstruction::UpdateCommission(commission) => {
                     // vote_state::update_commission(me, commission, &signers)
-                    Some(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "update-commission".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "commission".to_string(),
-                                value: commission.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            }
-                        ],
-                    })
+                    let key =
+                        (NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(), *NATIVE_VOTE_NODE_COMMISSION_SCHEMA);
+                    let node_commission = NodeCommission {
+                        node_pubkey: instruction.accounts[0].account.clone(),
+                        commission: commission as i16,
+                        timestamp: instruction.timestamp,
+                    };
+
+                    if response.contains(&key) {
+                        response[&key].push(node_commission);
+                    } else {
+                        response[&key] = vec![node_commission];
+                    }
+
+                    Some(response)
                 }
-                VoteInstruction::VoteSwitch(vote, hash) => {
-                    Some(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "vote-switch".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "hash".to_string(),
-                                value: bs58::encode(vote.hash.0).into_string(),
-                                parent_key: "vote".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "slots".to_string(),
-                                value: serde_json::to_string(vote.slots.as_slice()).unwrap(),
-                                parent_key: "vote".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            // InstructionProperty {
-                            //     tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            //     transaction_hash: instruction.transaction_hash.clone(),
-                            //     parent_index: instruction.parent_index.clone(),
-                            //     key: "timestamp".to_string(),
-                            //     value: if let Some(ts) = vote.timestamp {
-                            //         ts.to_string()
-                            //     } else {
-                            //         "".to_string()
-                            //     },
-                            //     parent_key: "vote".to_string(),
-                            //     timestamp: instruction.timestamp.clone(),
-                            // },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "hash".to_string(),
-                                value: bs58::encode(hash.0).into_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            }
-                        ],
-                    })
+                // TODO: Consider indexing specific votes
+                VoteInstruction::VoteSwitch(_, _) => {
+                    None
                 }
-                VoteInstruction::Vote(vote) => {
+                // TODO: Consider indexing specific votes
+                VoteInstruction::Vote(_) => {
                     // Source code execution
                     // vote_state::process_vote(
                     //     me,
@@ -257,75 +144,29 @@ pub async fn fragment_instruction(
                     //     &vote,
                     //     &signers,
                     // )
-                    Some(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "vote".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "hash".to_string(),
-                                value: bs58::encode(vote.hash.0).into_string(),
-                                parent_key: "vote".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "slots".to_string(),
-                                value: serde_json::to_string(vote.slots.as_slice()).unwrap(),
-                                parent_key: "vote".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            // InstructionProperty {
-                            //     tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            //     transaction_hash: instruction.transaction_hash.clone(),
-                            //     parent_index: instruction.parent_index.clone(),
-                            //     key: "timestamp".to_string(),
-                            //     value: if let Some(ts) = vote.timestamp {
-                            //         ts.to_string()
-                            //     } else {
-                            //         "".to_string()
-                            //     },
-                            //     parent_key: "vote".to_string(),
-                            //     timestamp: instruction.timestamp.clone(),
-                            // }
-                        ],
-                    })
+                    None
                 }
                 VoteInstruction::Withdraw(lamports) => {
                     // let to = next_keyed_account(keyed_accounts)?;
                     // vote_state::withdraw(me, lamports, to, &signers)
                     // vote_state::update_commission(me, commission, &signers)
-                    Some(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "withdraw".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "lamports".to_string(),
-                                value: lamports.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            }
-                        ],
-                    })
+                    let key =
+                        (NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(), *NATIVE_VOTE_NODE_COMMISSION_SCHEMA);
+                    let withdrawal = VoteAccountWithdrawal {
+                        account: instruction.accounts[0].account.clone(),
+                        amount: lamports as i64,
+                        recipient: instruction.accounts[1].account.clone(),
+                        withdraw_authority: instruction.accounts[2].account.clone(),
+                        timestamp: instruction.timestamp,
+                    };
+
+                    if response.contains(&key) {
+                        response[&key].push(withdrawal);
+                    } else {
+                        response[&key] = vec![withdrawal];
+                    }
+
+                    Some(response)
                 }
             }
         }
