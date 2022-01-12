@@ -198,15 +198,9 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_BPF_LOADER_UPGRADABLE_DEPLOYS_TABLE_NAME.to_string(), *NATIVE_BPF_LOADER_UPGRADABLE_DEPLOY_SCHEMA);
                     let deployment_data = NativeBpfUpgradeableDeploy {
                         transaction_hash: instruction.transaction_hash.clone(),
-                        program: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
-                        program_data: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
-                        program_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 7)
-                            .collect(),
+                        program: instruction.accounts[2].account.to_string(),
+                        program_data: instruction.accounts[1].account.to_string(),
+                        program_authority: instruction.accounts[7].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
                     if response.contains(&key) {
@@ -242,18 +236,10 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_BPF_LOADER_UPGRADABLE_UPGRADES_TABLE_NAME.to_string(), *NATIVE_BPF_LOADER_UPGRADABLE_UPGRADE_SCHEMA);
                     let deployment_data = NativeBpfUpgradeableUpgrade {
                         transaction_hash: instruction.transaction_hash.clone(),
-                        program: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
-                        program_data: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        program_buffer: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
-                        program_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 6)
-                            .collect(),
+                        program: instruction.accounts[1].account.to_string(),
+                        program_data: instruction.accounts[0].account.to_string(),
+                        program_buffer: instruction.accounts[2].account.to_string(),
+                        program_authority: instruction.accounts[6].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
                     if response.contains(&key) {
@@ -292,15 +278,9 @@ pub async fn fragment_instruction<T: Serialize>(
                     // TODO: Does not handle all edge cases.
                     let deployment_data = NativeBpfUpgradeableClosure {
                         transaction_hash: instruction.transaction_hash.clone(),
-                        program: Some(instruction.account_instructions.into_iter()
-                                          .filter(|ai| ai.index == 3)
-                                          .collect()),
-                        program_data: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        program_authority: Some(instruction.account_instructions.into_iter()
-                                                    .filter(|ai| ai.index == 2)
-                                                    .collect()),
+                        program: Some(instruction.accounts[3].account.to_string()),
+                        program_data: instruction.accounts[0].account.to_string(),
+                        program_authority: Some(instruction.accounts[2].account.to_string()),
                         timestamp: instruction.timestamp.clone()
                     };
                     if response.contains(&key) {
