@@ -177,17 +177,13 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_STAKE_SPLIT_TABLE_NAME.to_string(), *NATIVE_STAKE_SPLIT_SCHEMA);
                     let source_split = NativeStakeSplit {
                         transaction_hash: instruction.transaction_hash.clone(),
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
+                        account: instruction.accounts[0].account.to_string(),
                         amount: (lamports as i64) * -1,
                         timestamp: instruction.timestamp
                     };
                     let dest_split = NativeStakeSplit {
                         transaction_hash: instruction.transaction_hash.clone(),
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        account: instruction.accounts[1].account.to_string(),
                         amount: lamports as i64,
                         timestamp: instruction.timestamp
                     };
