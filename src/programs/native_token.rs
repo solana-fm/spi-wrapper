@@ -7,7 +7,7 @@ use spl_token::instruction::TokenInstruction;
 use spl_token::solana_program::program_option::COption;
 use tracing::error;
 
-use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
+use crate::{Account, ACCOUNT_SCHEMA, ACCOUNT_TABLE_NAME, AccountAuthState, Instruction, InstructionFunction, InstructionProperty, InstructionSet};
 
 pub const PROGRAM_ADDRESS: &str = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
@@ -72,6 +72,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_mint_delegation",
         "fields": [
+            {"name": "delegation_type", "type": "int"},
             {"name": "source", "type": "string"},
             {"name": "delegate", "type": "string"},
             {"name": "mint", "type": ["null", "string"]},
@@ -116,7 +117,14 @@ pub struct MintMovement {
 }
 
 #[derive(Serialize)]
+pub enum DelegationType {
+    Approve = 0,
+    Revoke = 1
+}
+
+#[derive(Serialize)]
 pub struct MintDelegation {
+    pub delegation_type: i16,
     pub source: String,
     pub delegate: String,
     pub mint: Option<String>,
@@ -186,7 +194,22 @@ pub async fn fragment_instruction<T: Serialize>(
                     //     },
                     //     properties: vec![]
                     // })
-                    None
+                    let key =
+                        (ACCOUNT_TABLE_NAME.to_string(), *ACCOUNT_SCHEMA);
+                    let token_account = Account {
+                        account: instruction.accounts[0].account.to_string(),
+                        mint: Some(instruction.accounts[1].account.to_string()),
+                        owner: instruction.accounts[2].account.to_string(),
+                        timestamp: instruction.timestamp
+                    };
+
+                    if response.contains(&key) {
+                        response[&key].push(token_account);
+                    } else {
+                        response[&key] = vec![token_account];
+                    }
+
+                    Some(response)
                 }
                 TokenInstruction::InitializeAccount2 { owner } => {
                     // msg!("Instruction: InitializeAccount2");
@@ -212,7 +235,22 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         }
                     //     ]
                     // })
-                    None
+                    let key =
+                        (ACCOUNT_TABLE_NAME.to_string(), *ACCOUNT_SCHEMA);
+                    let token_account = Account {
+                        account: instruction.accounts[0].account.to_string(),
+                        mint: Some(instruction.accounts[1].account.to_string()),
+                        owner: owner.to_string(),
+                        timestamp: instruction.timestamp
+                    };
+
+                    if response.contains(&key) {
+                        response[&key].push(token_account);
+                    } else {
+                        response[&key] = vec![token_account];
+                    }
+
+                    Some(response)
                 }
                 TokenInstruction::InitializeMultisig { m } => {
                     // msg!("Instruction: InitializeMultisig");
@@ -238,7 +276,22 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         }
                     //     ]
                     // })
-                    None
+                    let key =
+                        (ACCOUNT_TABLE_NAME.to_string(), *ACCOUNT_SCHEMA);
+                    let token_account = Account {
+                        account: instruction.accounts[0].account.to_string(),
+                        mint: None,
+                        owner: instruction.accounts[2].account.to_string(),
+                        timestamp: instruction.timestamp
+                    };
+
+                    if response.contains(&key) {
+                        response[&key].push(token_account);
+                    } else {
+                        response[&key] = vec![token_account];
+                    }
+
+                    Some(response)
                 }
                 TokenInstruction::Transfer { amount } => {
                     // msg!("Instruction: Transfer");
@@ -266,26 +319,20 @@ pub async fn fragment_instruction<T: Serialize>(
                     // })
                     let key =
                         (NATIVE_TOKEN_MINT_MOVEMENT_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_MOVEMENT_SCHEMA);
-                    let mint_burn = MintMovement {
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                    let mint_movement = MintMovement {
+                        destination: instruction.accounts[0].account.to_string(),
+                        source: instruction.accounts[1].account.to_string(),
                         mint: None,
                         amount: amount as i64,
                         decimals: None,
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        owner: instruction.accounts[2].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
                     if response.contains(&key) {
-                        response[&key].push(mint_burn);
+                        response[&key].push(mint_movement);
                     } else {
-                        response[&key] = vec![mint_burn];
+                        response[&key] = vec![mint_movement];
                     }
 
                     Some(response)
@@ -295,26 +342,21 @@ pub async fn fragment_instruction<T: Serialize>(
                     // Self::process_approve(program_id, accounts, amount, None)
                     let key =
                         (NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_DELEGATION_SCHEMA);
-                    let mint_burn = MintDelegation {
-                        delegate: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
+                    let mint_delegation = MintDelegation {
+                        delegation_type: DelegationType::Approve as i16,
+                        delegate: instruction.accounts[1].account.to_string(),
+                        source: instruction.accounts[0].account.to_string(),
                         mint: None,
                         amount: amount as i64,
                         decimals: None,
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        owner: instruction.accounts[2].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
                     if response.contains(&key) {
-                        response[&key].push(mint_burn);
+                        response[&key].push(mint_delegation);
                     } else {
-                        response[&key] = vec![mint_burn];
+                        response[&key] = vec![mint_delegation];
                     }
 
                     Some(response)
@@ -322,55 +364,52 @@ pub async fn fragment_instruction<T: Serialize>(
                 TokenInstruction::Revoke => {
                     // msg!("Instruction: Revoke");
                     // Self::process_revoke(program_id, accounts)
-                    None
+                    let key =
+                        (NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_DELEGATION_SCHEMA);
+                    let mint_delegation = MintDelegation {
+                        delegation_type: DelegationType::Revoke as i16,
+                        delegate: instruction.accounts[1].account.to_string(),
+                        source: instruction.accounts[0].account.to_string(),
+                        mint: None,
+                        amount: -1,
+                        decimals: None,
+                        owner: instruction.accounts[2].account.to_string(),
+                        timestamp: instruction.timestamp
+                    };
+
+                    if response.contains(&key) {
+                        response[&key].push(mint_delegation);
+                    } else {
+                        response[&key] = vec![mint_delegation];
+                    }
+
+                    Some(response)
                 }
                 // TODO: Do we need this?
                 TokenInstruction::SetAuthority {
                     authority_type,
                     new_authority,
                 } => {
-                    // msg!("Instruction: SetAuthority");
-                    // Self::process_set_authority(
-                    //     program_id,
-                    //     accounts,
-                    //     authority_type,
-                    //     new_authority,
-                    // )
-                    // Some(InstructionSet {
-                    //     function: InstructionFunction {
-                    //         tx_instruction_id: instruction.tx_instruction_id.clone(),
-                    //         transaction_hash: instruction.transaction_hash.clone(),
-                    //         parent_index: instruction.parent_index.clone(),
-                    //         program: instruction.program.clone(),
-                    //         function_name: "set-authority".to_string(),
-                    //         timestamp: instruction.timestamp.clone()
-                    //     },
-                    //     properties: vec![
-                    //         InstructionProperty {
-                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
-                    //             transaction_hash: instruction.transaction_hash.clone(),
-                    //             parent_index: instruction.parent_index.clone(),
-                    //             key: "authority_type".to_string(),
-                    //             value: (authority_type as u8).to_string(),
-                    //             parent_key: "".to_string(),
-                    //             timestamp: instruction.timestamp.clone(),
-                    //         },
-                    //         InstructionProperty {
-                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
-                    //             transaction_hash: instruction.transaction_hash.clone(),
-                    //             parent_index: instruction.parent_index.clone(),
-                    //             key: "new_authority".to_string(),
-                    //             value: if let COption::Some(na) = new_authority {
-                    //                 na.to_string()
-                    //             } else {
-                    //                 "".to_string()
-                    //             },
-                    //             parent_key: "".to_string(),
-                    //             timestamp: instruction.timestamp.clone(),
-                    //         }
-                    //     ]
-                    // })
-                    None
+                    let key =
+                        (NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_DELEGATION_SCHEMA);
+                    let mint_delegation = MintDelegation {
+                        delegation_type: DelegationType::Approve as i16,
+                        delegate: instruction.accounts[1].account.to_string(),
+                        source: instruction.accounts[0].account.to_string(),
+                        mint: None,
+                        amount: amount as i64,
+                        decimals: None,
+                        owner: instruction.accounts[2].account.to_string(),
+                        timestamp: instruction.timestamp
+                    };
+
+                    if response.contains(&key) {
+                        response[&key].push(mint_delegation);
+                    } else {
+                        response[&key] = vec![mint_delegation];
+                    }
+
+                    Some(response)
                 }
                 TokenInstruction::MintTo { amount } => {
                     // msg!("Instruction: MintTo");
@@ -378,26 +417,20 @@ pub async fn fragment_instruction<T: Serialize>(
                     // msg!("Instruction: Burn");
                     // Self::process_burn(program_id, accounts, amount, None)
                     let key =
-                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
-                    let mint_to = MintInflation {
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
-                        mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
+                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
+                    let mint_inflation = MintInflation {
+                        account: instruction.accounts[1].account.to_string(),
+                        mint: instruction.accounts[0].account.to_string(),
                         amount: amount as i64,
                         decimals: None,
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        owner: instruction.accounts[2].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
                     if response.contains(&key) {
-                        response[&key].push(mint_to);
+                        response[&key].push(mint_inflation);
                     } else {
-                        response[&key] = vec![mint_to];
+                        response[&key] = vec![mint_inflation];
                     }
 
                     Some(response)
@@ -406,26 +439,20 @@ pub async fn fragment_instruction<T: Serialize>(
                     // msg!("Instruction: Burn");
                     // Self::process_burn(program_id, accounts, amount, None)
                     let key =
-                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
-                    let mint_burn = MintInflation {
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
+                    let mint_inflation = MintInflation {
+                        account: instruction.accounts[0].account.to_string(),
+                        mint: instruction.accounts[1].account.to_string(),
                         amount: -1 * (amount as i64),
                         decimals: None,
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        owner:instruction.accounts[2].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
                     if response.contains(&key) {
-                        response[&key].push(mint_burn);
+                        response[&key].push(mint_inflation);
                     } else {
-                        response[&key] = vec![mint_burn];
+                        response[&key] = vec![mint_inflation];
                     }
 
                     Some(response)
@@ -475,20 +502,12 @@ pub async fn fragment_instruction<T: Serialize>(
                     let key =
                         (NATIVE_TOKEN_MINT_MOVEMENT_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_MOVEMENT_SCHEMA);
                     let mint_movement = MintMovement {
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        mint: Some(instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect()),
+                        destination: instruction.accounts[2].account.to_string(),
+                        source: instruction.accounts[0].account.to_string(),
+                        mint: Some(instruction.accounts[1].account.to_string()),
                         amount: amount as i64,
                         decimals: Some(decimals as i16),
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 3)
-                            .collect(),
+                        owner: instruction.accounts[3].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
@@ -506,20 +525,13 @@ pub async fn fragment_instruction<T: Serialize>(
                     let key =
                         (NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_DELEGATION_SCHEMA);
                     let mint_delegation = MintDelegation {
-                        delegate: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        mint: Some(instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect()),
+                        delegation_type: DelegationType::Approve as i16,
+                        delegate: instruction.accounts[2].account.to_string(),
+                        source: instruction.accounts[0].account.to_string(),
+                        mint: Some(instruction.accounts[1].account.to_string()),
                         amount: amount as i64,
                         decimals: Some(decimals as i16),
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 3)
-                            .collect(),
+                        owner: instruction.accounts[3].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
@@ -535,47 +547,35 @@ pub async fn fragment_instruction<T: Serialize>(
                     // msg!("Instruction: MintToChecked");
                     // Self::process_mint_to(program_id, accounts, amount, Some(decimals))
                     let key =
-                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
-                    let mint_to = MintInflation {
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
-                        mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
+                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
+                    let mint_inflation = MintInflation {
+                        account: instruction.accounts[1].account.to_string(),
+                        mint: instruction.accounts[0].account.to_string(),
                         amount: amount as i64,
                         decimals: Some(decimals as i16),
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        owner: instruction.accounts[2].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
                     if response.contains(&key) {
-                        response[&key].push(mint_to);
+                        response[&key].push(mint_inflation);
                     } else {
-                        response[&key] = vec![mint_to];
+                        response[&key] = vec![mint_inflation];
                     }
 
                     Some(response)
                 }
-                TokenInstruction::BurnChecked { amount, decimals } => {
+                TokenInstruction::BurnChecked { amount, decimals } =>  {
                     // msg!("Instruction: BurnChecked");
                     // Self::process_burn(program_id, accounts, amount, Some(decimals))
                     let key =
                         (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
                     let mint_burn = MintInflation {
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        account: instruction.accounts[0].account.to_string(),
+                        mint: instruction.accounts[1].account.to_string(),
                         amount: -1 * (amount as i64),
                         decimals: Some(decimals as i16),
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        owner: instruction.accounts[2].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
