@@ -13,7 +13,7 @@ pub const PROGRAM_ADDRESS: &str = "11111111111111111111111111111111";
 pub const NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE: &str = "native_system_account_creations";
 pub const NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE: &str = "native_system_account_assignments";
 pub const NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE: &str = "native_system_account_transfers";
-pub const NATIVE_SYSTEM_NONCE_ADVANCEMENTS_TABLE: &str = "native_system_nonce_consumptions";
+pub const NATIVE_SYSTEM_NONCE_ADVANCEMENTS_TABLE: &str = "native_system_nonce_advancements";
 pub const NATIVE_SYSTEM_NONCE_WITHDRAWALS_TABLE: &str = "native_system_nonce_withdrawals";
 lazy_static! {
     pub static ref NATIVE_ACCOUNT_CREATION_SCHEMA: Schema = Schema::parse_str(
@@ -22,9 +22,8 @@ lazy_static! {
         "type": "record",
         "name": "native_account_creation",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
-            {"name": "account", "type": "string"},
-            {"name": "amount", "type": "long"},
+            {"name": "lamports", "type": "long"},
+            {"name": "owner", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -37,6 +36,7 @@ lazy_static! {
         "type": "record",
         "name": "native_account_assignment",
         "fields": [
+            {"name": "account", "type": "string"},
             {"name": "program", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
@@ -63,7 +63,7 @@ lazy_static! {
         r#"
     {
         "type": "record",
-        "name": "native_nonce_consumption",
+        "name": "native_nonce_advancement",
         "fields": [
             {"name": "nonce_account", "type": "string"},
             {"name": "nonce_authority", "type": "string"},
@@ -208,9 +208,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let key =
                         (NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(), *NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA);
                     let account_assignment = AccountAssignment {
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
+                        account: instruction.accounts[0].account.to_string(),
                         program: owner.to_string(),
                         timestamp: instruction.timestamp,
                     };
@@ -237,12 +235,8 @@ pub async fn fragment_instruction<T: Serialize>(
                     let key =
                         (NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(), *NATIVE_ACCOUNT_TRANSFER_SCHEMA);
                     let account_assignment = AccountTransfer {
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        source: instruction.accounts[0].account.to_string(),
+                        destination: instruction.accounts[1].account.to_string(),
                         amount: lamports as i64,
                         timestamp: instruction.timestamp,
                     };
@@ -305,12 +299,8 @@ pub async fn fragment_instruction<T: Serialize>(
                     let key =
                         (NATIVE_SYSTEM_NONCE_ADVANCEMENTS_TABLE.to_string(), *NATIVE_SYSTEM_NONCE_ADVANCEMENT_SCHEMA);
                     let nonce_advancement = NonceAdvancement {
-                        nonce_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        nonce_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        nonce_account: instruction.accounts[0].account.to_string(),
+                        nonce_authority: instruction.accounts[2].account.to_string(),
                         timestamp: instruction.timestamp,
                     };
 
@@ -320,8 +310,7 @@ pub async fn fragment_instruction<T: Serialize>(
                         response[&key] = vec![nonce_advancement];
                     }
 
-                    // Some(response)
-                    None
+                    Some(response)
                 }
                 // TODO: Evaluate if we need this
                 SystemInstruction::WithdrawNonceAccount(lamports) => {
@@ -340,15 +329,9 @@ pub async fn fragment_instruction<T: Serialize>(
                     let key =
                         (NATIVE_SYSTEM_NONCE_WITHDRAWALS_TABLE.to_string(), *NATIVE_SYSTEM_NONCE_WITHDRAWAL_SCHEMA);
                     let nonce_withdrawal = NonceWithdrawal {
-                        nonce_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        recipient: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
-                        nonce_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 4)
-                            .collect(),
+                        nonce_account: instruction.accounts[0].account.to_string(),
+                        recipient: instruction.accounts[1].account.to_string(),
+                        nonce_authority: instruction.accounts[4].account.to_string(),
                         amount: lamports as i64,
                         timestamp: instruction.timestamp,
                     };
@@ -433,9 +416,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let key =
                         (NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(), *NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA);
                     let account_assignment = AccountAssignment {
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
+                        account: instruction.accounts[0].account.to_string(),
                         program: owner.to_string(),
                         timestamp: instruction.timestamp,
                     };
@@ -468,12 +449,8 @@ pub async fn fragment_instruction<T: Serialize>(
                     let key =
                         (NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(), *NATIVE_ACCOUNT_TRANSFER_SCHEMA);
                     let account_assignment = AccountTransfer {
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        source: instruction.accounts[0].account.to_string(),
+                        destination: instruction.accounts[2].account.to_string(),
                         amount: lamports as i64,
                         timestamp: instruction.timestamp,
                     };
