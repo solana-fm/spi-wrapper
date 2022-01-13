@@ -224,15 +224,9 @@ pub async fn fragment_instruction<T: Serialize>(
                     let market_state_key =
                         (NATIVE_TOKEN_LENDING_MARKET_TABLE.to_string(), *NATIVE_TOKEN_LENDING_MARKET_SCHEMA);
                     let market_state = LendingMarket {
-                        market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        token_program: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
-                        oracle_program: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 3)
-                            .collect(),
+                        market_account: instruction.accounts[0].account.to_string(),
+                        token_program: instruction.accounts[2].account.to_string(),
+                        oracle_program: instruction.accounts[3].account.to_string(),
                         quote_currency: Pubkey::new(&quote_currency).to_string(),
                         timestamp: instruction.timestamp
                     };
@@ -246,9 +240,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     let owner_state_key =
                         (NATIVE_TOKEN_LENDING_OWNER_STATE_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OWNER_STATE_SCHEMA);
                     let owner_state = LendingMarketOwnerState {
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
+                        account: instruction.accounts[0].account.to_string(),
                         new_owner: owner.to_string(),
                         owner: "".to_string(),
                         timestamp: instruction.timestamp
@@ -266,13 +258,9 @@ pub async fn fragment_instruction<T: Serialize>(
                     let owner_state_key =
                         (NATIVE_TOKEN_LENDING_OWNER_STATE_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OWNER_STATE_SCHEMA);
                     let owner_state = LendingMarketOwnerState {
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
+                        account: instruction.accounts[0].account.to_string(),
                         new_owner: new_owner.to_string(),
-                        owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        owner: instruction.accounts[1].account.to_string(),
                         timestamp: instruction.timestamp
                     };
 
@@ -293,51 +281,21 @@ pub async fn fragment_instruction<T: Serialize>(
                     let init_reserve_key =
                         (NATIVE_TOKEN_LENDING_MARKET_RESERVE_TABLE.to_string(), *NATIVE_TOKEN_LENDING_MARKET_RESERVE_SCHEMA);
                     let init_reserve = LendingMarketReserve {
-                        source_liquidity_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        collateral_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
-                        collateral_mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 6)
-                            .collect(),
-                        account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
-                        mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 3)
-                            .collect(),
-                        liquidity_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 4)
-                            .collect(),
-                        liquidity_fee_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 5)
-                            .collect(),
-                        collateral_token_supply: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 7)
-                            .collect(),
-                        oracle_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 8)
-                            .collect(),
-                        oracle_price_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 9)
-                            .collect(),
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 10)
-                            .collect(),
-                        lending_market_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 11)
-                            .collect(),
-                        lending_market_owner: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 12)
-                            .collect(),
-                        user_transfer_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 13)
-                            .collect(),
-                        token: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 16)
-                            .collect(),
+                        source_liquidity_account: instruction.accounts[0].account.to_string(),
+                        collateral_account: instruction.accounts[1].account.to_string(),
+                        collateral_mint: instruction.accounts[6].account.to_string(),
+                        account: instruction.accounts[2].account.to_string(),
+                        mint: instruction.accounts[3].account.to_string(),
+                        liquidity_account: instruction.accounts[3].account.to_string(),
+                        liquidity_fee_account: instruction.accounts[5].account.to_string(),
+                        collateral_token_supply: instruction.accounts[7].account.to_string(),
+                        oracle_account: instruction.accounts[8].account.to_string(),
+                        oracle_price_account: instruction.accounts[9].account.to_string(),
+                        lending_market_account: instruction.accounts[10].account.to_string(),
+                        lending_market_authority: instruction.accounts[11].account.to_string(),
+                        lending_market_owner: instruction.accounts[12].account.to_string(),
+                        user_transfer_authority: instruction.accounts[13].account.to_string(),
+                        token: instruction.accounts[16].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -350,22 +308,12 @@ pub async fn fragment_instruction<T: Serialize>(
                     let reserve_liquidity_key =
                         (NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(), *NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA);
                     let reserve_liquidity = ReserveLiquidity {
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 13)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 4)
-                            .collect(),
+                        source: instruction.accounts[13].account.to_string(),
+                        destination: instruction.accounts[4].account.to_string(),
                         amount: liquidity_amount as i64,
-                        mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 3)
-                            .collect(),
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 10)
-                            .collect(),
-                        lending_market_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 11)
-                            .collect(),
+                        mint: instruction.accounts[3].account.to_string(),
+                        lending_market_account: instruction.accounts[10].account.to_string(),
+                        lending_market_authority: instruction.accounts[11].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -384,22 +332,12 @@ pub async fn fragment_instruction<T: Serialize>(
                     let reserve_liquidity_key =
                         (NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(), *NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA);
                     let reserve_liquidity = ReserveLiquidity {
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 7)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 3)
-                            .collect(),
+                        source: instruction.accounts[7].account.to_string(),
+                        destination: instruction.accounts[3].account.to_string(),
                         amount: liquidity_amount as i64,
-                        mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 4)
-                            .collect(),
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 5)
-                            .collect(),
-                        lending_market_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 6)
-                            .collect(),
+                        mint: instruction.accounts[4].account.to_string(),
+                        lending_market_account: instruction.accounts[5].account.to_string(),
+                        lending_market_authority: instruction.accounts[6].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -415,22 +353,12 @@ pub async fn fragment_instruction<T: Serialize>(
                     let reserve_liquidity_key =
                         (NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(), *NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA);
                     let reserve_liquidity = ReserveLiquidity {
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 4)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 7)
-                            .collect(),
+                        source: instruction.accounts[4].account.to_string(),
+                        destination: instruction.accounts[7].account.to_string(),
                         amount: -1 * (collateral_amount as i64),
-                        mint: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 3)
-                            .collect(),
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 5)
-                            .collect(),
-                        lending_market_authority: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 6)
-                            .collect(),
+                        mint: instruction.accounts[3].account.to_string(),
+                        lending_market_account: instruction.accounts[5].account.to_string(),
+                        lending_market_authority: instruction.accounts[6].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -447,16 +375,10 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
                         obligation_type: ObligationType::Deposit as i16,
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 2)
-                            .collect(),
+                        source: instruction.accounts[0].account.to_string(),
+                        destination: instruction.accounts[2].account.to_string(),
                         amount: 0,
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        lending_market_account: instruction.accounts[1].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -474,16 +396,10 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
                         obligation_type: ObligationType::Deposit as i16,
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 6)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        source: instruction.accounts[6].account.to_string(),
+                        destination: instruction.accounts[1].account.to_string(),
                         amount: collateral_amount as i64,
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 4)
-                            .collect(),
+                        lending_market_account: instruction.accounts[4].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -500,16 +416,10 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
                         obligation_type: ObligationType::Withdraw as i16,
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 6)
-                            .collect(),
+                        source: instruction.accounts[0].account.to_string(),
+                        destination: instruction.accounts[6].account.to_string(),
                         amount: -1 * (collateral_amount as i64),
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 4)
-                            .collect(),
+                        lending_market_account: instruction.accounts[4].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -526,16 +436,10 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
                         obligation_type: ObligationType::Borrow as i16,
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 7)
-                            .collect(),
+                        source: instruction.accounts[0].account.to_string(),
+                        destination: instruction.accounts[7].account.to_string(),
                         amount: -1 * (liquidity_amount as i64),
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 5)
-                            .collect(),
+                        lending_market_account: instruction.accounts[5].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -552,16 +456,10 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
                         obligation_type: ObligationType::Repay as i16,
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 5)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        source: instruction.accounts[5].account.to_string(),
+                        destination: instruction.accounts[1].account.to_string(),
                         amount: liquidity_amount as i64,
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 4)
-                            .collect(),
+                        lending_market_account: instruction.accounts[4].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -578,16 +476,10 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
                         obligation_type: ObligationType::Liquidate as i16,
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 6)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 3)
-                            .collect(),
+                        source: instruction.accounts[6].account.to_string(),
+                        destination: instruction.accounts[3].account.to_string(),
                         amount: liquidity_amount as i64,
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 7)
-                            .collect(),
+                        lending_market_account:instruction.accounts[7].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
@@ -604,16 +496,10 @@ pub async fn fragment_instruction<T: Serialize>(
                         (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
                     let obligation = Obligation {
                         obligation_type: ObligationType::Liquidate as i16,
-                        source: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 0)
-                            .collect(),
-                        destination: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 1)
-                            .collect(),
+                        source: instruction.accounts[0].account.to_string(),
+                        destination: instruction.accounts[1].account.to_string(),
                         amount: -1 * (amount as i64),
-                        lending_market_account: instruction.account_instructions.into_iter()
-                            .filter(|ai| ai.index == 5)
-                            .collect(),
+                        lending_market_account: instruction.accounts[5].account.to_string(),
                         timestamp: instruction.timestamp.clone()
                     };
 
