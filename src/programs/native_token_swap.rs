@@ -8,6 +8,7 @@ use spl_token_swap::solana_program::program_error::ProgramError;
 use tracing::error;
 
 use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
+use crate::programs::native_token::*;
 
 pub const PROGRAM_ADDRESS: &str = "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8";
 
@@ -47,7 +48,34 @@ pub struct Peg {
 }
 
 pub struct PegFee {
+    /// Trade fees are extra token amounts that are held inside the token
+    /// accounts during a trade, making the value of liquidity tokens rise.
+    /// Trade fee numerator
+    pub trade_fee_numerator: i64,
+    /// Trade fee denominator
+    pub trade_fee_denominator: i64,
 
+    /// Owner trading fees are extra token amounts that are held inside the token
+    /// accounts during a trade, with the equivalent in pool tokens minted to
+    /// the owner of the program.
+    /// Owner trade fee numerator
+    pub owner_trade_fee_numerator: i64,
+    /// Owner trade fee denominator
+    pub owner_trade_fee_denominator: i64,
+
+    /// Owner withdraw fees are extra liquidity pool token amounts that are
+    /// sent to the owner on every withdrawal.
+    /// Owner withdraw fee numerator
+    pub owner_withdraw_fee_numerator: i64,
+    /// Owner withdraw fee denominator
+    pub owner_withdraw_fee_denominator: i64,
+
+    /// Host fees are a proportion of the owner trading fees, sent to an
+    /// extra account provided during the trade.
+    /// Host trading fee numerator
+    pub host_fee_numerator: i64,
+    /// Host trading fee denominator
+    pub host_fee_denominator: i64,
 }
 
 #[derive(Serialize)]
@@ -66,6 +94,8 @@ pub struct Swap {
     pub timestamp: i64,
 }
 
+#[deprecated(since="0.0.4", note="new revamp to come soon, does not seem viable due to backwards \
+incompatibility.")]
 pub async fn fragment_instruction<T: Serialize>(
     // The instruction
     instruction: Instruction
@@ -79,9 +109,10 @@ pub async fn fragment_instruction<T: Serialize>(
             let token_swap_instruction = tsi.clone();
             match token_swap_instruction {
                 /// A new swap (like literally THE new SOL/SRM for example, would happen here once.
-                SwapInstruction::Initialize(_) => {
+                SwapInstruction::Initialize(initialize) => {
                     // The actual calculator will not be indexed.
                     // initialize_instruction.swap_curve.calculator
+
                     None
                 }
                 SwapInstruction::Swap(swap) => {
@@ -89,15 +120,15 @@ pub async fn fragment_instruction<T: Serialize>(
                         source: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 4)
                             .collect(),
-                        token_a_mint: "".to_string(),
-                        token_b_mint: "".to_string(),
+                        token_a_provider_account: "".to_string(),
+                        token_b_provider_account: "".to_string(),
                         amount_in: swap.amount_in as i64,
                         minimum_amount_out: swap.minimum_amount_out as i64,
                         timestamp: instruction.timestamp
                     };
                     
                     let key =
-                        (NATIVE_TOKEN_MINT_BURN_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_BURN_SCHEMA);
+                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
                     let mint_to = MintInflation {
                         account: instruction.account_instructions.into_iter()
                             .filter(|ai| ai.index == 1)
@@ -122,150 +153,154 @@ pub async fn fragment_instruction<T: Serialize>(
                     Some(response)
                 }
                 SwapInstruction::DepositAllTokenTypes(datt) => {
-                    Option::from(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "deposit-all-token-types".to_string(),
-                            timestamp: instruction.timestamp.clone(),
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "pool_token_amount".to_string(),
-                                value: datt.pool_token_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "maximum_token_a_amount".to_string(),
-                                value: datt.maximum_token_a_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "maximum_token_b_amount".to_string(),
-                                value: datt.maximum_token_b_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                        ],
-                    })
+                    // Option::from(InstructionSet {
+                    //     function: InstructionFunction {
+                    //         tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //         transaction_hash: instruction.transaction_hash.clone(),
+                    //         parent_index: instruction.parent_index.clone(),
+                    //         program: instruction.program.clone(),
+                    //         function_name: "deposit-all-token-types".to_string(),
+                    //         timestamp: instruction.timestamp.clone(),
+                    //     },
+                    //     properties: vec![
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "pool_token_amount".to_string(),
+                    //             value: datt.pool_token_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "maximum_token_a_amount".to_string(),
+                    //             value: datt.maximum_token_a_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "maximum_token_b_amount".to_string(),
+                    //             value: datt.maximum_token_b_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //     ],
+                    // })
+                    None
                 }
                 SwapInstruction::WithdrawAllTokenTypes(watt) => {
-                    Option::from(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "withdraw-all-token-types".to_string(),
-                            timestamp: instruction.timestamp.clone()
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "pool_token_amount".to_string(),
-                                value: watt.pool_token_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "minimum_token_a_amount".to_string(),
-                                value: watt.minimum_token_a_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "minimum_token_b_amount".to_string(),
-                                value: watt.minimum_token_b_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                        ],
-                    })
+                    // Option::from(InstructionSet {
+                    //     function: InstructionFunction {
+                    //         tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //         transaction_hash: instruction.transaction_hash.clone(),
+                    //         parent_index: instruction.parent_index.clone(),
+                    //         program: instruction.program.clone(),
+                    //         function_name: "withdraw-all-token-types".to_string(),
+                    //         timestamp: instruction.timestamp.clone()
+                    //     },
+                    //     properties: vec![
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "pool_token_amount".to_string(),
+                    //             value: watt.pool_token_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "minimum_token_a_amount".to_string(),
+                    //             value: watt.minimum_token_a_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "minimum_token_b_amount".to_string(),
+                    //             value: watt.minimum_token_b_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //     ],
+                    // })
+                    None
                 }
                 SwapInstruction::DepositSingleTokenTypeExactAmountIn(dstteai) => {
-                    Option::from(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "deposit-single-token-type-exact-amount-in".to_string(),
-                            timestamp: instruction.timestamp.clone()
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "minimum_pool_token_amount".to_string(),
-                                value: dstteai.minimum_pool_token_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "source_token_amount".to_string(),
-                                value: dstteai.source_token_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                        ],
-                    })
+                    // Option::from(InstructionSet {
+                    //     function: InstructionFunction {
+                    //         tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //         transaction_hash: instruction.transaction_hash.clone(),
+                    //         parent_index: instruction.parent_index.clone(),
+                    //         program: instruction.program.clone(),
+                    //         function_name: "deposit-single-token-type-exact-amount-in".to_string(),
+                    //         timestamp: instruction.timestamp.clone()
+                    //     },
+                    //     properties: vec![
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "minimum_pool_token_amount".to_string(),
+                    //             value: dstteai.minimum_pool_token_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "source_token_amount".to_string(),
+                    //             value: dstteai.source_token_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //     ],
+                    // })
+                    None
                 }
                 SwapInstruction::WithdrawSingleTokenTypeExactAmountOut(wstteao) => {
-                    Option::from(InstructionSet {
-                        function: InstructionFunction {
-                            tx_instruction_id: instruction.tx_instruction_id.clone(),
-                            transaction_hash: instruction.transaction_hash.clone(),
-                            parent_index: instruction.parent_index.clone(),
-                            program: instruction.program.clone(),
-                            function_name: "withdraw-single-token-type-exact-amount-out".to_string(),
-                            timestamp: instruction.timestamp.clone()
-                        },
-                        properties: vec![
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "maximum_pool_token_amount".to_string(),
-                                value: wstteao.maximum_pool_token_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                            InstructionProperty {
-                                tx_instruction_id: instruction.tx_instruction_id.clone(),
-                                transaction_hash: instruction.transaction_hash.clone(),
-                                parent_index: instruction.parent_index.clone(),
-                                key: "destination_token_amount".to_string(),
-                                value: wstteao.destination_token_amount.to_string(),
-                                parent_key: "".to_string(),
-                                timestamp: instruction.timestamp.clone(),
-                            },
-                        ],
-                    })
+                    // Option::from(InstructionSet {
+                    //     function: InstructionFunction {
+                    //         tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //         transaction_hash: instruction.transaction_hash.clone(),
+                    //         parent_index: instruction.parent_index.clone(),
+                    //         program: instruction.program.clone(),
+                    //         function_name: "withdraw-single-token-type-exact-amount-out".to_string(),
+                    //         timestamp: instruction.timestamp.clone()
+                    //     },
+                    //     properties: vec![
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "maximum_pool_token_amount".to_string(),
+                    //             value: wstteao.maximum_pool_token_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //         InstructionProperty {
+                    //             tx_instruction_id: instruction.tx_instruction_id.clone(),
+                    //             transaction_hash: instruction.transaction_hash.clone(),
+                    //             parent_index: instruction.parent_index.clone(),
+                    //             key: "destination_token_amount".to_string(),
+                    //             value: wstteao.destination_token_amount.to_string(),
+                    //             parent_key: "".to_string(),
+                    //             timestamp: instruction.timestamp.clone(),
+                    //         },
+                    //     ],
+                    // })
+                    None
                 }
             }
         }
