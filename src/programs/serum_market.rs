@@ -14,6 +14,7 @@ pub const PROGRAM_ADDRESS_V3: &str = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVF
 pub const SERUM_MARKET_TABLE_NAME: &str = "serum_markets";
 pub const SERUM_ORDER_TABLE_NAME: &str = "serum_orders";
 pub const SERUM_CANCELLED_ORDER_TABLE_NAME: &str = "serum_cancelled_orders";
+pub const SERUM_FEE_SWEEP_TABLE_NAME: &str = "serum_fee_sweeps";
 pub const SERUM_SEND_TAKE_TABLE_NAME: &str = "serum_send_takes";
 pub const SERUM_PRUNE_TABLE_NAME: &str = "serum_prunes";
 pub const SERUM_MARKET_DISABLE_TABLE_NAME: &str = "serum_market_disables";
@@ -121,6 +122,22 @@ lazy_static! {
             {"name": "limit", "type": "int"},
             {"name": "open_orders", "type": "string"},
             {"name": "open_orders_owner", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref SERUM_FEE_SWEEP_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "serum_fee_sweep",
+        "fields": [
+            {"name": "market", "type": "string"},
+            {"name": "pc_vault", "type": "string"},
+            {"name": "fee_authority", "type": "string"},
+            {"name": "fee_receivable_account", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -271,7 +288,7 @@ pub async fn fragment_instruction<T: Serialize>(
         return match market_instruction {
             MarketInstruction::InitializeMarket(imi) => {
                 let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKET_SCHEMA);
+                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKETS_SCHEMA);
                 let new_market = SerumMarket {
                     market: instruction.accounts[0].account.to_string(),
                     request_queue_account: instruction.accounts[1].account.to_string(),
@@ -314,7 +331,7 @@ pub async fn fragment_instruction<T: Serialize>(
             }
             MarketInstruction::NewOrder(order) => {
                 let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKET_SCHEMA);
+                    (SERUM_ORDER_TABLE_NAME.to_string(), *SERUM_ORDERS_SCHEMA);
                 let serum_order = SerumOrder {
                     client_order_id: order.client_id as i64,
                     order_type: order.order_type as i16,
@@ -351,7 +368,7 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 2. `[writable]` the request queue
                 // 3. `[signer]` the OpenOrders owner
                 let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKET_SCHEMA);
+                    (SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(), *SERUM_CANCELLED_ORDERS_SCHEMA);
                 let serum_order = CancelledOrder {
                     side: Some(order.side as i16),
                     order_id: order.order_id.to_string(),
@@ -388,7 +405,7 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 2. `[writable]` the request queue
                 // 3. `[signer]` the OpenOrders owner
                 let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKET_SCHEMA);
+                    (SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(), *SERUM_CANCELLED_ORDERS_SCHEMA);
                 let serum_order = CancelledOrder {
                     side: Some(order.side as i16),
                     order_id: client_id.to_string(),
@@ -434,7 +451,7 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 0. `[writable]` market
                 // 1. `[signer]` disable authority
                 let key =
-                    (SERUM_MARKET_DISABLE_TABLE_NAME.to_string(), *SERUM_MARKET_DISABLE_SCHEMA);
+                    (SERUM_FEE_SWEEP_TABLE_NAME.to_string(), *SERUM_FEE_SWEEP_SCHEMA);
                 let market_disable = FeeSweep {
                     market: instruction.accounts[0].account.to_string(),
                     pc_vault: instruction.accounts[1].account.to_string(),
@@ -463,7 +480,7 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 8. `[]` the rent sysvar
                 // 9. `[writable]` (optional) the (M)SRM account used for fee discounts
                 let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKET_SCHEMA);
+                    (SERUM_ORDER_TABLE_NAME.to_string(), *SERUM_ORDERS_SCHEMA);
                 let serum_order = SerumOrder {
                     client_order_id: order.client_id as i64,
                     order_type: order.order_type as i16,
@@ -494,7 +511,7 @@ pub async fn fragment_instruction<T: Serialize>(
             }
             MarketInstruction::NewOrderV3(order) => {
                 let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKET_SCHEMA);
+                    (SERUM_ORDER_TABLE_NAME.to_string(), *SERUM_ORDERS_SCHEMA);
                 let serum_order = SerumOrder {
                     client_order_id: order.client_id as i64,
                     order_type: order.order_type as i16,
@@ -531,7 +548,7 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 4. `[signer]` the OpenOrders owner
                 // 5. `[writable]` event_q
                 let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKET_SCHEMA);
+                    (SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(), *SERUM_CANCELLED_ORDERS_SCHEMA);
                 let serum_order = CancelledOrder {
                     side: Some(order.side as i16),
                     order_id: order.order_id.to_string(),
@@ -556,7 +573,7 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 4. `[signer]` the OpenOrders owner
                 // 5. `[writable]` event_q
                 let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKET_SCHEMA);
+                    (SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(), *SERUM_CANCELLED_ORDERS_SCHEMA);
                 let serum_order = CancelledOrder {
                     side: None,
                     order_id: client_id.to_string(),
