@@ -1,12 +1,10 @@
 use avro_rs::schema::Schema;
 use bincode::{deserialize};
-use itertools::Itertools;
 use serde::Serialize;
-use std::collections::HashMap;
 use solana_program::system_instruction::SystemInstruction;
 use tracing::error;
 
-use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
+use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "11111111111111111111111111111111";
 
@@ -91,9 +89,20 @@ lazy_static! {
     .unwrap();
 }
 
+#[derive(Serialize)]
+pub enum NativeSystemDatum {
+    AccountCreation(AccountCreation),
+    AccountAssignment(AccountAssignment),
+    AccountTransfer(AccountTransfer),
+    NonceAdvancement(NonceAdvancement),
+    NonceWithdrawal(NonceWithdrawal),
+}
+
 /// Records the state changes of the account at the time.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct AccountCreation {
+    /// The new account's address
+    pub address: String,
     /// Current lamport change in the account (+ve for deposit, -ve for withdraw)
     pub lamports: i64,
     /// The owner of the account.
@@ -102,7 +111,7 @@ pub struct AccountCreation {
     pub timestamp: i64
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct AccountAssignment {
     /// The account that is assigned to the program.
     pub account: String,
@@ -112,7 +121,7 @@ pub struct AccountAssignment {
     pub timestamp: i64
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct AccountTransfer {
     /// The source of the transfer
     pub source: String,
@@ -124,7 +133,7 @@ pub struct AccountTransfer {
     pub timestamp: i64
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct NonceAdvancement {
     /// The nonce account involved
     pub nonce_account: String,
@@ -134,7 +143,7 @@ pub struct NonceAdvancement {
     pub timestamp: i64
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct NonceWithdrawal {
     /// The nonce account involved
     pub nonce_account: String,
@@ -152,16 +161,16 @@ pub struct NonceWithdrawal {
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
-    instruction: Instruction,
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+    instruction: Instruction
+) -> Option<Vec<TableData>> {
     let sdr = deserialize::<SystemInstruction>(
         &instruction.data.as_slice());
 
     return match sdr {
         Ok(ref sir) => {
-            let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
+            let mut response: Vec<TableData> = Vec::new();
             let si = sir.clone();
             match si {
                 SystemInstruction::CreateAccount {
@@ -180,19 +189,22 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         "owner": owner.to_string(),
                     //     }),
                     // })
-                    let key =
-                        (NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(), *NATIVE_ACCOUNT_CREATION_SCHEMA);
-                    let account_creation = AccountCreation {
-                        lamports: lamports as i64,
-                        owner: owner.to_string(),
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::AccountCreation(
+                                AccountCreation {
+                                    address: instruction.accounts[1].account.to_string(),
+                                    lamports: lamports as i64,
+                                    owner: owner.to_string(),
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(account_creation);
-                    } else {
-                        response[&key] = vec![account_creation];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -205,19 +217,21 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         "owner": owner.to_string(),
                     //     }),
                     // })
-                    let key =
-                        (NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(), *NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA);
-                    let account_assignment = AccountAssignment {
-                        account: instruction.accounts[0].account.to_string(),
-                        program: owner.to_string(),
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::AccountAssignment(
+                                AccountAssignment {
+                                    account: instruction.accounts[0].account.to_string(),
+                                    program: owner.to_string(),
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(account_assignment);
-                    } else {
-                        response[&key] = vec![account_assignment];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -232,20 +246,22 @@ pub async fn fragment_instruction<T: Serialize>(
                     //     }),
                     // })
                     // check_num_system_accounts(&instruction.accounts, 2)?;
-                    let key =
-                        (NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(), *NATIVE_ACCOUNT_TRANSFER_SCHEMA);
-                    let account_assignment = AccountTransfer {
-                        source: instruction.accounts[0].account.to_string(),
-                        destination: instruction.accounts[1].account.to_string(),
-                        amount: lamports as i64,
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_ACCOUNT_TRANSFER_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::AccountTransfer(
+                                AccountTransfer {
+                                    source: instruction.accounts[0].account.to_string(),
+                                    destination: instruction.accounts[1].account.to_string(),
+                                    amount: lamports as i64,
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(account_assignment);
-                    } else {
-                        response[&key] = vec![account_assignment];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -269,19 +285,22 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         "owner": owner.to_string(),
                     //     }),
                     // })
-                    let key =
-                        (NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(), *NATIVE_ACCOUNT_CREATION_SCHEMA);
-                    let account_creation = AccountCreation {
-                        lamports: lamports as i64,
-                        owner: owner.to_string(),
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::AccountCreation(
+                                AccountCreation {
+                                    address: instruction.accounts[1].account.to_string(),
+                                    lamports: lamports as i64,
+                                    owner: owner.to_string(),
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(account_creation);
-                    } else {
-                        response[&key] = vec![account_creation];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -296,19 +315,21 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         "nonceAuthority": account_keys[instruction.accounts[2] as usize].to_string(),
                     //     }),
                     // })
-                    let key =
-                        (NATIVE_SYSTEM_NONCE_ADVANCEMENTS_TABLE.to_string(), *NATIVE_SYSTEM_NONCE_ADVANCEMENT_SCHEMA);
-                    let nonce_advancement = NonceAdvancement {
-                        nonce_account: instruction.accounts[0].account.to_string(),
-                        nonce_authority: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_SYSTEM_NONCE_ADVANCEMENT_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_NONCE_ADVANCEMENTS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::NonceAdvancement(
+                                NonceAdvancement {
+                                    nonce_account: instruction.accounts[0].account.to_string(),
+                                    nonce_authority: instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(nonce_advancement);
-                    } else {
-                        response[&key] = vec![nonce_advancement];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -326,21 +347,23 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         "lamports": lamports,
                     //     }),
                     // })
-                    let key =
-                        (NATIVE_SYSTEM_NONCE_WITHDRAWALS_TABLE.to_string(), *NATIVE_SYSTEM_NONCE_WITHDRAWAL_SCHEMA);
-                    let nonce_withdrawal = NonceWithdrawal {
-                        nonce_account: instruction.accounts[0].account.to_string(),
-                        recipient: instruction.accounts[1].account.to_string(),
-                        nonce_authority: instruction.accounts[4].account.to_string(),
-                        amount: lamports as i64,
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_SYSTEM_NONCE_WITHDRAWAL_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_NONCE_WITHDRAWALS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::NonceWithdrawal(
+                                NonceWithdrawal {
+                                    nonce_account: instruction.accounts[0].account.to_string(),
+                                    recipient: instruction.accounts[1].account.to_string(),
+                                    nonce_authority: instruction.accounts[4].account.to_string(),
+                                    amount: lamports as i64,
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(nonce_withdrawal);
-                    } else {
-                        response[&key] = vec![nonce_withdrawal];
-                    }
+                    response.push(table_data);
 
                     // Some(response)
                     None
@@ -413,19 +436,21 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         "owner": owner.to_string(),
                     //     }),
                     // })
-                    let key =
-                        (NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(), *NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA);
-                    let account_assignment = AccountAssignment {
-                        account: instruction.accounts[0].account.to_string(),
-                        program: owner.to_string(),
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::AccountAssignment(
+                                AccountAssignment {
+                                    account: instruction.accounts[0].account.to_string(),
+                                    program: owner.to_string(),
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(account_assignment);
-                    } else {
-                        response[&key] = vec![account_assignment];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -446,20 +471,22 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         "sourceOwner": from_owner.to_string(),
                     //     }),
                     // })
-                    let key =
-                        (NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(), *NATIVE_ACCOUNT_TRANSFER_SCHEMA);
-                    let account_assignment = AccountTransfer {
-                        source: instruction.accounts[0].account.to_string(),
-                        destination: instruction.accounts[2].account.to_string(),
-                        amount: lamports as i64,
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_ACCOUNT_TRANSFER_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::AccountTransfer(
+                                AccountTransfer {
+                                    source: instruction.accounts[0].account.to_string(),
+                                    destination: instruction.accounts[2].account.to_string(),
+                                    amount: lamports as i64,
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(account_assignment);
-                    } else {
-                        response[&key] = vec![account_assignment];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }

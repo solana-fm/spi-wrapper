@@ -1,13 +1,14 @@
-use std::collections::HashMap;
 use avro_rs::Schema;
-use itertools::Itertools;
 use serde::Serialize;
 use solana_program::program_error::ProgramError;
 use spl_token::instruction::TokenInstruction;
 use spl_token::solana_program::program_option::COption;
 use tracing::error;
 
-use crate::{Account, ACCOUNT_SCHEMA, ACCOUNT_TABLE_NAME, AccountAuthState, Instruction, InstructionFunction, InstructionProperty, InstructionSet};
+use crate::{Account, ACCOUNT_SCHEMA, ACCOUNT_TABLE_NAME, AccountAuthState, Instruction, NativeAssociatedTokenAccountDatum, NativeSystemDatum, TableData, TypedDatum};
+
+use crate::programs::native_associated_token_account::{NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE, NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA, NewAssociatedTokenAccount};
+use crate::programs::native_system::{AccountCreation, NATIVE_ACCOUNT_CREATION_SCHEMA, NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE};
 
 pub const PROGRAM_ADDRESS: &str = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
@@ -88,6 +89,14 @@ lazy_static! {
 }
 
 #[derive(Serialize)]
+pub enum NativeTokenDatum {
+    State(MintState),
+    Inflation(MintInflation),
+    Movement(MintMovement),
+    Delegation(MintDelegation),
+}
+
+#[derive(Serialize)]
 pub struct MintState {
     pub decimals: i16,
     pub mint_authority: String,
@@ -138,16 +147,16 @@ pub struct MintDelegation {
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
-    instruction: Instruction,
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+    instruction: Instruction
+) -> Option<Vec<TableData>> {
     // We don't have anything to work with
     let tdr = TokenInstruction::unpack(instruction.data.as_slice());
 
     return match tdr {
         Ok(ref tir) => {
-            let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
+            let mut response: Vec<TableData> = Vec::new();
             let dti = tir.clone();
             match dti {
                 TokenInstruction::InitializeMint {
@@ -163,23 +172,30 @@ pub async fn fragment_instruction<T: Serialize>(
                     //     mint_authority,
                     //     freeze_authority,
                     // )
-                    let key =
-                        (NATIVE_TOKEN_MINT_STATE_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_STATE_SCHEMA);
-                    let mint_state = MintState {
-                        decimals: decimals as i16,
-                        mint_authority: mint_authority.to_string(),
-                        freeze_authority: freeze_authority.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA).clone(),
+                        table_name: NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::State(
+                                MintState {
+                                    decimals: decimals as i16,
+                                    mint_authority: mint_authority.to_string(),
+                                    freeze_authority: if freeze_authority.is_some() {
+                                        freeze_authority.unwrap().to_string()
+                                    } else {
+                                        "".to_string()
+                                    },
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_state);
-                    } else {
-                        response[&key] = vec![mint_state];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
+                /// Store an ATA.
                 TokenInstruction::InitializeAccount => {
                     // msg!("Instruction: InitializeAccount");
                     // Self::process_initialize_account(accounts)
@@ -194,20 +210,23 @@ pub async fn fragment_instruction<T: Serialize>(
                     //     },
                     //     properties: vec![]
                     // })
-                    let key =
-                        (ACCOUNT_TABLE_NAME.to_string(), *ACCOUNT_SCHEMA);
-                    let token_account = Account {
-                        account: instruction.accounts[0].account.to_string(),
-                        mint: Some(instruction.accounts[1].account.to_string()),
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA).clone(),
+                        table_name: NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeAssocicatedTokenAccount(
+                            NativeAssociatedTokenAccountDatum::NewAccount(
+                                NewAssociatedTokenAccount {
+                                    transaction_hash: instruction.transaction_hash.to_string(),
+                                    ata_address: instruction.accounts[0].account.to_string(),
+                                    wallet_address: instruction.accounts[2].account.to_string(),
+                                    mint: instruction.accounts[1].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(token_account);
-                    } else {
-                        response[&key] = vec![token_account];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -235,20 +254,23 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         }
                     //     ]
                     // })
-                    let key =
-                        (ACCOUNT_TABLE_NAME.to_string(), *ACCOUNT_SCHEMA);
-                    let token_account = Account {
-                        account: instruction.accounts[0].account.to_string(),
-                        mint: Some(instruction.accounts[1].account.to_string()),
-                        owner: owner.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA).clone(),
+                        table_name: NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeAssocicatedTokenAccount(
+                            NativeAssociatedTokenAccountDatum::NewAccount(
+                                NewAssociatedTokenAccount {
+                                    transaction_hash: instruction.transaction_hash.to_string(),
+                                    ata_address: instruction.accounts[0].account.to_string(),
+                                    wallet_address: owner.to_string(),
+                                    mint: instruction.accounts[1].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(token_account);
-                    } else {
-                        response[&key] = vec![token_account];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -276,20 +298,22 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         }
                     //     ]
                     // })
-                    let key =
-                        (ACCOUNT_TABLE_NAME.to_string(), *ACCOUNT_SCHEMA);
-                    let token_account = Account {
-                        account: instruction.accounts[0].account.to_string(),
-                        mint: None,
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeSystem(
+                            NativeSystemDatum::AccountCreation(
+                                AccountCreation {
+                                    address: instruction.accounts[0].account.to_string(),
+                                    lamports: 0,
+                                    owner: instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(token_account);
-                    } else {
-                        response[&key] = vec![token_account];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -317,71 +341,77 @@ pub async fn fragment_instruction<T: Serialize>(
                     //         }
                     //     ]
                     // })
-                    let key =
-                        (NATIVE_TOKEN_MINT_MOVEMENT_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_MOVEMENT_SCHEMA);
-                    let mint_movement = MintMovement {
-                        destination: instruction.accounts[0].account.to_string(),
-                        source: instruction.accounts[1].account.to_string(),
-                        mint: None,
-                        amount: amount as i64,
-                        decimals: None,
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_MOVEMENT_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_MOVEMENT_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Movement(
+                                MintMovement {
+                                    destination: instruction.accounts[0].account.to_string(),
+                                    source: instruction.accounts[1].account.to_string(),
+                                    mint: None,
+                                    amount: amount as i64,
+                                    decimals: None,
+                                    owner: instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_movement);
-                    } else {
-                        response[&key] = vec![mint_movement];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
                 TokenInstruction::Approve { amount } => {
                     // msg!("Instruction: Approve");
                     // Self::process_approve(program_id, accounts, amount, None)
-                    let key =
-                        (NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_DELEGATION_SCHEMA);
-                    let mint_delegation = MintDelegation {
-                        delegation_type: DelegationType::Approve as i16,
-                        delegate: instruction.accounts[1].account.to_string(),
-                        source: instruction.accounts[0].account.to_string(),
-                        mint: None,
-                        amount: amount as i64,
-                        decimals: None,
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_DELEGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Delegation(
+                                MintDelegation {
+                                    delegation_type: DelegationType::Approve as i16,
+                                    delegate: instruction.accounts[1].account.to_string(),
+                                    source: instruction.accounts[0].account.to_string(),
+                                    mint: None,
+                                    amount: amount as i64,
+                                    decimals: None,
+                                    owner: instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_delegation);
-                    } else {
-                        response[&key] = vec![mint_delegation];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
                 TokenInstruction::Revoke => {
                     // msg!("Instruction: Revoke");
                     // Self::process_revoke(program_id, accounts)
-                    let key =
-                        (NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_DELEGATION_SCHEMA);
-                    let mint_delegation = MintDelegation {
-                        delegation_type: DelegationType::Revoke as i16,
-                        delegate: instruction.accounts[1].account.to_string(),
-                        source: instruction.accounts[0].account.to_string(),
-                        mint: None,
-                        amount: -1,
-                        decimals: None,
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_DELEGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Delegation(
+                                MintDelegation {
+                                    delegation_type: DelegationType::Revoke as i16,
+                                    delegate: instruction.accounts[1].account.to_string(),
+                                    source: instruction.accounts[0].account.to_string(),
+                                    mint: None,
+                                    amount: -1,
+                                    decimals: None,
+                                    owner: instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_delegation);
-                    } else {
-                        response[&key] = vec![mint_delegation];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -390,70 +420,55 @@ pub async fn fragment_instruction<T: Serialize>(
                     authority_type,
                     new_authority,
                 } => {
-                    let key =
-                        (NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_DELEGATION_SCHEMA);
-                    let mint_delegation = MintDelegation {
-                        delegation_type: DelegationType::Approve as i16,
-                        delegate: instruction.accounts[1].account.to_string(),
-                        source: instruction.accounts[0].account.to_string(),
-                        mint: None,
-                        amount: amount as i64,
-                        decimals: None,
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
-                    };
-
-                    if response.contains(&key) {
-                        response[&key].push(mint_delegation);
-                    } else {
-                        response[&key] = vec![mint_delegation];
-                    }
-
-                    Some(response)
+                    None
                 }
                 TokenInstruction::MintTo { amount } => {
                     // msg!("Instruction: MintTo");
                     // Self::process_mint_to(program_id, accounts, amount, None)
                     // msg!("Instruction: Burn");
                     // Self::process_burn(program_id, accounts, amount, None)
-                    let key =
-                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
-                    let mint_inflation = MintInflation {
-                        account: instruction.accounts[1].account.to_string(),
-                        mint: instruction.accounts[0].account.to_string(),
-                        amount: amount as i64,
-                        decimals: None,
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_INFLATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Inflation(
+                                MintInflation {
+                                    account: instruction.accounts[1].account.to_string(),
+                                    mint: instruction.accounts[0].account.to_string(),
+                                    amount: amount as i64,
+                                    decimals: None,
+                                    owner: instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_inflation);
-                    } else {
-                        response[&key] = vec![mint_inflation];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
                 TokenInstruction::Burn { amount } => {
                     // msg!("Instruction: Burn");
                     // Self::process_burn(program_id, accounts, amount, None)
-                    let key =
-                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
-                    let mint_inflation = MintInflation {
-                        account: instruction.accounts[0].account.to_string(),
-                        mint: instruction.accounts[1].account.to_string(),
-                        amount: -1 * (amount as i64),
-                        decimals: None,
-                        owner:instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_INFLATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Inflation(
+                                MintInflation {
+                                    account: instruction.accounts[0].account.to_string(),
+                                    mint: instruction.accounts[1].account.to_string(),
+                                    amount: -1 * (amount as i64),
+                                    decimals: None,
+                                    owner:instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_inflation);
-                    } else {
-                        response[&key] = vec![mint_inflation];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -499,91 +514,99 @@ pub async fn fragment_instruction<T: Serialize>(
                 TokenInstruction::TransferChecked { amount, decimals } => {
                     // msg!("Instruction: TransferChecked");
                     // Self::process_transfer(program_id, accounts, amount, Some(decimals))
-                    let key =
-                        (NATIVE_TOKEN_MINT_MOVEMENT_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_MOVEMENT_SCHEMA);
-                    let mint_movement = MintMovement {
-                        destination: instruction.accounts[2].account.to_string(),
-                        source: instruction.accounts[0].account.to_string(),
-                        mint: Some(instruction.accounts[1].account.to_string()),
-                        amount: amount as i64,
-                        decimals: Some(decimals as i16),
-                        owner: instruction.accounts[3].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_MOVEMENT_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_MOVEMENT_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Movement(
+                                MintMovement {
+                                    destination: instruction.accounts[2].account.to_string(),
+                                    source: instruction.accounts[0].account.to_string(),
+                                    mint: Some(instruction.accounts[1].account.to_string()),
+                                    amount: amount as i64,
+                                    decimals: Some(decimals as i16),
+                                    owner: instruction.accounts[3].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_movement);
-                    } else {
-                        response[&key] = vec![mint_movement];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
                 TokenInstruction::ApproveChecked { amount, decimals } => {
                     // msg!("Instruction: ApproveChecked");
                     // Self::process_approve(program_id, accounts, amount, Some(decimals))
-                    let key =
-                        (NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_DELEGATION_SCHEMA);
-                    let mint_delegation = MintDelegation {
-                        delegation_type: DelegationType::Approve as i16,
-                        delegate: instruction.accounts[2].account.to_string(),
-                        source: instruction.accounts[0].account.to_string(),
-                        mint: Some(instruction.accounts[1].account.to_string()),
-                        amount: amount as i64,
-                        decimals: Some(decimals as i16),
-                        owner: instruction.accounts[3].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_DELEGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_DELEGATION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Delegation(
+                                MintDelegation {
+                                    delegation_type: DelegationType::Approve as i16,
+                                    delegate: instruction.accounts[2].account.to_string(),
+                                    source: instruction.accounts[0].account.to_string(),
+                                    mint: Some(instruction.accounts[1].account.to_string()),
+                                    amount: amount as i64,
+                                    decimals: Some(decimals as i16),
+                                    owner: instruction.accounts[3].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_delegation);
-                    } else {
-                        response[&key] = vec![mint_delegation];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
                 TokenInstruction::MintToChecked { amount, decimals } => {
                     // msg!("Instruction: MintToChecked");
                     // Self::process_mint_to(program_id, accounts, amount, Some(decimals))
-                    let key =
-                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
-                    let mint_inflation = MintInflation {
-                        account: instruction.accounts[1].account.to_string(),
-                        mint: instruction.accounts[0].account.to_string(),
-                        amount: amount as i64,
-                        decimals: Some(decimals as i16),
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_INFLATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Inflation(
+                                MintInflation {
+                                    account: instruction.accounts[1].account.to_string(),
+                                    mint: instruction.accounts[0].account.to_string(),
+                                    amount: amount as i64,
+                                    decimals: Some(decimals as i16),
+                                    owner: instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_inflation);
-                    } else {
-                        response[&key] = vec![mint_inflation];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
                 TokenInstruction::BurnChecked { amount, decimals } =>  {
                     // msg!("Instruction: BurnChecked");
                     // Self::process_burn(program_id, accounts, amount, Some(decimals))
-                    let key =
-                        (NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(), *NATIVE_TOKEN_MINT_INFLATION_SCHEMA);
-                    let mint_burn = MintInflation {
-                        account: instruction.accounts[0].account.to_string(),
-                        mint: instruction.accounts[1].account.to_string(),
-                        amount: -1 * (amount as i64),
-                        decimals: Some(decimals as i16),
-                        owner: instruction.accounts[2].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_TOKEN_MINT_INFLATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_INFLATION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeToken(
+                            NativeTokenDatum::Inflation(
+                                MintInflation {
+                                    account: instruction.accounts[0].account.to_string(),
+                                    mint: instruction.accounts[1].account.to_string(),
+                                    amount: -1 * (amount as i64),
+                                    decimals: Some(decimals as i16),
+                                    owner: instruction.accounts[2].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(mint_burn);
-                    } else {
-                        response[&key] = vec![mint_burn];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }

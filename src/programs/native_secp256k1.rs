@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-use avro_rs::Schema;
 use sha3::Digest;
 use libsecp256k1::PublicKey;
 use serde::Serialize;
@@ -10,20 +8,25 @@ use solana_sdk::{ precompiles::PrecompileError, secp256k1_instruction::{
 }};
 use tracing::{error, info};
 
-use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
+use crate::{Instruction, TableData};
 
 pub const PROGRAM_ADDRESS: &str = "KeccakSecp256k11111111111111111111111111111";
+
+#[derive(Serialize)]
+pub enum NativeSecp256k1Datum {
+    None
+}
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction,
     // The instructions that were part of the transaction, in order.
     instructions: &[CompiledInstruction]
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+) -> Option<Vec<TableData>> {
     // The first element within data slice tells us the number of signatures.
     let count = instruction.data[0] as usize;
     let expected_data_size = 1 + count * SIGNATURE_OFFSETS_SERIALIZED_SIZE;

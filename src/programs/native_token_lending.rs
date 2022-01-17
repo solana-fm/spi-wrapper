@@ -7,7 +7,7 @@ use solana_sdk::pubkey::Pubkey;
 use spl_token_lending::instruction::LendingInstruction;
 use tracing::error;
 
-use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
+use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "LendZqTs8gn5CTSJU1jWKhKuVpjJGom45nnwPb2AMTi";
 
@@ -113,6 +113,15 @@ lazy_static! {
 }
 
 #[derive(Serialize)]
+pub enum TokenLendingDatum {
+    Market(LendingMarket),
+    OwnerState(LendingMarketOwnerState),
+    MarketReserve(LendingMarketReserve),
+    ReserveLiquidity(ReserveLiquidity),
+    Obligation(Obligation),
+}
+
+#[derive(Serialize)]
 pub struct LendingMarket {
     pub market_account: String,
     pub token_program: String,
@@ -204,71 +213,77 @@ pub struct Obligation {
     pub timestamp: i64
 }
 
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+) -> Option<Vec<TableData>> {
     // Unpack the instruction via the spl_token_swap library
     let unpack_result = LendingInstruction::unpack(
         instruction.data.as_slice());
 
     return match unpack_result {
         Ok(ref li) => {
-            let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
+            let mut response: Vec<TableData> = Vec::new();
             let lending_instruction = li.clone();
             match lending_instruction {
                 LendingInstruction::InitLendingMarket {
                     owner,
                     quote_currency,
                 } => {
-                    let market_state_key =
-                        (NATIVE_TOKEN_LENDING_MARKET_TABLE.to_string(), *NATIVE_TOKEN_LENDING_MARKET_SCHEMA);
-                    let market_state = LendingMarket {
-                        market_account: instruction.accounts[0].account.to_string(),
-                        token_program: instruction.accounts[2].account.to_string(),
-                        oracle_program: instruction.accounts[3].account.to_string(),
-                        quote_currency: Pubkey::new(&quote_currency).to_string(),
-                        timestamp: instruction.timestamp
+                    let market = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_MARKET_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_MARKET_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::Market(
+                                LendingMarket {
+                                    market_account: instruction.accounts[0].account.to_string(),
+                                    token_program: instruction.accounts[2].account.to_string(),
+                                    oracle_program: instruction.accounts[3].account.to_string(),
+                                    quote_currency: Pubkey::new(&quote_currency).to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&market_state_key) {
-                        response[&market_state_key].push(market_state);
-                    } else {
-                        response[&market_state_key] = vec![market_state];
-                    }
+                    response.push(market);
 
-                    let owner_state_key =
-                        (NATIVE_TOKEN_LENDING_OWNER_STATE_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OWNER_STATE_SCHEMA);
-                    let owner_state = LendingMarketOwnerState {
-                        account: instruction.accounts[0].account.to_string(),
-                        new_owner: owner.to_string(),
-                        owner: "".to_string(),
-                        timestamp: instruction.timestamp
+                    let owner_state = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OWNER_STATE_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OWNER_STATE_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::OwnerState(
+                                LendingMarketOwnerState {
+                                    account: instruction.accounts[0].account.to_string(),
+                                    new_owner: owner.to_string(),
+                                    owner: "".to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&owner_state_key) {
-                        response[&owner_state_key].push(owner_state);
-                    } else {
-                        response[&owner_state_key] = vec![owner_state];
-                    }
+                    response.push(owner_state);
 
                     Some(response)
                 }
                 LendingInstruction::SetLendingMarketOwner { new_owner } => {
-                    let owner_state_key =
-                        (NATIVE_TOKEN_LENDING_OWNER_STATE_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OWNER_STATE_SCHEMA);
-                    let owner_state = LendingMarketOwnerState {
-                        account: instruction.accounts[0].account.to_string(),
-                        new_owner: new_owner.to_string(),
-                        owner: instruction.accounts[1].account.to_string(),
-                        timestamp: instruction.timestamp
+                    let owner_state = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OWNER_STATE_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OWNER_STATE_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::OwnerState(
+                                LendingMarketOwnerState {
+                                    account: instruction.accounts[0].account.to_string(),
+                                    new_owner: new_owner.to_string(),
+                                    owner: instruction.accounts[1].account.to_string(),
+                                    timestamp: instruction.timestamp
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&owner_state_key) {
-                        response[&owner_state_key].push(owner_state);
-                    } else {
-                        response[&owner_state_key] = vec![owner_state];
-                    }
+                    response.push(owner_state);
 
                     Some(response)
                 }
@@ -278,50 +293,54 @@ pub async fn fragment_instruction<T: Serialize>(
                     liquidity_amount,
                     config, // TODO: Index Reserve Config
                 } => {
-                    let init_reserve_key =
-                        (NATIVE_TOKEN_LENDING_MARKET_RESERVE_TABLE.to_string(), *NATIVE_TOKEN_LENDING_MARKET_RESERVE_SCHEMA);
-                    let init_reserve = LendingMarketReserve {
-                        source_liquidity_account: instruction.accounts[0].account.to_string(),
-                        collateral_account: instruction.accounts[1].account.to_string(),
-                        collateral_mint: instruction.accounts[6].account.to_string(),
-                        account: instruction.accounts[2].account.to_string(),
-                        mint: instruction.accounts[3].account.to_string(),
-                        liquidity_account: instruction.accounts[3].account.to_string(),
-                        liquidity_fee_account: instruction.accounts[5].account.to_string(),
-                        collateral_token_supply: instruction.accounts[7].account.to_string(),
-                        oracle_account: instruction.accounts[8].account.to_string(),
-                        oracle_price_account: instruction.accounts[9].account.to_string(),
-                        lending_market_account: instruction.accounts[10].account.to_string(),
-                        lending_market_authority: instruction.accounts[11].account.to_string(),
-                        lending_market_owner: instruction.accounts[12].account.to_string(),
-                        user_transfer_authority: instruction.accounts[13].account.to_string(),
-                        token: instruction.accounts[16].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let market_reserve = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_MARKET_RESERVE_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_MARKET_RESERVE_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::MarketReserve(
+                                LendingMarketReserve {
+                                    source_liquidity_account: instruction.accounts[0].account.to_string(),
+                                    collateral_account: instruction.accounts[1].account.to_string(),
+                                    collateral_mint: instruction.accounts[6].account.to_string(),
+                                    account: instruction.accounts[2].account.to_string(),
+                                    mint: instruction.accounts[3].account.to_string(),
+                                    liquidity_account: instruction.accounts[3].account.to_string(),
+                                    liquidity_fee_account: instruction.accounts[5].account.to_string(),
+                                    collateral_token_supply: instruction.accounts[7].account.to_string(),
+                                    oracle_account: instruction.accounts[8].account.to_string(),
+                                    oracle_price_account: instruction.accounts[9].account.to_string(),
+                                    lending_market_account: instruction.accounts[10].account.to_string(),
+                                    lending_market_authority: instruction.accounts[11].account.to_string(),
+                                    lending_market_owner: instruction.accounts[12].account.to_string(),
+                                    user_transfer_authority: instruction.accounts[13].account.to_string(),
+                                    token: instruction.accounts[16].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&init_reserve_key) {
-                        response[&init_reserve_key].push(init_reserve);
-                    } else {
-                        response[&init_reserve_key] = vec![init_reserve];
-                    }
+                    response.push(market_reserve);
 
-                    let reserve_liquidity_key =
-                        (NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(), *NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA);
-                    let reserve_liquidity = ReserveLiquidity {
-                        source: instruction.accounts[13].account.to_string(),
-                        destination: instruction.accounts[4].account.to_string(),
-                        amount: liquidity_amount as i64,
-                        mint: instruction.accounts[3].account.to_string(),
-                        lending_market_account: instruction.accounts[10].account.to_string(),
-                        lending_market_authority: instruction.accounts[11].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let reserve_liquidity = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::ReserveLiquidity(
+                                ReserveLiquidity {
+                                    source: instruction.accounts[13].account.to_string(),
+                                    destination: instruction.accounts[4].account.to_string(),
+                                    amount: liquidity_amount as i64,
+                                    mint: instruction.accounts[3].account.to_string(),
+                                    lending_market_account: instruction.accounts[10].account.to_string(),
+                                    lending_market_authority: instruction.accounts[11].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&reserve_liquidity_key) {
-                        response[&reserve_liquidity_key].push(reserve_liquidity);
-                    } else {
-                        response[&reserve_liquidity_key] = vec![reserve_liquidity];
-                    }
+                    response.push(reserve_liquidity);
 
                     Some(response)
                 }
@@ -329,185 +348,203 @@ pub async fn fragment_instruction<T: Serialize>(
                     None
                 }
                 LendingInstruction::DepositReserveLiquidity { liquidity_amount } => {
-                    let reserve_liquidity_key =
-                        (NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(), *NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA);
-                    let reserve_liquidity = ReserveLiquidity {
-                        source: instruction.accounts[7].account.to_string(),
-                        destination: instruction.accounts[3].account.to_string(),
-                        amount: liquidity_amount as i64,
-                        mint: instruction.accounts[4].account.to_string(),
-                        lending_market_account: instruction.accounts[5].account.to_string(),
-                        lending_market_authority: instruction.accounts[6].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let deposit_reserve_liquidity = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::ReserveLiquidity(
+                                ReserveLiquidity {
+                                    source: instruction.accounts[7].account.to_string(),
+                                    destination: instruction.accounts[3].account.to_string(),
+                                    amount: liquidity_amount as i64,
+                                    mint: instruction.accounts[4].account.to_string(),
+                                    lending_market_account: instruction.accounts[5].account.to_string(),
+                                    lending_market_authority: instruction.accounts[6].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&reserve_liquidity_key) {
-                        response[&reserve_liquidity_key].push(reserve_liquidity);
-                    } else {
-                        response[&reserve_liquidity_key] = vec![reserve_liquidity];
-                    }
+                    response.push(deposit_reserve_liquidity);
 
                     Some(response)
                 }
                 LendingInstruction::RedeemReserveCollateral { collateral_amount } => {
-                    let reserve_liquidity_key =
-                        (NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(), *NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA);
-                    let reserve_liquidity = ReserveLiquidity {
-                        source: instruction.accounts[4].account.to_string(),
-                        destination: instruction.accounts[7].account.to_string(),
-                        amount: -1 * (collateral_amount as i64),
-                        mint: instruction.accounts[3].account.to_string(),
-                        lending_market_account: instruction.accounts[5].account.to_string(),
-                        lending_market_authority: instruction.accounts[6].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let redeem_reserve_collateral = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_RESERVE_LIQUIDITY_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::ReserveLiquidity(
+                                ReserveLiquidity {
+                                    source: instruction.accounts[4].account.to_string(),
+                                    destination: instruction.accounts[7].account.to_string(),
+                                    amount: -1 * (collateral_amount as i64),
+                                    mint: instruction.accounts[3].account.to_string(),
+                                    lending_market_account: instruction.accounts[5].account.to_string(),
+                                    lending_market_authority: instruction.accounts[6].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&reserve_liquidity_key) {
-                        response[&reserve_liquidity_key].push(reserve_liquidity);
-                    } else {
-                        response[&reserve_liquidity_key] = vec![reserve_liquidity];
-                    }
+                    response.push(redeem_reserve_collateral);
 
                     Some(response)
                 }
                 LendingInstruction::InitObligation => {
-                    let obligation_key =
-                        (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
-                    let obligation = Obligation {
-                        obligation_type: ObligationType::Deposit as i16,
-                        source: instruction.accounts[0].account.to_string(),
-                        destination: instruction.accounts[2].account.to_string(),
-                        amount: 0,
-                        lending_market_account: instruction.accounts[1].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let init_obligation = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::Obligation(
+                                Obligation {
+                                    obligation_type: ObligationType::Deposit as i16,
+                                    source: instruction.accounts[0].account.to_string(),
+                                    destination: instruction.accounts[2].account.to_string(),
+                                    amount: 0,
+                                    lending_market_account: instruction.accounts[1].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&obligation_key) {
-                        response[&obligation_key].push(obligation);
-                    } else {
-                        response[&obligation_key] = vec![obligation];
-                    }
+                    response.push(init_obligation);
 
                     Some(response)
                 }
                 LendingInstruction::RefreshObligation => None,
                 LendingInstruction::DepositObligationCollateral { collateral_amount } => {
-                    let obligation_key =
-                        (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
-                    let obligation = Obligation {
-                        obligation_type: ObligationType::Deposit as i16,
-                        source: instruction.accounts[6].account.to_string(),
-                        destination: instruction.accounts[1].account.to_string(),
-                        amount: collateral_amount as i64,
-                        lending_market_account: instruction.accounts[4].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let deposit_obligation_collateral = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::Obligation(
+                                Obligation {
+                                    obligation_type: ObligationType::Deposit as i16,
+                                    source: instruction.accounts[6].account.to_string(),
+                                    destination: instruction.accounts[1].account.to_string(),
+                                    amount: collateral_amount as i64,
+                                    lending_market_account: instruction.accounts[4].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&obligation_key) {
-                        response[&obligation_key].push(obligation);
-                    } else {
-                        response[&obligation_key] = vec![obligation];
-                    }
+                    response.push(deposit_obligation_collateral);
 
                     Some(response)
                 }
                 LendingInstruction::WithdrawObligationCollateral { collateral_amount } => {
-                    let obligation_key =
-                        (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
-                    let obligation = Obligation {
-                        obligation_type: ObligationType::Withdraw as i16,
-                        source: instruction.accounts[0].account.to_string(),
-                        destination: instruction.accounts[6].account.to_string(),
-                        amount: -1 * (collateral_amount as i64),
-                        lending_market_account: instruction.accounts[4].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let withdraw_obligation_collateral = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::Obligation(
+                                Obligation {
+                                    obligation_type: ObligationType::Withdraw as i16,
+                                    source: instruction.accounts[0].account.to_string(),
+                                    destination: instruction.accounts[6].account.to_string(),
+                                    amount: -1 * (collateral_amount as i64),
+                                    lending_market_account: instruction.accounts[4].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&obligation_key) {
-                        response[&obligation_key].push(obligation);
-                    } else {
-                        response[&obligation_key] = vec![obligation];
-                    }
+                    response.push(withdraw_obligation_collateral);
 
                     Some(response)
                 }
                 LendingInstruction::BorrowObligationLiquidity { liquidity_amount } => {
-                    let obligation_key =
-                        (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
-                    let obligation = Obligation {
-                        obligation_type: ObligationType::Borrow as i16,
-                        source: instruction.accounts[0].account.to_string(),
-                        destination: instruction.accounts[7].account.to_string(),
-                        amount: -1 * (liquidity_amount as i64),
-                        lending_market_account: instruction.accounts[5].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let borrow_obligation_collateral = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::Obligation(
+                                Obligation {
+                                    obligation_type: ObligationType::Borrow as i16,
+                                    source: instruction.accounts[0].account.to_string(),
+                                    destination: instruction.accounts[7].account.to_string(),
+                                    amount: -1 * (liquidity_amount as i64),
+                                    lending_market_account: instruction.accounts[5].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&obligation_key) {
-                        response[&obligation_key].push(obligation);
-                    } else {
-                        response[&obligation_key] = vec![obligation];
-                    }
+                    response.push(borrow_obligation_collateral);
 
                     Some(response)
                 }
                 LendingInstruction::RepayObligationLiquidity { liquidity_amount } => {
-                    let obligation_key =
-                        (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
-                    let obligation = Obligation {
-                        obligation_type: ObligationType::Repay as i16,
-                        source: instruction.accounts[5].account.to_string(),
-                        destination: instruction.accounts[1].account.to_string(),
-                        amount: liquidity_amount as i64,
-                        lending_market_account: instruction.accounts[4].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let repay_obligation_collateral = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::Obligation(
+                                Obligation {
+                                    obligation_type: ObligationType::Repay as i16,
+                                    source: instruction.accounts[5].account.to_string(),
+                                    destination: instruction.accounts[1].account.to_string(),
+                                    amount: liquidity_amount as i64,
+                                    lending_market_account: instruction.accounts[4].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&obligation_key) {
-                        response[&obligation_key].push(obligation);
-                    } else {
-                        response[&obligation_key] = vec![obligation];
-                    }
+                    response.push(repay_obligation_collateral);
 
                     Some(response)
                 }
                 LendingInstruction::LiquidateObligation { liquidity_amount } => {
-                    let obligation_key =
-                        (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
-                    let obligation = Obligation {
-                        obligation_type: ObligationType::Liquidate as i16,
-                        source: instruction.accounts[6].account.to_string(),
-                        destination: instruction.accounts[3].account.to_string(),
-                        amount: liquidity_amount as i64,
-                        lending_market_account:instruction.accounts[7].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let repay_obligation_collateral = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::Obligation(
+                                Obligation {
+                                    obligation_type: ObligationType::Liquidate as i16,
+                                    source: instruction.accounts[6].account.to_string(),
+                                    destination: instruction.accounts[3].account.to_string(),
+                                    amount: liquidity_amount as i64,
+                                    lending_market_account:instruction.accounts[7].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&obligation_key) {
-                        response[&obligation_key].push(obligation);
-                    } else {
-                        response[&obligation_key] = vec![obligation];
-                    }
+                    response.push(repay_obligation_collateral);
 
                     Some(response)
                 }
                 LendingInstruction::FlashLoan { amount } => {
-                    let obligation_key =
-                        (NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(), *NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA);
-                    let obligation = Obligation {
-                        obligation_type: ObligationType::Liquidate as i16,
-                        source: instruction.accounts[0].account.to_string(),
-                        destination: instruction.accounts[1].account.to_string(),
-                        amount: -1 * (amount as i64),
-                        lending_market_account: instruction.accounts[5].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let flash_loan_obligation = TableData {
+                        schema: (*NATIVE_TOKEN_LENDING_OBLIGATION_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_LENDING_OBLIGATION_TABLE.to_string(),
+                        data: vec![TypedDatum::NativeTokenLending(
+                            TokenLendingDatum::Obligation(
+                                Obligation {
+                                    obligation_type: ObligationType::Liquidate as i16,
+                                    source: instruction.accounts[0].account.to_string(),
+                                    destination: instruction.accounts[1].account.to_string(),
+                                    amount: -1 * (amount as i64),
+                                    lending_market_account: instruction.accounts[5].account.to_string(),
+                                    timestamp: instruction.timestamp.clone()
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&obligation_key) {
-                        response[&obligation_key].push(obligation);
-                    } else {
-                        response[&obligation_key] = vec![obligation];
-                    }
+                    response.push(flash_loan_obligation);
 
                     Some(response)
                 }

@@ -1,14 +1,7 @@
-use std::collections::HashMap;
 use avro_rs::schema::Schema;
-use itertools::Itertools;
 use serde::Serialize;
-use solana_account_decoder::parse_bpf_loader::{
-    parse_bpf_upgradeable_loader, BpfUpgradeableLoaderAccountType,
-};
-use tracing::error;
 
-use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
-use solana_account_decoder::parse_account_data::{ParseAccountError, ParsableAccount};
+use crate::{Instruction, TableData, TypedDatum};
 use solana_program::loader_upgradeable_instruction::UpgradeableLoaderInstruction;
 
 pub const PROGRAM_ADDRESS: &str = "BPFLoaderUpgradeab1e11111111111111111111111";
@@ -68,6 +61,13 @@ lazy_static! {
     .unwrap();
 }
 
+#[derive(Serialize)]
+pub enum BpfUpgradeableLoaderDatum {
+    NativeBpfUpgradeableClosure(NativeBpfUpgradeableClosure),
+    NativeBpfUpgradeableDeploy(NativeBpfUpgradeableDeploy),
+    NativeBpfUpgradeableUpgrade(NativeBpfUpgradeableUpgrade),
+}
+
 /// Struct tables
 #[derive(Serialize)]
 pub struct NativeBpfUpgradeableDeploy {
@@ -80,7 +80,7 @@ pub struct NativeBpfUpgradeableDeploy {
     /// Who's the program's owner?
     pub program_authority: String,
     /// Wen deployed?
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -96,7 +96,7 @@ pub struct NativeBpfUpgradeableUpgrade {
     /// Who's the program's owner?
     pub program_authority: String,
     /// Wen deployed?
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -110,23 +110,23 @@ pub struct NativeBpfUpgradeableClosure {
     /// Who's the program's owner?
     pub program_authority: Option<String>,
     /// Wen deployed?
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+) -> Option<Vec<TableData>> {
     let bpf_loader_upgradeable_dr =
         bincode::deserialize::<UpgradeableLoaderInstruction>(instruction.data.as_slice());
 
     return match bpf_loader_upgradeable_dr {
         Ok(ref blu) => {
-            let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
+            let mut response: Vec<TableData> = Vec::new();
             let bpf_loader_upgradeable_i = blu.clone();
 
             match bpf_loader_upgradeable_i {
@@ -194,20 +194,23 @@ pub async fn fragment_instruction<T: Serialize>(
                 ///   6. `[]` System program (`solana_sdk::system_program::id()`).
                 ///   7. `[signer]` The program's authority
                 UpgradeableLoaderInstruction::DeployWithMaxDataLen { .. } => {
-                    let key =
-                        (NATIVE_BPF_LOADER_UPGRADABLE_DEPLOYS_TABLE_NAME.to_string(), *NATIVE_BPF_LOADER_UPGRADABLE_DEPLOY_SCHEMA);
-                    let deployment_data = NativeBpfUpgradeableDeploy {
-                        transaction_hash: instruction.transaction_hash.clone(),
-                        program: instruction.accounts[2].account.to_string(),
-                        program_data: instruction.accounts[1].account.to_string(),
-                        program_authority: instruction.accounts[7].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let table_data = TableData {
+                        schema: (*NATIVE_BPF_LOADER_UPGRADABLE_DEPLOY_SCHEMA).clone(),
+                        table_name: NATIVE_BPF_LOADER_UPGRADABLE_DEPLOYS_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::BpfLoaderUpgradeable(
+                            BpfUpgradeableLoaderDatum::NativeBpfUpgradeableDeploy(
+                                NativeBpfUpgradeableDeploy {
+                                    transaction_hash: instruction.transaction_hash.clone(),
+                                    program: instruction.accounts[2].account.to_string(),
+                                    program_data: instruction.accounts[1].account.to_string(),
+                                    program_authority: instruction.accounts[7].account.to_string(),
+                                    timestamp: instruction.timestamp.clone(),
+                                }
+                            )
+                        )],
                     };
-                    if response.contains(&key) {
-                        response[&key].push(deployment_data);
-                    } else {
-                        response[&key] = vec![deployment_data];
-                    }
+
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -232,21 +235,24 @@ pub async fn fragment_instruction<T: Serialize>(
                 ///   5. `[]` Clock sysvar.
                 ///   6. `[signer]` The program's authority.
                 UpgradeableLoaderInstruction::Upgrade => {
-                    let key =
-                        (NATIVE_BPF_LOADER_UPGRADABLE_UPGRADES_TABLE_NAME.to_string(), *NATIVE_BPF_LOADER_UPGRADABLE_UPGRADE_SCHEMA);
-                    let deployment_data = NativeBpfUpgradeableUpgrade {
-                        transaction_hash: instruction.transaction_hash.clone(),
-                        program: instruction.accounts[1].account.to_string(),
-                        program_data: instruction.accounts[0].account.to_string(),
-                        program_buffer: instruction.accounts[2].account.to_string(),
-                        program_authority: instruction.accounts[6].account.to_string(),
-                        timestamp: instruction.timestamp.clone()
+                    let table_data = TableData {
+                        schema: (*NATIVE_BPF_LOADER_UPGRADABLE_UPGRADE_SCHEMA).clone(),
+                        table_name: NATIVE_BPF_LOADER_UPGRADABLE_UPGRADES_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::BpfLoaderUpgradeable(
+                            BpfUpgradeableLoaderDatum::NativeBpfUpgradeableUpgrade(
+                                NativeBpfUpgradeableUpgrade {
+                                    transaction_hash: instruction.transaction_hash.clone(),
+                                    program: instruction.accounts[1].account.to_string(),
+                                    program_data: instruction.accounts[0].account.to_string(),
+                                    program_buffer: instruction.accounts[2].account.to_string(),
+                                    program_authority: instruction.accounts[6].account.to_string(),
+                                    timestamp: instruction.timestamp.clone(),
+                                }
+                            )
+                        )],
                     };
-                    if response.contains(&key) {
-                        response[&key].push(deployment_data);
-                    } else {
-                        response[&key] = vec![deployment_data];
-                    }
+
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -273,21 +279,23 @@ pub async fn fragment_instruction<T: Serialize>(
                 ///   3. `[writable]` The associated Program account if the account to close
                 ///      is a ProgramData account.
                 UpgradeableLoaderInstruction::Close => {
-                    let key =
-                        (NATIVE_BPF_LOADER_UPGRADABLE_CLOSURES_TABLE_NAME.to_string(), *NATIVE_BPF_LOADER_CLOSURE_DEPLOY_SCHEMA);
-                    // TODO: Does not handle all edge cases.
-                    let deployment_data = NativeBpfUpgradeableClosure {
-                        transaction_hash: instruction.transaction_hash.clone(),
-                        program: Some(instruction.accounts[3].account.to_string()),
-                        program_data: instruction.accounts[0].account.to_string(),
-                        program_authority: Some(instruction.accounts[2].account.to_string()),
-                        timestamp: instruction.timestamp.clone()
+                    let table_data = TableData {
+                        schema: (*NATIVE_BPF_LOADER_CLOSURE_DEPLOY_SCHEMA).clone(),
+                        table_name: NATIVE_BPF_LOADER_UPGRADABLE_CLOSURES_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::BpfLoaderUpgradeable(
+                            BpfUpgradeableLoaderDatum::NativeBpfUpgradeableClosure(
+                                NativeBpfUpgradeableClosure {
+                                    transaction_hash: instruction.transaction_hash.clone(),
+                                    program: Some(instruction.accounts[3].account.to_string()),
+                                    program_data: instruction.accounts[0].account.to_string(),
+                                    program_authority: Some(instruction.accounts[2].account.to_string()),
+                                    timestamp: instruction.timestamp.clone(),
+                                }
+                            )
+                        )],
                     };
-                    if response.contains(&key) {
-                        response[&key].push(deployment_data);
-                    } else {
-                        response[&key] = vec![deployment_data];
-                    }
+
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -300,5 +308,5 @@ pub async fn fragment_instruction<T: Serialize>(
 
             None
         }
-    }
+    };
 }

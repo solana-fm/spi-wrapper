@@ -1,11 +1,9 @@
-use std::collections::HashMap;
 use avro_rs::schema::Schema;
 use bincode::deserialize;
-use itertools::Itertools;
 use serde::Serialize;
 use tracing::error;
 
-use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
+use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 pub const NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE: &str = "native_associated_token_account_new";
@@ -28,6 +26,11 @@ lazy_static! {
     .unwrap();
 }
 
+#[derive(Serialize)]
+pub enum NativeAssociatedTokenAccountDatum {
+    NewAccount(NewAssociatedTokenAccount)
+}
+
 /// Struct tables
 #[derive(Serialize)]
 pub struct NewAssociatedTokenAccount {
@@ -42,16 +45,16 @@ pub struct NewAssociatedTokenAccount {
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+) -> Option<Vec<TableData>> {
     let atadr = deserialize::<solana_program::instruction::Instruction>(
         &instruction.data.as_slice());
 
     return match atadr {
         Ok(ref ati) => {
-            let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
+            let mut response: Vec<TableData> = Vec::new();
             let associated_token_instruction = ati.clone();
             // Create an associated token account for the given wallet address and token mint
             //
@@ -64,20 +67,23 @@ pub async fn fragment_instruction<T: Serialize>(
             //   4. `[]` System program
             //   5. `[]` SPL Token program
             //   6. `[]` Rent sysvar
-            let key =
-                (NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(), *NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA);
-            let associated_token_account = NewAssociatedTokenAccount {
-                transaction_hash: associated_token_instruction.transaction_hash.to_string(),
-                ata_address: associated_token_instruction.accounts[1].account.to_string(),
-                wallet_address: associated_token_instruction.accounts[2].account.to_string(),
-                mint: associated_token_instruction.accounts[3].account.to_string(),
-                timestamp: associated_token_instruction.timestamp
+            let table_data = TableData {
+                schema: (*NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA).clone(),
+                table_name: NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(),
+                data: vec![TypedDatum::NativeAssocicatedTokenAccount(
+                    NativeAssociatedTokenAccountDatum::NewAccount(
+                        NewAssociatedTokenAccount {
+                            transaction_hash: instruction.transaction_hash.to_string(),
+                            ata_address: associated_token_instruction.accounts[1].pubkey.to_string(),
+                            wallet_address: associated_token_instruction.accounts[2].pubkey.to_string(),
+                            mint: associated_token_instruction.accounts[3].pubkey.to_string(),
+                            timestamp: instruction.timestamp
+                        }
+                    )
+                )]
             };
-            if response.contains(&key) {
-                response[&key].push(associated_token_account);
-            } else {
-                response[&key] = vec![associated_token_account];
-            }
+
+            response.push(table_data);
 
             Some(response)
         }

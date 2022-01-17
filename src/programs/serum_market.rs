@@ -5,7 +5,7 @@ use serde::Serialize;
 use serum_dex::instruction::MarketInstruction;
 use tracing::error;
 
-use crate::{InstructionFunction, InstructionSet, InstructionProperty, Instruction};
+use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS_V1: &str = "BJ3jrUzddfuSrZHXSCxMUUQsjKEyLmuuyZebkcaFp2fg";
 pub const PROGRAM_ADDRESS_V2: &str = "EUqojwWA2rd19FZrzeBncJsm38Jm1hEhE3zsmX3bRc2o";
@@ -161,6 +161,17 @@ lazy_static! {
 }
 
 #[derive(Serialize)]
+pub enum SerumMarketDatum {
+    Market(SerumMarket),
+    Disable(MarketDisable),
+    FeeSweep(FeeSweep),
+    Order(SerumOrder),
+    CancelledOrder(CancelledOrder),
+    SendTake(SendTake),
+    Prune(Prune)
+}
+
+#[derive(Serialize)]
 pub struct SerumMarket {
     pub market: String,
     pub request_queue_account: String,
@@ -248,6 +259,7 @@ pub struct CancelledOrder {
     pub timestamp: i64
 }
 
+#[derive(Serialize)]
 pub struct SendTake {
     pub market: String,
     pub side: i16,
@@ -266,6 +278,7 @@ pub struct SendTake {
     pub timestamp: i64
 }
 
+#[derive(Serialize)]
 pub struct Prune {
     pub market: String,
     pub limit: i16,
@@ -274,85 +287,89 @@ pub struct Prune {
     pub timestamp: i64
 }
 
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+) -> Option<Vec<TableData>> {
     // Unpack the instruction via the spl_token_swap library
     let unpack_result = MarketInstruction::unpack(
         instruction.data.as_slice());
 
     if let Some(market_instruction) = unpack_result {
-        let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
+        let mut response: Vec<TableData> = Vec::new();
 
         return match market_instruction {
             MarketInstruction::InitializeMarket(imi) => {
-                let key =
-                    (SERUM_MARKET_TABLE_NAME.to_string(), *SERUM_MARKETS_SCHEMA);
-                let new_market = SerumMarket {
-                    market: instruction.accounts[0].account.to_string(),
-                    request_queue_account: instruction.accounts[1].account.to_string(),
-                    event_queue_account: instruction.accounts[2].account.to_string(),
-                    bids_account: instruction.accounts[3].account.to_string(),
-                    asks_account: instruction.accounts[4].account.to_string(),
-                    coin_account: instruction.accounts[5].account.to_string(),
-                    coin_mint: instruction.accounts[7].account.to_string(),
-                    price_account: instruction.accounts[6].account.to_string(),
-                    price_mint: instruction.accounts[8].account.to_string(),
-                    open_order_authority: if instruction.accounts.len() >= 11 {
-                        Some(instruction.accounts[10].account.to_string())
-                    } else {
-                        None
-                    },
-                    prune_authority: if instruction.accounts.len() >= 11 {
-                        Some(instruction.accounts[11].account.to_string())
-                    } else {
-                        None
-                    },
-                    crank_authority: if instruction.accounts.len() >= 11 {
-                        Some(instruction.accounts[12].account.to_string())
-                    } else {
-                        None
-                    },
-                    coin_lot_size: imi.coin_lot_size as i64,
-                    price_currency_lot_size: imi.pc_lot_size as i64,
-                    fee_rate_bps: imi.fee_rate_bps as i64,
-                    pc_dust_threshold: imi.pc_dust_threshold as i64,
-                    timestamp: instruction.timestamp
+                let table_data = TableData {
+                    schema: (*SERUM_MARKETS_SCHEMA).clone(),
+                    table_name: SERUM_MARKET_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::Market(
+                            SerumMarket {
+                                market: instruction.accounts[0].account.to_string(),
+                                request_queue_account: instruction.accounts[1].account.to_string(),
+                                event_queue_account: instruction.accounts[2].account.to_string(),
+                                bids_account: instruction.accounts[3].account.to_string(),
+                                asks_account: instruction.accounts[4].account.to_string(),
+                                coin_account: instruction.accounts[5].account.to_string(),
+                                coin_mint: instruction.accounts[7].account.to_string(),
+                                price_account: instruction.accounts[6].account.to_string(),
+                                price_mint: instruction.accounts[8].account.to_string(),
+                                open_order_authority: if instruction.accounts.len() >= 11 {
+                                    Some(instruction.accounts[10].account.to_string())
+                                } else {
+                                    None
+                                },
+                                prune_authority: if instruction.accounts.len() >= 11 {
+                                    Some(instruction.accounts[11].account.to_string())
+                                } else {
+                                    None
+                                },
+                                crank_authority: if instruction.accounts.len() >= 11 {
+                                    Some(instruction.accounts[12].account.to_string())
+                                } else {
+                                    None
+                                },
+                                coin_lot_size: imi.coin_lot_size as i64,
+                                price_currency_lot_size: imi.pc_lot_size as i64,
+                                fee_rate_bps: imi.fee_rate_bps as i64,
+                                pc_dust_threshold: imi.pc_dust_threshold as i64,
+                                timestamp: instruction.timestamp
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(new_market);
-                } else {
-                    response[&key] = vec![new_market];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
             MarketInstruction::NewOrder(order) => {
-                let key =
-                    (SERUM_ORDER_TABLE_NAME.to_string(), *SERUM_ORDERS_SCHEMA);
-                let serum_order = SerumOrder {
-                    client_order_id: order.client_id as i64,
-                    order_type: order.order_type as i16,
-                    side: order.side as i16,
-                    limit: None,
-                    limit_price: order.limit_price as i64,
-                    max_quantity: order.max_qty as i64,
-                    market: instruction.accounts[0].account.to_string(),
-                    self_trade_behavior: None,
-                    paying_account: instruction.accounts[3].account.to_string(),
-                    coin_vault: instruction.accounts[5].account.to_string(),
-                    pc_vault: instruction.accounts[6].account.to_string(),
-                    msrm_discount_account: Some(instruction.accounts[9].account.to_string()),
-                    timestamp: instruction.timestamp
+                let table_data = TableData {
+                    schema: (*SERUM_ORDERS_SCHEMA).clone(),
+                    table_name: SERUM_ORDER_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::Order(
+                            SerumOrder {
+                                client_order_id: order.client_id as i64,
+                                order_type: order.order_type as i16,
+                                side: order.side as i16,
+                                limit: None,
+                                limit_price: order.limit_price.get() as i64,
+                                max_quantity: order.max_qty.get() as i64,
+                                market: instruction.accounts[0].account.to_string(),
+                                self_trade_behavior: None,
+                                paying_account: instruction.accounts[3].account.to_string(),
+                                coin_vault: instruction.accounts[5].account.to_string(),
+                                pc_vault: instruction.accounts[6].account.to_string(),
+                                msrm_discount_account: Some(instruction.accounts[9].account.to_string()),
+                                timestamp: instruction.timestamp
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(serum_order);
-                } else {
-                    response[&key] = vec![serum_order];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
@@ -367,21 +384,23 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 1. `[writable]` OpenOrders
                 // 2. `[writable]` the request queue
                 // 3. `[signer]` the OpenOrders owner
-                let key =
-                    (SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(), *SERUM_CANCELLED_ORDERS_SCHEMA);
-                let serum_order = CancelledOrder {
-                    side: Some(order.side as i16),
-                    order_id: order.order_id.to_string(),
-                    market: instruction.accounts[0].account.to_string(),
-                    timestamp: instruction.timestamp,
-                    open_order_owner: instruction.accounts[3].account.to_string(),
+                let table_data = TableData {
+                    schema: (*SERUM_CANCELLED_ORDERS_SCHEMA).clone(),
+                    table_name: SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::CancelledOrder(
+                            CancelledOrder {
+                                side: Some(order.side as i16),
+                                order_id: order.order_id.to_string(),
+                                market: instruction.accounts[0].account.to_string(),
+                                timestamp: instruction.timestamp,
+                                open_order_owner: instruction.accounts[3].account.to_string(),
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(serum_order);
-                } else {
-                    response[&key] = vec![serum_order];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
@@ -404,40 +423,44 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 1. `[writable]` OpenOrders
                 // 2. `[writable]` the request queue
                 // 3. `[signer]` the OpenOrders owner
-                let key =
-                    (SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(), *SERUM_CANCELLED_ORDERS_SCHEMA);
-                let serum_order = CancelledOrder {
-                    side: Some(order.side as i16),
-                    order_id: client_id.to_string(),
-                    market: instruction.accounts[0].account.to_string(),
-                    timestamp: instruction.timestamp,
-                    open_order_owner: instruction.accounts[3].account.to_string(),
+                let table_data = TableData {
+                    schema: (*SERUM_CANCELLED_ORDERS_SCHEMA).clone(),
+                    table_name: SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::CancelledOrder(
+                            CancelledOrder {
+                                side: None,
+                                order_id: client_id.to_string(),
+                                market: instruction.accounts[0].account.to_string(),
+                                timestamp: instruction.timestamp,
+                                open_order_owner: instruction.accounts[3].account.to_string(),
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(serum_order);
-                } else {
-                    response[&key] = vec![serum_order];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
             MarketInstruction::DisableMarket => {
                 // 0. `[writable]` market
                 // 1. `[signer]` disable authority
-                let key =
-                    (SERUM_MARKET_DISABLE_TABLE_NAME.to_string(), *SERUM_MARKET_DISABLE_SCHEMA);
-                let market_disable = MarketDisable {
-                    market: instruction.accounts[0].account.to_string(),
-                    authority: instruction.accounts[1].account.to_string(),
-                    timestamp: instruction.timestamp
+                let table_data = TableData {
+                    schema: (*SERUM_MARKET_DISABLE_SCHEMA).clone(),
+                    table_name: SERUM_MARKET_DISABLE_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::Disable(
+                            MarketDisable {
+                                market: instruction.accounts[0].account.to_string(),
+                                authority: instruction.accounts[1].account.to_string(),
+                                timestamp: instruction.timestamp
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(market_disable);
-                } else {
-                    response[&key] = vec![market_disable];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
@@ -450,21 +473,23 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 5. `[]` spl token program
                 // 0. `[writable]` market
                 // 1. `[signer]` disable authority
-                let key =
-                    (SERUM_FEE_SWEEP_TABLE_NAME.to_string(), *SERUM_FEE_SWEEP_SCHEMA);
-                let market_disable = FeeSweep {
-                    market: instruction.accounts[0].account.to_string(),
-                    pc_vault: instruction.accounts[1].account.to_string(),
-                    fee_authority: instruction.accounts[2].account.to_string(),
-                    fee_receivable_account: instruction.accounts[3].account.to_string(),
-                    timestamp: instruction.timestamp
+                let table_data = TableData {
+                    schema: (*SERUM_FEE_SWEEP_SCHEMA).clone(),
+                    table_name: SERUM_FEE_SWEEP_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::FeeSweep(
+                            FeeSweep {
+                                market: instruction.accounts[0].account.to_string(),
+                                pc_vault: instruction.accounts[1].account.to_string(),
+                                fee_authority: instruction.accounts[2].account.to_string(),
+                                fee_receivable_account: instruction.accounts[3].account.to_string(),
+                                timestamp: instruction.timestamp
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(market_disable);
-                } else {
-                    response[&key] = vec![market_disable];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
@@ -479,64 +504,68 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 7. `[]` spl token program
                 // 8. `[]` the rent sysvar
                 // 9. `[writable]` (optional) the (M)SRM account used for fee discounts
-                let key =
-                    (SERUM_ORDER_TABLE_NAME.to_string(), *SERUM_ORDERS_SCHEMA);
-                let serum_order = SerumOrder {
-                    client_order_id: order.client_id as i64,
-                    order_type: order.order_type as i16,
-                    side: order.side as i16,
-                    limit: None,
-                    limit_price: order.limit_price as i64,
-                    max_quantity: order.max_qty as i64,
-                    market: instruction.accounts[0].account.to_string(),
-                    self_trade_behavior: Some(order.self_trade_behavior as i16),
-                    paying_account: instruction.accounts[3].account.to_string(),
-                    coin_vault: instruction.accounts[5].account.to_string(),
-                    pc_vault: instruction.accounts[6].account.to_string(),
-                    msrm_discount_account: if instruction.accounts.len() >= 12 {
-                        Some(instruction.accounts[9].account.to_string())
-                    } else {
-                        None
-                    },
-                    timestamp: instruction.timestamp
+                let table_data = TableData {
+                    schema: (*SERUM_ORDERS_SCHEMA).clone(),
+                    table_name: SERUM_ORDER_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::Order(
+                            SerumOrder {
+                                client_order_id: order.client_id as i64,
+                                order_type: order.order_type as i16,
+                                side: order.side as i16,
+                                limit: None,
+                                limit_price: order.limit_price.get() as i64,
+                                max_quantity: order.max_qty.get() as i64,
+                                market: instruction.accounts[0].account.to_string(),
+                                self_trade_behavior: Some(order.self_trade_behavior as i16),
+                                paying_account: instruction.accounts[3].account.to_string(),
+                                coin_vault: instruction.accounts[5].account.to_string(),
+                                pc_vault: instruction.accounts[6].account.to_string(),
+                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                    Some(instruction.accounts[9].account.to_string())
+                                } else {
+                                    None
+                                },
+                                timestamp: instruction.timestamp
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(serum_order);
-                } else {
-                    response[&key] = vec![serum_order];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
             MarketInstruction::NewOrderV3(order) => {
-                let key =
-                    (SERUM_ORDER_TABLE_NAME.to_string(), *SERUM_ORDERS_SCHEMA);
-                let serum_order = SerumOrder {
-                    client_order_id: order.client_id as i64,
-                    order_type: order.order_type as i16,
-                    side: order.side as i16,
-                    limit: Some(order.limit as i16),
-                    limit_price: order.limit_price as i64,
-                    max_quantity: order.max_qty as i64,
-                    market: instruction.accounts[0].account.to_string(),
-                    self_trade_behavior: Some(order.self_trade_behavior as i16),
-                    paying_account: instruction.accounts[6].account.to_string(),
-                    coin_vault: instruction.accounts[8].account.to_string(),
-                    pc_vault: instruction.accounts[9].account.to_string(),
-                    msrm_discount_account: if instruction.accounts.len() >= 12 {
-                        Some(instruction.accounts[12].account.to_string())
-                    } else {
-                        None
-                    },
-                    timestamp: instruction.timestamp
+                let table_data = TableData {
+                    schema: (*SERUM_ORDERS_SCHEMA).clone(),
+                    table_name: SERUM_ORDER_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::Order(
+                            SerumOrder {
+                                client_order_id: order.client_order_id as i64,
+                                order_type: order.order_type as i16,
+                                side: order.side as i16,
+                                limit: Some(order.limit as i16),
+                                limit_price: order.limit_price.get() as i64,
+                                max_quantity: order.max_coin_qty.get() as i64,
+                                market: instruction.accounts[0].account.to_string(),
+                                self_trade_behavior: Some(order.self_trade_behavior as i16),
+                                paying_account: instruction.accounts[6].account.to_string(),
+                                coin_vault: instruction.accounts[8].account.to_string(),
+                                pc_vault: instruction.accounts[9].account.to_string(),
+                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                    Some(instruction.accounts[12].account.to_string())
+                                } else {
+                                    None
+                                },
+                                timestamp: instruction.timestamp
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(serum_order);
-                } else {
-                    response[&key] = vec![serum_order];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
@@ -547,21 +576,23 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 3. `[writable]` OpenOrders
                 // 4. `[signer]` the OpenOrders owner
                 // 5. `[writable]` event_q
-                let key =
-                    (SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(), *SERUM_CANCELLED_ORDERS_SCHEMA);
-                let serum_order = CancelledOrder {
-                    side: Some(order.side as i16),
-                    order_id: order.order_id.to_string(),
-                    market: instruction.accounts[0].account.to_string(),
-                    timestamp: instruction.timestamp,
-                    open_order_owner: instruction.accounts[4].account.to_string(),
+                let table_data = TableData {
+                    schema: (*SERUM_CANCELLED_ORDERS_SCHEMA).clone(),
+                    table_name: SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::CancelledOrder(
+                            CancelledOrder {
+                                side: Some(order.side as i16),
+                                order_id: order.order_id.to_string(),
+                                market: instruction.accounts[0].account.to_string(),
+                                timestamp: instruction.timestamp,
+                                open_order_owner: instruction.accounts[4].account.to_string(),
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(serum_order);
-                } else {
-                    response[&key] = vec![serum_order];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
@@ -572,21 +603,23 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 3. `[writable]` OpenOrders
                 // 4. `[signer]` the OpenOrders owner
                 // 5. `[writable]` event_q
-                let key =
-                    (SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(), *SERUM_CANCELLED_ORDERS_SCHEMA);
-                let serum_order = CancelledOrder {
-                    side: None,
-                    order_id: client_id.to_string(),
-                    market: instruction.accounts[0].account.to_string(),
-                    timestamp: instruction.timestamp,
-                    open_order_owner: instruction.accounts[3].account.to_string(),
+                let table_data = TableData {
+                    schema: (*SERUM_CANCELLED_ORDERS_SCHEMA).clone(),
+                    table_name: SERUM_CANCELLED_ORDER_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::CancelledOrder(
+                            CancelledOrder {
+                                side: None,
+                                order_id: client_id.to_string(),
+                                market: instruction.accounts[0].account.to_string(),
+                                timestamp: instruction.timestamp,
+                                open_order_owner: instruction.accounts[3].account.to_string(),
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(serum_order);
-                } else {
-                    response[&key] = vec![serum_order];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
@@ -596,33 +629,35 @@ pub async fn fragment_instruction<T: Serialize>(
                 // 2. `[writable]` asks
                 // 3. `[writable]` OpenOrders
                 // 4. `[]`
-                let key =
-                    (SERUM_SEND_TAKE_TABLE_NAME.to_string(), *SERUM_SEND_TAKES_SCHEMA);
-                let send_take = SendTake {
-                    market: instruction.accounts[0].account.to_string(),
-                    side: sti.side as i16,
-                    limit_price: sti.limit_price as i64,
-                    max_quantity: sti.max_coin_qty as i64,
-                    max_pc_qty_incl_fees: sti.max_native_pc_qty_including_fees as i64,
-                    min_coin_qty: sti.min_coin_qty as i64,
-                    min_pc_qty: sti.min_native_pc_qty as i64,
-                    coin_wallet_account: instruction.accounts[5].account.to_string(),
-                    pc_wallet_account: instruction.accounts[6].account.to_string(),
-                    coin_vault: instruction.accounts[8].account.to_string(),
-                    pc_vault: instruction.accounts[9].account.to_string(),
-                    msrm_discount_account: if instruction.accounts.len() >= 12 {
-                        Some(instruction.accounts[12].account.to_string())
-                    } else {
-                        None
-                    },
-                    timestamp: instruction.timestamp
+                let table_data = TableData {
+                    schema: (*SERUM_SEND_TAKES_SCHEMA).clone(),
+                    table_name: SERUM_SEND_TAKE_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::SendTake(
+                            SendTake {
+                                market: instruction.accounts[0].account.to_string(),
+                                side: sti.side as i16,
+                                limit_price: sti.limit_price.get() as i64,
+                                max_quantity: sti.max_coin_qty.get() as i64,
+                                max_pc_qty_incl_fees: sti.max_native_pc_qty_including_fees.get() as i64,
+                                min_coin_qty: sti.min_coin_qty as i64,
+                                min_pc_qty: sti.min_native_pc_qty as i64,
+                                coin_wallet_account: instruction.accounts[5].account.to_string(),
+                                pc_wallet_account: instruction.accounts[6].account.to_string(),
+                                coin_vault: instruction.accounts[8].account.to_string(),
+                                pc_vault: instruction.accounts[9].account.to_string(),
+                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                    Some(instruction.accounts[12].account.to_string())
+                                } else {
+                                    None
+                                },
+                                timestamp: instruction.timestamp
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(send_take);
-                } else {
-                    response[&key] = vec![send_take];
-                }
+                response.push(table_data);
 
                 Some(response)
             }
@@ -642,21 +677,23 @@ pub async fn fragment_instruction<T: Serialize>(
                 None
             }
             MarketInstruction::Prune(limit) => {
-                let key =
-                    (SERUM_PRUNE_TABLE_NAME.to_string(), *SERUM_PRUNE_SCHEMA);
-                let prune = Prune {
-                    market: instruction.accounts[0].account.to_string(),
-                    limit: limit as i16,
-                    open_orders: instruction.accounts[4].account.to_string(),
-                    open_orders_owner: instruction.accounts[5].account.to_string(),
-                    timestamp: instruction.timestamp
+                let table_data = TableData {
+                    schema: (*SERUM_PRUNE_SCHEMA).clone(),
+                    table_name: SERUM_PRUNE_TABLE_NAME.to_string(),
+                    data: vec![TypedDatum::SerumMarket(
+                        SerumMarketDatum::Prune(
+                            Prune {
+                                market: instruction.accounts[0].account.to_string(),
+                                limit: limit as i16,
+                                open_orders: instruction.accounts[4].account.to_string(),
+                                open_orders_owner: instruction.accounts[5].account.to_string(),
+                                timestamp: instruction.timestamp
+                            }
+                        )
+                    )]
                 };
 
-                if response.contains(&key) {
-                    response[&key].push(prune);
-                } else {
-                    response[&key] = vec![prune];
-                }
+                response.push(table_data);
 
                 Some(response)
             }

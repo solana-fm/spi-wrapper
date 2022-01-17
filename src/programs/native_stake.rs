@@ -1,14 +1,11 @@
-use std::collections::HashMap;
 use avro_rs::schema::Schema;
-use itertools::Itertools;
 use serde::Serialize;
 use solana_program::instruction::InstructionError;
 use solana_sdk::program_utils::limited_deserialize;
 use solana_program::stake::instruction::StakeInstruction;
-use solana_program::stake::state::StakeAuthorize;
 use tracing::error;
 
-use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
+use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "Stake11111111111111111111111111111111111111";
 
@@ -46,6 +43,12 @@ lazy_static! {
     .unwrap();
 }
 
+#[derive(Serialize)]
+pub enum NativeStakeDatum {
+    Withdrawal(NativeStakeWithdrawal),
+    Split(NativeStakeSplit),
+}
+
 /// Struct tables
 #[derive(Serialize)]
 pub struct NativeStakeWithdrawal {
@@ -54,7 +57,7 @@ pub struct NativeStakeWithdrawal {
     /// Split amount
     pub amount: i64,
     /// Wen exit?
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -66,23 +69,23 @@ pub struct NativeStakeSplit {
     /// Amount of benefit/loss from split.
     pub amount: i64,
     /// Wen split?
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
-    instruction: Instruction,
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+    instruction: Instruction
+) -> Option<Vec<TableData>> {
     let dsr = limited_deserialize::<StakeInstruction>(
         instruction.data.as_slice());
 
     match dsr {
         Ok(ref si) => {
-            let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
+            let mut response: Vec<TableData> = Vec::new();
             let stake_result = si.clone();
             match stake_result {
                 StakeInstruction::Initialize(_, _) => {
@@ -173,29 +176,26 @@ pub async fn fragment_instruction<T: Serialize>(
                 ///   1. `[WRITE]` Uninitialized stake account that will take the split-off amount
                 ///   2. `[SIGNER]` Stake authority
                 StakeInstruction::Split(lamports) => {
-                    let key =
-                        (NATIVE_STAKE_SPLIT_TABLE_NAME.to_string(), *NATIVE_STAKE_SPLIT_SCHEMA);
-                    let source_split = NativeStakeSplit {
-                        transaction_hash: instruction.transaction_hash.clone(),
-                        account: instruction.accounts[0].account.to_string(),
-                        amount: (lamports as i64) * -1,
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_STAKE_SPLIT_SCHEMA).clone(),
+                        table_name: NATIVE_STAKE_SPLIT_TABLE_NAME.to_string(),
+                        data: vec![
+                            TypedDatum::NativeStake(NativeStakeDatum::Split(NativeStakeSplit {
+                                    transaction_hash: instruction.transaction_hash.clone(),
+                                    account: instruction.accounts[0].account.to_string(),
+                                    amount: (lamports as i64) * -1,
+                                    timestamp: instruction.timestamp
+                            })),
+                            TypedDatum::NativeStake(NativeStakeDatum::Split(NativeStakeSplit {
+                                transaction_hash: instruction.transaction_hash.clone(),
+                                account: instruction.accounts[1].account.to_string(),
+                                amount: lamports as i64,
+                                timestamp: instruction.timestamp
+                            })),
+                        ],
                     };
-                    let dest_split = NativeStakeSplit {
-                        transaction_hash: instruction.transaction_hash.clone(),
-                        account: instruction.accounts[1].account.to_string(),
-                        amount: lamports as i64,
-                        timestamp: instruction.timestamp
-                    };
-                    // let split_stake = &next_keyed_account(keyed_accounts)?;
-                    // me.split(lamports, split_stake, &signers)
-                    // ((String::from(""), String::from("")), {})
-                    if response.contains(&key) {
-                        response[&key].push(source_split);
-                        response[&key].push(dest_split);
-                    } else {
-                        response[&key] = vec![source_split, dest_split];
-                    }
+
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -231,19 +231,21 @@ pub async fn fragment_instruction<T: Serialize>(
                     //     invoke_context
                     //         .is_feature_active(&feature_set::stake_program_v4::id()),
                     // )
-                    let key =
-                        (NATIVE_STAKE_WITHDRAWAL_TABLE_NAME.to_string(), *NATIVE_STAKE_WITHDRAWAL_SCHEMA);
-                    let withdrawal = NativeStakeWithdrawal {
-                        transaction_hash: instruction.transaction_hash,
-                        amount: lamports as i64,
-                        timestamp: instruction.timestamp
+                    let table_data = TableData {
+                        schema: (*NATIVE_STAKE_WITHDRAWAL_SCHEMA).clone(),
+                        table_name: NATIVE_STAKE_WITHDRAWAL_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeStake(
+                            NativeStakeDatum::Withdrawal(
+                                NativeStakeWithdrawal {
+                                    transaction_hash: instruction.transaction_hash,
+                                    amount: lamports as i64,
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[key].push(withdrawal);
-                    } else {
-                        response[key] = vec![withdrawal];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }

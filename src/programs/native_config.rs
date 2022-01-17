@@ -1,23 +1,26 @@
-use std::collections::HashMap;
-use avro_rs::schema::Schema;
 use serde::Serialize;
 use solana_config_program::ConfigKeys;
 use solana_program::instruction::InstructionError;
 use solana_sdk::program_utils::limited_deserialize;
 use tracing::error;
 
-use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
+use crate::{TableData, Instruction};
 
 pub const PROGRAM_ADDRESS: &str = "Config1111111111111111111111111111111111111";
+
+#[derive(Serialize)]
+pub enum NativeConfigDatum {
+    None
+}
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
-    instruction: Instruction,
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+    instruction: Instruction
+) -> Option<Vec<TableData>> {
     let key_list_result = limited_deserialize::<ConfigKeys>(
         instruction.data.as_slice());
 

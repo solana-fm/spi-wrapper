@@ -1,17 +1,16 @@
 use avro_rs::schema::Schema;
-use std::collections::HashMap;
 use bincode::deserialize;
-use itertools::Itertools;
 use serde::Serialize;
 use solana_sdk::loader_instruction::LoaderInstruction;
 use tracing::error;
 
-use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
+use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "BPFLoader1111111111111111111111111111111111";
 pub const PROGRAM_ADDRESS_2: &str = "BPFLoader2111111111111111111111111111111111";
 
 pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+
 lazy_static! {
     pub static ref NATIVE_BPF_LOADER_WRITE_SCHEMA: Schema = Schema::parse_str(
         r#"
@@ -29,6 +28,11 @@ lazy_static! {
     .unwrap();
 }
 
+#[derive(Serialize)]
+pub enum BpfLoaderDatum {
+    NativeBpfWrite(NativeBpfWrite),
+}
+
 /// Struct tables
 #[derive(Serialize)]
 pub struct NativeBpfWrite {
@@ -37,51 +41,38 @@ pub struct NativeBpfWrite {
     /// Program Involved
     pub program: String,
     /// Wen exit?
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
     _instruction: Instruction
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+) -> Option<Vec<TableData>> {
     let bpf_loader_dr = deserialize::<LoaderInstruction>(
         &_instruction.data);
 
     return match bpf_loader_dr {
         Ok(ref bld) => {
             let deserialized_bpf_loader = bld.clone();
-            let mut response: HashMap<(String, Schema), Vec<T>> = HashMap::new();
+            let mut response: Vec<TableData> = Vec::new();
             return match deserialized_bpf_loader {
-                /// Write program data into an account
-                ///
-                /// # Account references
-                ///   0. [WRITE, SIGNER] Account to write to
-                // Write {
-                //     /// Offset at which to write the given bytes
-                //     offset: u32,
-                //
-                //     /// Serialized program data
-                //     #[serde(with = "serde_bytes")]
-                //     bytes: Vec<u8>,
-                // },
                 LoaderInstruction::Write { .. } => {
-                    let key =
-                        (NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(), *NATIVE_BPF_LOADER_WRITE_SCHEMA);
-                    let write_data = NativeBpfWrite {
-                        transaction_hash: _instruction.transaction_hash,
-                        program: _instruction.program,
-                        timestamp: _instruction.timestamp
+                    let native_bpf_write_table_data = TableData {
+                        schema: (*NATIVE_BPF_LOADER_WRITE_SCHEMA).clone(),
+                        table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::BpfLoader(BpfLoaderDatum::NativeBpfWrite(
+                            NativeBpfWrite {
+                                transaction_hash: _instruction.transaction_hash,
+                                program: _instruction.program,
+                                timestamp: _instruction.timestamp,
+                            }))]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(write_data);
-                    } else {
-                        response[&key] = vec![write_data];
-                    }
+                    response.push(native_bpf_write_table_data);
 
                     Some(response)
                 }
@@ -99,7 +90,7 @@ pub async fn fragment_instruction<T: Serialize>(
                     // })
                     None
                 }
-            }
+            };
         }
         Err(err) => {
             // If the instruction parsing is failing, bail out
@@ -108,5 +99,5 @@ pub async fn fragment_instruction<T: Serialize>(
 
             None
         }
-    }
+    };
 }

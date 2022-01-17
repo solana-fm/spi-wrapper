@@ -7,7 +7,7 @@ use solana_vote_program::vote_instruction::VoteInstruction;
 use solana_vote_program::vote_state::VoteAuthorize;
 use tracing::error;
 
-use crate::{Instruction, InstructionFunction, InstructionProperty, InstructionSet};
+use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "Vote111111111111111111111111111111111111111";
 
@@ -30,12 +30,20 @@ lazy_static! {
     .unwrap();
 }
 
+#[derive(Serialize)]
+pub enum VoteDatum {
+    NodeCommission(NodeCommission),
+    VoteAccountWithdrawal(VoteAccountWithdrawal)
+}
+
+#[derive(Serialize)]
 pub struct NodeCommission {
     pub node_pubkey: String,
     pub commission: i16,
     pub timestamp: i64,
 }
 
+#[derive(Serialize)]
 pub struct VoteAccountWithdrawal {
     pub account: String,
     pub amount: i64,
@@ -48,16 +56,17 @@ pub struct VoteAccountWithdrawal {
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-pub async fn fragment_instruction<T: Serialize>(
+pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction
-) -> Option<HashMap<(String, Schema), Vec<T>>> {
+) -> Option<Vec<TableData>> {
     // Deserialize the instruction
     let vdr: Result<VoteInstruction, InstructionError> = limited_deserialize(
         instruction.data.as_slice());
 
     return match vdr {
         Ok(ref di) => {
+            let mut response: Vec<TableData> = Vec::new();
             let deserialized_instruction = di.clone();
             match deserialized_instruction {
                 // TODO: Consider indexing the vote account initialisation.
@@ -72,19 +81,21 @@ pub async fn fragment_instruction<T: Serialize>(
                     //     invoke_context
                     //         .is_feature_active(&feature_set::check_init_vote_data::id()),
                     // );
-                    let key =
-                        (NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(), *NATIVE_VOTE_NODE_COMMISSION_SCHEMA);
-                    let node_commission = NodeCommission {
-                        node_pubkey: vote_init.node_pubkey.to_string(),
-                        commission: vote_init.commission as i16,
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_VOTE_NODE_COMMISSION_SCHEMA).clone(),
+                        table_name: NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeVote(
+                            VoteDatum::NodeCommission(
+                                NodeCommission {
+                                    node_pubkey: vote_init.node_pubkey.to_string(),
+                                    commission: vote_init.commission as i16,
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(node_commission);
-                    } else {
-                        response[&key] = vec![node_commission];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -114,19 +125,21 @@ pub async fn fragment_instruction<T: Serialize>(
                 }
                 VoteInstruction::UpdateCommission(commission) => {
                     // vote_state::update_commission(me, commission, &signers)
-                    let key =
-                        (NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(), *NATIVE_VOTE_NODE_COMMISSION_SCHEMA);
-                    let node_commission = NodeCommission {
-                        node_pubkey: instruction.accounts[0].account.clone(),
-                        commission: commission as i16,
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_VOTE_NODE_COMMISSION_SCHEMA).clone(),
+                        table_name: NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeVote(
+                            VoteDatum::NodeCommission(
+                                NodeCommission {
+                                    node_pubkey: instruction.accounts[0].account.clone(),
+                                    commission: commission as i16,
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(node_commission);
-                    } else {
-                        response[&key] = vec![node_commission];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
@@ -150,21 +163,23 @@ pub async fn fragment_instruction<T: Serialize>(
                     // let to = next_keyed_account(keyed_accounts)?;
                     // vote_state::withdraw(me, lamports, to, &signers)
                     // vote_state::update_commission(me, commission, &signers)
-                    let key =
-                        (NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(), *NATIVE_VOTE_NODE_COMMISSION_SCHEMA);
-                    let withdrawal = VoteAccountWithdrawal {
-                        account: instruction.accounts[0].account.clone(),
-                        amount: lamports as i64,
-                        recipient: instruction.accounts[1].account.clone(),
-                        withdraw_authority: instruction.accounts[2].account.clone(),
-                        timestamp: instruction.timestamp,
+                    let table_data = TableData {
+                        schema: (*NATIVE_VOTE_NODE_COMMISSION_SCHEMA).clone(),
+                        table_name: NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeVote(
+                            VoteDatum::VoteAccountWithdrawal(
+                                VoteAccountWithdrawal {
+                                    account: instruction.accounts[0].account.clone(),
+                                    amount: lamports as i64,
+                                    recipient: instruction.accounts[1].account.clone(),
+                                    withdraw_authority: instruction.accounts[2].account.clone(),
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
                     };
 
-                    if response.contains(&key) {
-                        response[&key].push(withdrawal);
-                    } else {
-                        response[&key] = vec![withdrawal];
-                    }
+                    response.push(table_data);
 
                     Some(response)
                 }
