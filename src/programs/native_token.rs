@@ -5,7 +5,7 @@ use spl_token::instruction::TokenInstruction;
 use spl_token::solana_program::program_option::COption;
 use tracing::error;
 
-use crate::{Account, ACCOUNT_SCHEMA, ACCOUNT_TABLE_NAME, AccountAuthState, Instruction, NativeAssociatedTokenAccountDatum, NativeSystemDatum, TableData, TypedDatum};
+use crate::{Account, AccountAuthState, Instruction, NativeAssociatedTokenAccountDatum, NativeSystemDatum, TableData, TypedDatum};
 
 use crate::programs::native_associated_token_account::{NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE, NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA, NewAssociatedTokenAccount};
 use crate::programs::native_system::{AccountCreation, NATIVE_ACCOUNT_CREATION_SCHEMA, NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE};
@@ -195,7 +195,6 @@ pub async fn fragment_instruction(
 
                     Some(response)
                 }
-                /// Store an ATA.
                 TokenInstruction::InitializeAccount => {
                     // msg!("Instruction: InitializeAccount");
                     // Self::process_initialize_account(accounts)

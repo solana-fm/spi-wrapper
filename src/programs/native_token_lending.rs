@@ -1,6 +1,4 @@
 use avro_rs::Schema;
-use std::collections::HashMap;
-use itertools::Itertools;
 use serde::Serialize;
 use solana_program::program_error::ProgramError;
 use solana_sdk::pubkey::Pubkey;
@@ -287,8 +285,6 @@ pub async fn fragment_instruction(
 
                     Some(response)
                 }
-                /// Sample transaction
-                /// https://explorer.solana.com/tx/5Tmy1U59GFJD3sLe98WnKUksz3EHGmBqZKH53oBZhXdXEHcKu3hDhuFraJ43H8c1ezJDjuzZcu14EwcRJGEM4WSj
                 LendingInstruction::InitReserve {
                     liquidity_amount,
                     config, // TODO: Index Reserve Config
@@ -533,7 +529,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Obligation(
                                 Obligation {
-                                    obligation_type: ObligationType::Liquidate as i16,
+                                    obligation_type: ObligationType::FlashLoan as i16,
                                     source: instruction.accounts[0].account.to_string(),
                                     destination: instruction.accounts[1].account.to_string(),
                                     amount: -1 * (amount as i64),

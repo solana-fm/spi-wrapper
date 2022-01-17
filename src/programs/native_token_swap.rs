@@ -1,11 +1,6 @@
 use avro_rs::Schema;
-use itertools::Itertools;
-use std::collections::HashMap;
 use serde::Serialize;
-use spl_token_swap::curve::base::CurveType;
 use spl_token_swap::instruction::{unpack, SwapInstruction};
-use spl_token_swap::solana_program::program_error::ProgramError;
-use tracing::error;
 
 use crate::{Instruction, TableData};
 use crate::programs::native_token::*;

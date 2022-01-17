@@ -1,10 +1,8 @@
-use std::collections::HashMap;
 use avro_rs::Schema;
 use serde::Serialize;
 use solana_program::instruction::InstructionError;
 use solana_sdk::program_utils::limited_deserialize;
 use solana_vote_program::vote_instruction::VoteInstruction;
-use solana_vote_program::vote_state::VoteAuthorize;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};

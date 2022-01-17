@@ -1,4 +1,3 @@
-use sha3::Digest;
 use libsecp256k1::PublicKey;
 use serde::Serialize;
 use solana_program::instruction::CompiledInstruction;

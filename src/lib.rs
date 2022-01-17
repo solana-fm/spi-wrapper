@@ -3,12 +3,9 @@ extern crate lazy_static;
 
 mod programs;
 
-use std::any::Any;
 use avro_rs::{Codec, Writer, Schema};
-use itertools::Itertools;
 use serde::{Serialize, Deserialize};
 use solana_sdk::instruction::CompiledInstruction;
-use std::collections::{BTreeMap, HashMap};
 use serde::de::DeserializeOwned;
 use solana_sdk::transaction::Transaction;
 use tokio::spawn;
@@ -241,14 +238,10 @@ pub async fn process(
                         crate::programs::serum_market::fragment_instruction(instruction)
                             .await
                     }
-                    // programs::native_vote::PROGRAM_ADDRESS => {
-                    //     crate::programs::native_vote::fragment_instruction(instruction)
-                    //         .await
-                    // }
-                    // programs::solend_token_lending::PROGRAM_ADDRESS => {
-                    //     crate::programs::solend_token_lending::fragment_instruction(instruction)
-                    //         .await
-                    // }
+                    programs::native_vote::PROGRAM_ADDRESS => {
+                        crate::programs::native_vote::fragment_instruction(instruction)
+                            .await
+                    }
                     _ => {
                         info!("Looks like this program ({}) is an unsupported one.",
                             instruction.program.to_string());

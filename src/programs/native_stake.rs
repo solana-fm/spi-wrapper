@@ -169,12 +169,6 @@ pub async fn fragment_instruction(
                     // Nothing to index here, just telling us who delegated the stake.
                     None
                 }
-                /// Split u64 tokens and stake off a stake account into another stake account.
-                ///
-                /// # Account references
-                ///   0. `[WRITE]` Stake account to be split; must be in the Initialized or Stake state
-                ///   1. `[WRITE]` Uninitialized stake account that will take the split-off amount
-                ///   2. `[SIGNER]` Stake authority
                 StakeInstruction::Split(lamports) => {
                     let table_data = TableData {
                         schema: (*NATIVE_STAKE_SPLIT_SCHEMA).clone(),

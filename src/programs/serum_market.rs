@@ -1,6 +1,4 @@
-use std::collections::HashMap;
 use avro_rs::Schema;
-use itertools::Itertools;
 use serde::Serialize;
 use serum_dex::instruction::MarketInstruction;
 use tracing::error;
@@ -214,20 +212,6 @@ pub struct FeeSweep {
     pub fee_authority: String,
     pub fee_receivable_account: String,
     pub timestamp: i64,
-}
-
-#[derive(Serialize)]
-pub enum OrderType {
-    Limit = 0,
-    ImmediateOrCancel = 1,
-    PostOnly = 2,
-}
-
-#[derive(Serialize)]
-pub enum SelfTradeBehavior {
-    DecrementTake = 0,
-    CancelProvide = 1,
-    AbortTransaction = 2,
 }
 
 #[derive(Serialize)]
