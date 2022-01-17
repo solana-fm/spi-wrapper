@@ -565,7 +565,8 @@ pub async fn fragment_instruction(
                 ProgramError::BorshIoError(_) => "BorshIoError".to_string(),
                 ProgramError::AccountNotRentExempt => "AccountNotRentExempt".to_string(),
                 ProgramError::UnsupportedSysvar => "UnsupportedSysvar".to_string(),
-                ProgramError::IllegalOwner => "IllegalOwner".to_string()
+                ProgramError::IllegalOwner => "IllegalOwner".to_string(),
+                ProgramError::AccountsDataBudgetExceeded => "AccountsDataBudgetExceeded".to_string()
             };
 
             error!("{} Reason: {}",
