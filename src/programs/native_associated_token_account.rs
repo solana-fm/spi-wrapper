@@ -1,9 +1,45 @@
+use avro_rs::schema::Schema;
 use bincode::deserialize;
+use serde::Serialize;
 use tracing::error;
 
-use crate::{InstructionProperty, Instruction, InstructionSet, InstructionFunction};
+use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
+pub const NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE: &str = "native_associated_token_account_new";
+lazy_static! {
+    pub static ref NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "native_new_associated_token_account",
+        "fields": [
+            {"name": "transaction_hash", "type": "string"},
+            {"name": "ata_address", "type": "string"},
+            {"name": "wallet_address", "type": "string"},
+            {"name": "mint", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+}
+
+#[derive(Serialize)]
+pub enum NativeAssociatedTokenAccountDatum {
+    NewAccount(NewAssociatedTokenAccount)
+}
+
+/// Struct tables
+#[derive(Serialize)]
+pub struct NewAssociatedTokenAccount {
+    pub transaction_hash: String,
+    pub ata_address: String,
+    pub wallet_address: String,
+    pub mint: String,
+    pub timestamp: i64
+}
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
@@ -11,13 +47,14 @@ pub const PROGRAM_ADDRESS: &str = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 /// The function should return a list of instruction properties extracted from an instruction.
 pub async fn fragment_instruction(
     // The instruction
-    instruction: Instruction,
-) -> Option<InstructionSet> {
+    instruction: Instruction
+) -> Option<Vec<TableData>> {
     let atadr = deserialize::<solana_program::instruction::Instruction>(
         &instruction.data.as_slice());
 
     return match atadr {
         Ok(ref ati) => {
+            let mut response: Vec<TableData> = Vec::new();
             let associated_token_instruction = ati.clone();
             // Create an associated token account for the given wallet address and token mint
             //
@@ -30,83 +67,25 @@ pub async fn fragment_instruction(
             //   4. `[]` System program
             //   5. `[]` SPL Token program
             //   6. `[]` Rent sysvar
-            let account_sets: Vec<Vec<InstructionProperty>> = associated_token_instruction.accounts
-                .into_iter().map(|am| {
-                vec![
-                    InstructionProperty {
-                        tx_instruction_id: instruction.tx_instruction_id.clone(),
-                        transaction_hash: instruction.transaction_hash.clone(),
-                        parent_index: instruction.parent_index.clone(),
-                        key: "pubkey".to_string(),
-                        value: am.pubkey.to_string(),
-                        parent_key: "".to_string(),
-                        timestamp: instruction.timestamp.clone(),
-                    },
-                    InstructionProperty {
-                        tx_instruction_id: instruction.tx_instruction_id.clone(),
-                        transaction_hash: instruction.transaction_hash.clone(),
-                        parent_index: instruction.parent_index.clone(),
-                        key: "is_signer".to_string(),
-                        value: if am.is_signer {
-                            "1".to_string()
-                        } else {
-                            "0".to_string()
-                        },
-                        parent_key: "".to_string(),
-                        timestamp: instruction.timestamp.clone(),
-                    },
-                    InstructionProperty {
-                        tx_instruction_id: instruction.tx_instruction_id.clone(),
-                        transaction_hash: instruction.transaction_hash.clone(),
-                        parent_index: instruction.parent_index.clone(),
-                        key: "is_writable".to_string(),
-                        value: if am.is_writable {
-                            "1".to_string()
-                        } else {
-                            "0".to_string()
-                        },
-                        parent_key: "".to_string(),
-                        timestamp: instruction.timestamp.clone(),
-                    }
-                ]
-            }).collect();
+            let table_data = TableData {
+                schema: (*NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA).clone(),
+                table_name: NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(),
+                data: vec![TypedDatum::NativeAssocicatedTokenAccount(
+                    NativeAssociatedTokenAccountDatum::NewAccount(
+                        NewAssociatedTokenAccount {
+                            transaction_hash: instruction.transaction_hash.to_string(),
+                            ata_address: associated_token_instruction.accounts[1].pubkey.to_string(),
+                            wallet_address: associated_token_instruction.accounts[2].pubkey.to_string(),
+                            mint: associated_token_instruction.accounts[3].pubkey.to_string(),
+                            timestamp: instruction.timestamp
+                        }
+                    )
+                )]
+            };
 
-            let mut properties = vec![
-                InstructionProperty {
-                    tx_instruction_id: instruction.tx_instruction_id.clone(),
-                    transaction_hash: instruction.transaction_hash.clone(),
-                    parent_index: instruction.parent_index.clone(),
-                    key: "data".to_string(),
-                    value: bs58::encode(associated_token_instruction.data).into_string(),
-                    parent_key: "".to_string(),
-                    timestamp: instruction.timestamp.clone(),
-                },
-                InstructionProperty {
-                    tx_instruction_id: instruction.tx_instruction_id.clone(),
-                    transaction_hash: instruction.transaction_hash.clone(),
-                    parent_index: instruction.parent_index.clone(),
-                    key: "program_id".to_string(),
-                    value: associated_token_instruction.program_id.to_string(),
-                    parent_key: "".to_string(),
-                    timestamp: instruction.timestamp.clone(),
-                }
-            ];
+            response.push(table_data);
 
-            for ac in account_sets {
-                properties.extend(ac);
-            }
-
-            Some(InstructionSet {
-                function: InstructionFunction {
-                    tx_instruction_id: instruction.tx_instruction_id.clone(),
-                    transaction_hash: instruction.transaction_hash.clone(),
-                    parent_index: instruction.parent_index.clone(),
-                    program: instruction.program.clone(),
-                    function_name: "".to_string(),
-                    timestamp: instruction.timestamp
-                },
-                properties
-            })
+            Some(response)
         }
         Err(err) => {
             // If the instruction parsing is failing, bail out
