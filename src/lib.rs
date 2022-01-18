@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-mod programs;
+pub mod programs;
 
 use avro_rs::{Codec, Writer, Schema};
 use serde::{Serialize, Deserialize};
