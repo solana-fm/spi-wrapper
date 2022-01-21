@@ -412,7 +412,11 @@ pub async fn fragment_instruction(
                                     mint: None,
                                     amount: -1,
                                     decimals: None,
-                                    owner: instruction.accounts[2].account.to_string(),
+                                    owner: if instruction.accounts.len() >= 3 {
+                                        instruction.accounts[2].account.to_string()
+                                    } else {
+                                        instruction.accounts[1].account.to_string()
+                                    },
                                     timestamp: instruction.timestamp
                                 }
                             )
