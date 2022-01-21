@@ -1,5 +1,6 @@
 use avro_rs::Schema;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use solana_program::program_error::ProgramError;
 use spl_token::instruction::TokenInstruction;
 use spl_token::solana_program::program_option::COption;
@@ -141,6 +142,14 @@ pub struct MintDelegation {
     pub amount: i64,
     pub decimals: Option<i16>,
     pub timestamp: i64
+}
+
+// Native json data
+#[derive(Deserialize)]
+pub struct TransferDatum {
+    pub source: String,
+    pub destination: String,
+    pub amount: u64
 }
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
@@ -340,18 +349,34 @@ pub async fn fragment_instruction(
                     //         }
                     //     ]
                     // })
-                    let table_data = TableData {
+                    // Attempt to review the data.
+                    let data_obj_res: TransferDatum =
+                        serde_json::de::from_slice::<TransferDatum>(instruction.data.as_slice()).unwrap();
+
+                    let mut table_data = TableData {
                         schema: (*NATIVE_TOKEN_MINT_MOVEMENT_SCHEMA).clone(),
                         table_name: NATIVE_TOKEN_MINT_MOVEMENT_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Movement(
                                 MintMovement {
-                                    destination: instruction.accounts[0].account.to_string(),
-                                    source: instruction.accounts[1].account.to_string(),
+                                    destination: if instruction.accounts.len() == 3 {
+                                        instruction.accounts[0].account.to_string()
+                                    } else {
+                                        data_obj_res.destination
+                                    },
+                                    source: if instruction.accounts.len() == 3 {
+                                        instruction.accounts[1].account.to_string()
+                                    } else {
+                                        data_obj_res.source
+                                    },
                                     mint: None,
                                     amount: amount as i64,
                                     decimals: None,
-                                    owner: instruction.accounts[2].account.to_string(),
+                                    owner: if instruction.accounts.len() == 3 {
+                                        instruction.accounts[2].account.to_string()
+                                    } else {
+                                        "".to_string()
+                                    },
                                     timestamp: instruction.timestamp
                                 }
                             )

@@ -2,6 +2,7 @@ use avro_rs::Schema;
 use serde::Serialize;
 use solana_program::instruction::InstructionError;
 use solana_sdk::program_utils::limited_deserialize;
+use solana_sdk::transaction::Transaction;
 use solana_vote_program::vote_instruction::VoteInstruction;
 use tracing::error;
 
@@ -56,7 +57,8 @@ pub struct VoteAccountWithdrawal {
 /// The function should return a list of instruction properties extracted from an instruction.
 pub async fn fragment_instruction(
     // The instruction
-    instruction: Instruction
+    instruction: Instruction,
+    transaction: Transaction
 ) -> Option<Vec<TableData>> {
     // Deserialize the instruction
     let vdr: Result<VoteInstruction, InstructionError> = limited_deserialize(
