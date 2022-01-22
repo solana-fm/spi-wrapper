@@ -6,7 +6,7 @@ use tracing::error;
 use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
-pub const NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE: &str = "native_associated_token_account_new";
+pub const NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE: &str = "native_associated_token_accounts";
 lazy_static! {
     pub static ref NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA: Schema = Schema::parse_str(
         r#"

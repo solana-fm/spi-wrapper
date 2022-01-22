@@ -9,7 +9,7 @@ use tracing::error;
 use crate::{Account, AccountAuthState, Instruction, NativeAssociatedTokenAccountDatum, NativeSystemDatum, TableData, TypedDatum};
 
 use crate::programs::native_associated_token_account::{NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE, NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA, NewAssociatedTokenAccount};
-use crate::programs::native_system::{AccountCreation, NATIVE_ACCOUNT_CREATION_SCHEMA, NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE};
+use crate::programs::native_system::{AccountCreation, NATIVE_ACCOUNT_CREATION_SCHEMA, NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA, NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE};
 
 pub const PROGRAM_ADDRESS: &str = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
@@ -182,8 +182,8 @@ pub async fn fragment_instruction(
                     //     freeze_authority,
                     // )
                     let table_data = TableData {
-                        schema: (*NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA).clone(),
-                        table_name: NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(),
+                        schema: (*NATIVE_TOKEN_MINT_STATE_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_STATE_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::State(
                                 MintState {
@@ -307,7 +307,7 @@ pub async fn fragment_instruction(
                     //     ]
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(

@@ -14,7 +14,7 @@ pub const NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE: &str = "native_system_account_t
 pub const NATIVE_SYSTEM_NONCE_ADVANCEMENTS_TABLE: &str = "native_system_nonce_advancements";
 pub const NATIVE_SYSTEM_NONCE_WITHDRAWALS_TABLE: &str = "native_system_nonce_withdrawals";
 lazy_static! {
-    pub static ref NATIVE_ACCOUNT_CREATION_SCHEMA: Schema = Schema::parse_str(
+    pub static ref NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
@@ -28,7 +28,7 @@ lazy_static! {
     "#
     )
     .unwrap();
-    pub static ref NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA: Schema = Schema::parse_str(
+    pub static ref NATIVE_SYSTEM_ACCOUNT_ASSIGNMENT_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
@@ -42,7 +42,7 @@ lazy_static! {
     "#
     )
     .unwrap();
-    pub static ref NATIVE_ACCOUNT_TRANSFER_SCHEMA: Schema = Schema::parse_str(
+    pub static ref NATIVE_SYSTEM_ACCOUNT_TRANSFER_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
@@ -190,7 +190,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(
@@ -218,7 +218,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountAssignment(
@@ -247,7 +247,7 @@ pub async fn fragment_instruction(
                     // })
                     // check_num_system_accounts(&instruction.accounts, 2)?;
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_TRANSFER_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_TRANSFER_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountTransfer(
@@ -286,7 +286,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(
@@ -437,7 +437,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountAssignment(
@@ -472,7 +472,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_TRANSFER_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_TRANSFER_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountTransfer(
