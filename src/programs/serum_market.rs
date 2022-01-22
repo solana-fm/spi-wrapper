@@ -346,7 +346,11 @@ pub async fn fragment_instruction(
                                 paying_account: instruction.accounts[3].account.to_string(),
                                 coin_vault: instruction.accounts[5].account.to_string(),
                                 pc_vault: instruction.accounts[6].account.to_string(),
-                                msrm_discount_account: Some(instruction.accounts[9].account.to_string()),
+                                msrm_discount_account: if instruction.accounts.len() > 9 {
+                                    Some(instruction.accounts[9].account.to_string())
+                                } else {
+                                    None
+                                },
                                 timestamp: instruction.timestamp
                             }
                         )
@@ -505,7 +509,7 @@ pub async fn fragment_instruction(
                                 paying_account: instruction.accounts[3].account.to_string(),
                                 coin_vault: instruction.accounts[5].account.to_string(),
                                 pc_vault: instruction.accounts[6].account.to_string(),
-                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                msrm_discount_account: if instruction.accounts.len() >= 13 {
                                     Some(instruction.accounts[9].account.to_string())
                                 } else {
                                     None
@@ -538,7 +542,7 @@ pub async fn fragment_instruction(
                                 paying_account: instruction.accounts[6].account.to_string(),
                                 coin_vault: instruction.accounts[8].account.to_string(),
                                 pc_vault: instruction.accounts[9].account.to_string(),
-                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                msrm_discount_account: if instruction.accounts.len() >= 13 {
                                     Some(instruction.accounts[12].account.to_string())
                                 } else {
                                     None
@@ -630,7 +634,7 @@ pub async fn fragment_instruction(
                                 pc_wallet_account: instruction.accounts[6].account.to_string(),
                                 coin_vault: instruction.accounts[8].account.to_string(),
                                 pc_vault: instruction.accounts[9].account.to_string(),
-                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                msrm_discount_account: if instruction.accounts.len() >= 13 {
                                     Some(instruction.accounts[12].account.to_string())
                                 } else {
                                     None
