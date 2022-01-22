@@ -58,7 +58,6 @@ lazy_static! {
         "fields": [
             {"name": "source", "type": "string"},
             {"name": "destination", "type": "string"},
-            {"name": "mint", "type": ["null", "string"]},
             {"name": "amount", "type": "long"},
             {"name": "decimals", "type": ["null", "int"]},
             {"name": "owner", "type": "string"},
@@ -77,7 +76,6 @@ lazy_static! {
             {"name": "delegation_type", "type": "int"},
             {"name": "source", "type": "string"},
             {"name": "delegate", "type": "string"},
-            {"name": "mint", "type": ["null", "string"]},
             {"name": "owner", "type": "string"},
             {"name": "amount", "type": "long"},
             {"name": "decimals", "type": ["null", "int"]},
@@ -119,7 +117,6 @@ pub struct MintInflation {
 pub struct MintMovement {
     pub source: String,
     pub destination: String,
-    pub mint: Option<String>,
     pub amount: i64,
     pub decimals: Option<i16>,
     pub owner: String,
@@ -137,7 +134,6 @@ pub struct MintDelegation {
     pub delegation_type: i16,
     pub source: String,
     pub delegate: String,
-    pub mint: Option<String>,
     pub owner: String,
     pub amount: i64,
     pub decimals: Option<i16>,
@@ -357,7 +353,6 @@ pub async fn fragment_instruction(
                                 MintMovement {
                                     destination: instruction.accounts[0].account.to_string(),
                                     source: instruction.accounts[1].account.to_string(),
-                                    mint: None,
                                     amount: amount as i64,
                                     decimals: None,
                                     owner: instruction.accounts[2].account.to_string(),
@@ -383,7 +378,6 @@ pub async fn fragment_instruction(
                                     delegation_type: DelegationType::Approve as i16,
                                     delegate: instruction.accounts[1].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
-                                    mint: None,
                                     amount: amount as i64,
                                     decimals: None,
                                     owner: instruction.accounts[2].account.to_string(),
@@ -409,7 +403,6 @@ pub async fn fragment_instruction(
                                     delegation_type: DelegationType::Revoke as i16,
                                     delegate: instruction.accounts[1].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
-                                    mint: None,
                                     amount: -1,
                                     decimals: None,
                                     owner: if instruction.accounts.len() >= 3 {
@@ -534,7 +527,6 @@ pub async fn fragment_instruction(
                                 MintMovement {
                                     destination: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
-                                    mint: Some(instruction.accounts[1].account.to_string()),
                                     amount: amount as i64,
                                     decimals: Some(decimals as i16),
                                     owner: instruction.accounts[3].account.to_string(),
@@ -560,7 +552,6 @@ pub async fn fragment_instruction(
                                     delegation_type: DelegationType::Approve as i16,
                                     delegate: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
-                                    mint: Some(instruction.accounts[1].account.to_string()),
                                     amount: amount as i64,
                                     decimals: Some(decimals as i16),
                                     owner: instruction.accounts[3].account.to_string(),
