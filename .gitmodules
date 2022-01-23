@@ -1,3 +1,6 @@
 [submodule "submodules/solana-program-library"]
 	path = submodules/solana-program-library
 	url = https://github.com/solana-labs/solana-program-library.git
+[submodule "submodules/serum-dex"]
+	path = submodules/serum-dex
+	url = https://github.com/project-serum/serum-dex.git
