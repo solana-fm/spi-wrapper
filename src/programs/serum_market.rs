@@ -689,6 +689,6 @@ pub async fn fragment_instruction(
         };
     }
 
-    error!("{}", "[processors/programs/serum/market] FATAL: Unrecognised instruction.".to_string());
+    error!("{}{}", "[processors/programs/serum/market] FATAL: Unrecognised instruction for tx: ".to_string(), instruction.transaction_hash);
     None
 }
