@@ -109,7 +109,7 @@ pub struct AccountCreation {
     /// The owner of the account.
     pub owner: String,
     /// Account state at the recorded timestamp.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -119,7 +119,7 @@ pub struct AccountAssignment {
     /// The owner program of the account.
     pub program: String,
     /// Account state at the recorded timestamp.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -131,7 +131,7 @@ pub struct AccountTransfer {
     /// The amount of this transfer.
     pub amount: i64,
     /// Account state at the recorded timestamp.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -141,7 +141,7 @@ pub struct NonceAdvancement {
     /// The account approving this advancement.
     pub nonce_authority: String,
     /// The time this advancement was done.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -155,7 +155,7 @@ pub struct NonceWithdrawal {
     /// The amount withdrawn.
     pub amount: i64,
     /// The time this advancement was done.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
@@ -202,7 +202,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -229,7 +229,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -259,7 +259,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -298,7 +298,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -327,7 +327,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -361,7 +361,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -448,7 +448,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -484,7 +484,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -493,11 +493,13 @@ pub async fn fragment_instruction(
                 }
             }
         }
-        Err(_) => { // Error provided has no utility at the moment.
-            error!("{}", "[spi-wrapper/programs/native_system] Error deserializing this system \
-        instruction!".to_string());
+        Err(_) => {
+            // Error provided has no utility at the moment.
+            error!("[spi-wrapper/programs/native_system] Error deserializing this system \
+        instruction! tx: {}, tx_instruction_id: {}, parent_idx: {}", instruction.transaction_hash,
+        instruction.tx_instruction_id, instruction.parent_index);
 
             None
         }
-    }
+    };
 }
