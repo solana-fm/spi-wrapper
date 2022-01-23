@@ -52,7 +52,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_order",
         "fields": [
-            {"name": "client_order_id", "type": "long"},
+            {"name": "client_order_id", "type": "string"},
             {"name": "order_type", "type": "int"},
             {"name": "side", "type": "int"},
             {"name": "limit", "type": ["null", "int"]},
@@ -217,7 +217,7 @@ pub struct FeeSweep {
 #[derive(Serialize)]
 pub struct SerumOrder {
     /// Legacy = client_id
-    pub client_order_id: i64,
+    pub client_order_id: String,
     pub order_type: i16,
     pub side: i16,
     pub limit: Option<i16>,
@@ -335,7 +335,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
-                                client_order_id: order.client_id as i64,
+                                client_order_id: order.client_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
                                 limit: None,
@@ -498,7 +498,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
-                                client_order_id: order.client_id as i64,
+                                client_order_id: order.client_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
                                 limit: None,
@@ -531,7 +531,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
-                                client_order_id: order.client_order_id as i64,
+                                client_order_id: order.client_order_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
                                 limit: Some(order.limit as i16),
