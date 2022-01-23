@@ -20,6 +20,7 @@ lazy_static! {
         "type": "record",
         "name": "native_account_creation",
         "fields": [
+            {"name": "address", "type": "string"},
             {"name": "lamports", "type": "long"},
             {"name": "owner", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
