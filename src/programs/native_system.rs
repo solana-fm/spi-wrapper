@@ -166,7 +166,7 @@ pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction
 ) -> Option<Vec<TableData>> {
-    let sdr = deserialize::<SystemInstruction>(
+    let sdr = serde_json::de::from_slice::<SystemInstruction>(
         &instruction.data.as_slice());
 
     return match sdr {
