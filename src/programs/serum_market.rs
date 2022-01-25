@@ -280,7 +280,7 @@ pub async fn fragment_instruction(
         instruction.data.as_slice())
         .ok_or(solana_program::program_error::ProgramError::InvalidArgument);
 
-    return if let Some(market_instruction) = unpack_result {
+    return if let Ok(market_instruction) = unpack_result {
         let mut response: Vec<TableData> = Vec::new();
 
         return match market_instruction {
