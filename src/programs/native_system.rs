@@ -2,6 +2,7 @@ use avro_rs::schema::Schema;
 use bincode::{deserialize};
 use serde::Serialize;
 use solana_program::system_instruction::SystemInstruction;
+use solana_sdk::transaction::Transaction;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
@@ -497,7 +498,7 @@ pub async fn fragment_instruction(
             // Error provided has no utility at the moment.
             error!("[spi-wrapper/programs/native_system] Error deserializing this system \
         instruction! tx: {}, tx_instruction_id: {}, parent_idx: {}", instruction.transaction_hash,
-        instruction.tx_instruction_id, instruction.parent_index);
+                                     instruction.tx_instruction_id, instruction.parent_index);
 
             None
         }
