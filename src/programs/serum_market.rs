@@ -277,9 +277,10 @@ pub async fn fragment_instruction(
 ) -> Option<Vec<TableData>> {
     // Unpack the instruction via the spl_token_swap library
     let unpack_result = MarketInstruction::unpack(
-        instruction.data.as_slice());
+        instruction.data.as_slice())
+        .ok_or(solana_program::program_error::ProgramError::InvalidArgument);
 
-    if let Some(market_instruction) = unpack_result {
+    return if let Some(market_instruction) = unpack_result {
         let mut response: Vec<TableData> = Vec::new();
 
         return match market_instruction {
@@ -687,10 +688,10 @@ pub async fn fragment_instruction(
             }
             MarketInstruction::ConsumeEventsPermissioned(_) => None
         };
-    }
-
-    error!("[processors/programs/serum_market] FATAL: Unrecognised instruction for tx: {} \
+    } else {
+        error!("[processors/programs/serum_market] FATAL: Unrecognised instruction for tx: {} \
     with tx_instruction_id: {} and parent_idx: {}", instruction.transaction_hash,
         instruction.tx_instruction_id, instruction.parent_index);
-    None
+        None
+    }
 }
