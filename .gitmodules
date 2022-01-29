@@ -4,3 +4,9 @@
 [submodule "submodules/serum-dex"]
 	path = submodules/serum-dex
 	url = https://github.com/project-serum/serum-dex.git
+[submodule "submodules/step-program-library"]
+	path = submodules/step-program-library
+	url = https://github.com/step-finance/solana-program-library.git
+[submodule "submodules/--help"]
+	path = submodules/--help
+	url = https://github.com/step-finance/solana-program-library.git
