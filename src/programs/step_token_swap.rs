@@ -1,7 +1,6 @@
 use avro_rs::Schema;
 use serde::Serialize;
 use solana_program::program_error::ProgramError;
-use spl_token::instruction::initialize_account;
 use step_token_swap::instruction::{unpack, SwapInstruction, DeregisterPool};
 use tracing::error;
 
@@ -345,7 +344,7 @@ pub async fn fragment_instruction(
     instruction: Instruction
 ) -> Option<Vec<TableData>> {
     // Unpack the instruction via the spl_token_swap library
-    let unpack_result = unpack::<SwapInstruction>(
+    let unpack_result = step_token_swap::instruction::unpack::<step_token_swap::instruction::SwapInstruction>(
         instruction.data.as_slice());
 
     return match unpack_result {
