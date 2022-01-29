@@ -24,6 +24,7 @@ use crate::programs::native_token_lending::TokenLendingDatum;
 use crate::programs::native_token_swap::NativeTokenSwapDatum;
 use crate::programs::native_vote::VoteDatum;
 use crate::programs::serum_market::SerumMarketDatum;
+use crate::programs::step_token_swap::StepTokenSwapDatum;
 
 #[derive(Clone, Serialize)]
 pub struct AccountInstruction {
@@ -126,7 +127,8 @@ pub enum TypedDatum {
     NativeTokenSwap(NativeTokenSwapDatum),
     NativeVote(VoteDatum),
     SerumMarket(SerumMarketDatum),
-    SolendTokenLending
+    SolendTokenLending,
+    StepTokenSwap(StepTokenSwapDatum)
 }
 
 #[derive(Serialize)]
@@ -204,6 +206,10 @@ pub async fn process(
                     programs::native_vote::PROGRAM_ADDRESS => {
                         crate::programs::native_vote::fragment_instruction(instruction,
                                                                            tx)
+                            .await
+                    },
+                    programs::step_token_swap::PROGRAM_ADDRESS => {
+                        crate::programs::step_token_swap::fragment_instruction(instruction)
                             .await
                     }
                     _ => {
