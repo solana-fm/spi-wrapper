@@ -51,6 +51,7 @@ solana-vote-program = "1.8.14"
 spl-token = { version = "3.2.0", features = ["no-entrypoint"] }
 spl-token-lending = { path = "submodules/solana-program-library/token-lending/program", version = "=0.1.0", features = ["no-entrypoint"]}
 spl-token-swap = "2.1.0"
+step-token-lending = { path = "submodules/step-program-library/token-swap/program", package = "spl-token-swap" }
 tokio = { version = "1", features = ["rt"] }
 tracing = "0.1.5"
 arrayref = "0.3.6"
