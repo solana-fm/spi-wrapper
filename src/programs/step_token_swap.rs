@@ -344,7 +344,7 @@ pub async fn fragment_instruction(
     instruction: Instruction
 ) -> Option<Vec<TableData>> {
     // Unpack the instruction via the spl_token_swap library
-    let unpack_result = step_token_swap::instruction::unpack::<step_token_swap::instruction::SwapInstruction>(
+    let unpack_result = step_token_swap::instruction::SwapInstruction::unpack(
         instruction.data.as_slice());
 
     return match unpack_result {
@@ -505,79 +505,81 @@ pub async fn fragment_instruction(
                 }
                 // TODO: Derive which token is deposited via inner instructions?
                 SwapInstruction::DepositSingleTokenTypeExactAmountIn(dstteai) => {
-                    response.push(TableData {
-                        schema: (*STEP_TOKEN_SWAP_PEG_FLOW_SCHEMA).clone(),
-                        table_name: STEP_TOKEN_SWAP_PEG_FLOW_TABLE.to_string(),
-                        data: vec![
-                            TypedDatum::StepTokenSwap(
-                                Flow(PegFlow {
-                                    flow_type: 0,
-                                    peg_pda: instruction.accounts[0].account.to_string(),
-                                    swap_authority: instruction.accounts[1].account.to_string(),
-                                    user: instruction.accounts[2].account.to_string(),
-                                    source: instruction.accounts[3].account.to_string(),
-                                    target: instruction.accounts[4].account.to_string(),
-                                    pool_account: instruction.accounts[7].account.to_string(),
-                                    pool_token_amount: dstteai.source_token_amount as i64,
-                                    token_amount: dstteai.minimum_pool_token_amount as i64,
-                                    pool_mint_account: instruction.accounts[6].account.to_string(),
-                                    pool_fee_account: None,
-                                    timestamp: instruction.timestamp,
-                                })
-                            )
-                        ],
-                    });
-
-                    Some(response)
+                    // response.push(TableData {
+                    //     schema: (*STEP_TOKEN_SWAP_PEG_FLOW_SCHEMA).clone(),
+                    //     table_name: STEP_TOKEN_SWAP_PEG_FLOW_TABLE.to_string(),
+                    //     data: vec![
+                    //         TypedDatum::StepTokenSwap(
+                    //             Flow(PegFlow {
+                    //                 flow_type: 0,
+                    //                 peg_pda: instruction.accounts[0].account.to_string(),
+                    //                 swap_authority: instruction.accounts[1].account.to_string(),
+                    //                 user: instruction.accounts[2].account.to_string(),
+                    //                 source: instruction.accounts[3].account.to_string(),
+                    //                 target: instruction.accounts[4].account.to_string(),
+                    //                 pool_account: instruction.accounts[7].account.to_string(),
+                    //                 pool_token_amount: dstteai.source_token_amount as i64,
+                    //                 token_amount: dstteai.minimum_pool_token_amount as i64,
+                    //                 pool_mint_account: instruction.accounts[6].account.to_string(),
+                    //                 pool_fee_account: None,
+                    //                 timestamp: instruction.timestamp,
+                    //             })
+                    //         )
+                    //     ],
+                    // });
+                    //
+                    // Some(response)
+                    None
                 }
                 // TODO: Derive which token is withdrawn via inner instructions?
                 SwapInstruction::WithdrawSingleTokenTypeExactAmountOut(wstteao) => {
-                    response.push(TableData {
-                        schema: (*STEP_TOKEN_SWAP_PEG_SCHEMA).clone(),
-                        table_name: STEP_TOKEN_SWAP_PEG_TABLE.to_string(),
-                        data: vec![
-                            TypedDatum::StepTokenSwap(
-                                Flow(PegFlow {
-                                    flow_type: 1,
-                                    peg_pda: instruction.accounts[0].account.to_string(),
-                                    swap_authority: instruction.accounts[1].account.to_string(),
-                                    user: instruction.accounts[2].account.to_string(),
-                                    source: instruction.accounts[5].account.to_string(),
-                                    target: instruction.accounts[7].account.to_string(),
-                                    /// Maximum amount of pool tokens to burn. User receives an output of token A
-                                    /// or B based on the percentage of the pool tokens that are returned.
-                                    pool_token_amount: wstteao.maximum_pool_token_amount as i64,
-                                    /// Amount of token A or B to receive
-                                    token_amount: wstteao.destination_token_amount as i64,
-                                    pool_account: instruction.accounts[4].account.to_string(),
-                                    pool_mint_account: instruction.accounts[3].account.to_string(),
-                                    pool_fee_account: Some(instruction.accounts[8].account.to_string()),
-                                    timestamp: instruction.timestamp,
-                                })
-                            ),
-                            TypedDatum::StepTokenSwap(
-                                Flow(PegFlow {
-                                    flow_type: 1,
-                                    peg_pda: instruction.accounts[0].account.to_string(),
-                                    swap_authority: instruction.accounts[1].account.to_string(),
-                                    user: instruction.accounts[2].account.to_string(),
-                                    source: instruction.accounts[6].account.to_string(),
-                                    target: instruction.accounts[7].account.to_string(),
-                                    /// Maximum amount of pool tokens to burn. User receives an output of token A
-                                    /// or B based on the percentage of the pool tokens that are returned.
-                                    pool_token_amount: wstteao.maximum_pool_token_amount as i64,
-                                    /// Amount of token A or B to receive
-                                    token_amount: wstteao.destination_token_amount as i64,
-                                    pool_account: instruction.accounts[4].account.to_string(),
-                                    pool_mint_account: instruction.accounts[3].account.to_string(),
-                                    pool_fee_account: Some(instruction.accounts[8].account.to_string()),
-                                    timestamp: instruction.timestamp,
-                                })
-                            )
-                        ]
-                    });
-
-                    Some(response)
+                    // response.push(TableData {
+                    //     schema: (*STEP_TOKEN_SWAP_PEG_SCHEMA).clone(),
+                    //     table_name: STEP_TOKEN_SWAP_PEG_TABLE.to_string(),
+                    //     data: vec![
+                    //         TypedDatum::StepTokenSwap(
+                    //             Flow(PegFlow {
+                    //                 flow_type: 1,
+                    //                 peg_pda: instruction.accounts[0].account.to_string(),
+                    //                 swap_authority: instruction.accounts[1].account.to_string(),
+                    //                 user: instruction.accounts[2].account.to_string(),
+                    //                 source: instruction.accounts[5].account.to_string(),
+                    //                 target: instruction.accounts[7].account.to_string(),
+                    //                 /// Maximum amount of pool tokens to burn. User receives an output of token A
+                    //                 /// or B based on the percentage of the pool tokens that are returned.
+                    //                 pool_token_amount: wstteao.maximum_pool_token_amount as i64,
+                    //                 /// Amount of token A or B to receive
+                    //                 token_amount: wstteao.destination_token_amount as i64,
+                    //                 pool_account: instruction.accounts[4].account.to_string(),
+                    //                 pool_mint_account: instruction.accounts[3].account.to_string(),
+                    //                 pool_fee_account: Some(instruction.accounts[8].account.to_string()),
+                    //                 timestamp: instruction.timestamp,
+                    //             })
+                    //         ),
+                    //         TypedDatum::StepTokenSwap(
+                    //             Flow(PegFlow {
+                    //                 flow_type: 1,
+                    //                 peg_pda: instruction.accounts[0].account.to_string(),
+                    //                 swap_authority: instruction.accounts[1].account.to_string(),
+                    //                 user: instruction.accounts[2].account.to_string(),
+                    //                 source: instruction.accounts[6].account.to_string(),
+                    //                 target: instruction.accounts[7].account.to_string(),
+                    //                 /// Maximum amount of pool tokens to burn. User receives an output of token A
+                    //                 /// or B based on the percentage of the pool tokens that are returned.
+                    //                 pool_token_amount: wstteao.maximum_pool_token_amount as i64,
+                    //                 /// Amount of token A or B to receive
+                    //                 token_amount: wstteao.destination_token_amount as i64,
+                    //                 pool_account: instruction.accounts[4].account.to_string(),
+                    //                 pool_mint_account: instruction.accounts[3].account.to_string(),
+                    //                 pool_fee_account: Some(instruction.accounts[8].account.to_string()),
+                    //                 timestamp: instruction.timestamp,
+                    //             })
+                    //         )
+                    //     ]
+                    // });
+                    //
+                    // Some(response)
+                    None
                 }
                 SwapInstruction::InitializeRegistry() => {
                     response.push(TableData {
