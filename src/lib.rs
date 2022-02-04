@@ -128,7 +128,8 @@ pub enum TypedDatum {
     NativeVote(VoteDatum),
     SerumMarket(SerumMarketDatum),
     SolendTokenLending,
-    StepTokenSwap(StepTokenSwapDatum)
+    StepTokenSwap(StepTokenSwapDatum),
+    MetaplexTokenMetadata,
 }
 
 #[derive(Serialize)]
