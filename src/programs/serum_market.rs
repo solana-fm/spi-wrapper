@@ -52,7 +52,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_order",
         "fields": [
-            {"name": "client_order_id", "type": "long"},
+            {"name": "client_order_id", "type": "string"},
             {"name": "order_type", "type": "int"},
             {"name": "side", "type": "int"},
             {"name": "limit", "type": ["null", "int"]},
@@ -217,7 +217,7 @@ pub struct FeeSweep {
 #[derive(Serialize)]
 pub struct SerumOrder {
     /// Legacy = client_id
-    pub client_order_id: i64,
+    pub client_order_id: String,
     pub order_type: i16,
     pub side: i16,
     pub limit: Option<i16>,
@@ -277,9 +277,10 @@ pub async fn fragment_instruction(
 ) -> Option<Vec<TableData>> {
     // Unpack the instruction via the spl_token_swap library
     let unpack_result = MarketInstruction::unpack(
-        instruction.data.as_slice());
+        instruction.data.as_slice())
+        .ok_or(solana_program::program_error::ProgramError::InvalidArgument);
 
-    if let Some(market_instruction) = unpack_result {
+    return if let Ok(market_instruction) = unpack_result {
         let mut response: Vec<TableData> = Vec::new();
 
         return match market_instruction {
@@ -335,7 +336,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
-                                client_order_id: order.client_id as i64,
+                                client_order_id: order.client_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
                                 limit: None,
@@ -346,7 +347,11 @@ pub async fn fragment_instruction(
                                 paying_account: instruction.accounts[3].account.to_string(),
                                 coin_vault: instruction.accounts[5].account.to_string(),
                                 pc_vault: instruction.accounts[6].account.to_string(),
-                                msrm_discount_account: Some(instruction.accounts[9].account.to_string()),
+                                msrm_discount_account: if instruction.accounts.len() > 9 {
+                                    Some(instruction.accounts[9].account.to_string())
+                                } else {
+                                    None
+                                },
                                 timestamp: instruction.timestamp
                             }
                         )
@@ -494,7 +499,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
-                                client_order_id: order.client_id as i64,
+                                client_order_id: order.client_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
                                 limit: None,
@@ -505,7 +510,7 @@ pub async fn fragment_instruction(
                                 paying_account: instruction.accounts[3].account.to_string(),
                                 coin_vault: instruction.accounts[5].account.to_string(),
                                 pc_vault: instruction.accounts[6].account.to_string(),
-                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                msrm_discount_account: if instruction.accounts.len() >= 13 {
                                     Some(instruction.accounts[9].account.to_string())
                                 } else {
                                     None
@@ -527,7 +532,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
-                                client_order_id: order.client_order_id as i64,
+                                client_order_id: order.client_order_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
                                 limit: Some(order.limit as i16),
@@ -538,7 +543,7 @@ pub async fn fragment_instruction(
                                 paying_account: instruction.accounts[6].account.to_string(),
                                 coin_vault: instruction.accounts[8].account.to_string(),
                                 pc_vault: instruction.accounts[9].account.to_string(),
-                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                msrm_discount_account: if instruction.accounts.len() >= 13 {
                                     Some(instruction.accounts[12].account.to_string())
                                 } else {
                                     None
@@ -630,7 +635,7 @@ pub async fn fragment_instruction(
                                 pc_wallet_account: instruction.accounts[6].account.to_string(),
                                 coin_vault: instruction.accounts[8].account.to_string(),
                                 pc_vault: instruction.accounts[9].account.to_string(),
-                                msrm_discount_account: if instruction.accounts.len() >= 12 {
+                                msrm_discount_account: if instruction.accounts.len() >= 13 {
                                     Some(instruction.accounts[12].account.to_string())
                                 } else {
                                     None
@@ -683,8 +688,10 @@ pub async fn fragment_instruction(
             }
             MarketInstruction::ConsumeEventsPermissioned(_) => None
         };
+    } else {
+        error!("[processors/programs/serum_market] FATAL: Unrecognised instruction for tx: {} \
+    with tx_instruction_id: {} and parent_idx: {}", instruction.transaction_hash,
+        instruction.tx_instruction_id, instruction.parent_index);
+        None
     }
-
-    error!("{}", "[processors/programs/serum/market] FATAL: Unrecognised instruction.".to_string());
-    None
 }

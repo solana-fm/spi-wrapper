@@ -2,6 +2,7 @@ use avro_rs::Schema;
 use serde::Serialize;
 use solana_program::instruction::InstructionError;
 use solana_sdk::program_utils::limited_deserialize;
+use solana_sdk::transaction::Transaction;
 use solana_vote_program::vote_instruction::VoteInstruction;
 use tracing::error;
 
@@ -10,6 +11,7 @@ use crate::{Instruction, TableData, TypedDatum};
 pub const PROGRAM_ADDRESS: &str = "Vote111111111111111111111111111111111111111";
 
 pub const NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME: &str = "native_vote_node_commissions";
+pub const NATIVE_VOTE_ACCOUNT_WITHDRAWAL_TABLE_NAME: &str = "native_vote_account_withdrawals";
 
 lazy_static! {
     pub static ref NATIVE_VOTE_NODE_COMMISSION_SCHEMA: Schema = Schema::parse_str(
@@ -20,6 +22,22 @@ lazy_static! {
         "fields": [
             {"name": "node_pubkey", "type": "string"},
             {"name": "commission", "type": "int"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref NATIVE_VOTE_ACCOUNT_WITHDRAWAL_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "native_vote_account_withdrawal",
+        "fields": [
+            {"name": "account", "type": "string"},
+            {"name": "amount", "type": "long"},
+            {"name": "recipient", "type": "string"},
+            {"name": "withdraw_authority", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -56,7 +74,8 @@ pub struct VoteAccountWithdrawal {
 /// The function should return a list of instruction properties extracted from an instruction.
 pub async fn fragment_instruction(
     // The instruction
-    instruction: Instruction
+    instruction: Instruction,
+    transaction: Transaction
 ) -> Option<Vec<TableData>> {
     // Deserialize the instruction
     let vdr: Result<VoteInstruction, InstructionError> = limited_deserialize(
@@ -162,8 +181,8 @@ pub async fn fragment_instruction(
                     // vote_state::withdraw(me, lamports, to, &signers)
                     // vote_state::update_commission(me, commission, &signers)
                     let table_data = TableData {
-                        schema: (*NATIVE_VOTE_NODE_COMMISSION_SCHEMA).clone(),
-                        table_name: NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(),
+                        schema: (*NATIVE_VOTE_ACCOUNT_WITHDRAWAL_SCHEMA).clone(),
+                        table_name: NATIVE_VOTE_ACCOUNT_WITHDRAWAL_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::NativeVote(
                             VoteDatum::VoteAccountWithdrawal(
                                 VoteAccountWithdrawal {

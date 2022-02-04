@@ -287,7 +287,7 @@ pub async fn fragment_instruction(
                 }
                 LendingInstruction::InitReserve {
                     liquidity_amount,
-                    config, // TODO: Index Reserve Config
+                    .. // TODO: Index Reserve Config
                 } => {
                     let market_reserve = TableData {
                         schema: (*NATIVE_TOKEN_LENDING_MARKET_RESERVE_SCHEMA).clone(),

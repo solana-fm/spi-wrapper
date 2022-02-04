@@ -1,5 +1,6 @@
 use avro_rs::Schema;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use solana_program::program_error::ProgramError;
 use spl_token::instruction::TokenInstruction;
 use spl_token::solana_program::program_option::COption;
@@ -8,7 +9,7 @@ use tracing::error;
 use crate::{Account, AccountAuthState, Instruction, NativeAssociatedTokenAccountDatum, NativeSystemDatum, TableData, TypedDatum};
 
 use crate::programs::native_associated_token_account::{NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE, NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA, NewAssociatedTokenAccount};
-use crate::programs::native_system::{AccountCreation, NATIVE_ACCOUNT_CREATION_SCHEMA, NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE};
+use crate::programs::native_system::{AccountCreation, NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA, NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE};
 
 pub const PROGRAM_ADDRESS: &str = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
@@ -57,7 +58,6 @@ lazy_static! {
         "fields": [
             {"name": "source", "type": "string"},
             {"name": "destination", "type": "string"},
-            {"name": "mint", "type": ["null", "string"]},
             {"name": "amount", "type": "long"},
             {"name": "decimals", "type": ["null", "int"]},
             {"name": "owner", "type": "string"},
@@ -76,7 +76,6 @@ lazy_static! {
             {"name": "delegation_type", "type": "int"},
             {"name": "source", "type": "string"},
             {"name": "delegate", "type": "string"},
-            {"name": "mint", "type": ["null", "string"]},
             {"name": "owner", "type": "string"},
             {"name": "amount", "type": "long"},
             {"name": "decimals", "type": ["null", "int"]},
@@ -118,7 +117,6 @@ pub struct MintInflation {
 pub struct MintMovement {
     pub source: String,
     pub destination: String,
-    pub mint: Option<String>,
     pub amount: i64,
     pub decimals: Option<i16>,
     pub owner: String,
@@ -136,11 +134,18 @@ pub struct MintDelegation {
     pub delegation_type: i16,
     pub source: String,
     pub delegate: String,
-    pub mint: Option<String>,
     pub owner: String,
     pub amount: i64,
     pub decimals: Option<i16>,
     pub timestamp: i64
+}
+
+// Native json data
+#[derive(Deserialize)]
+pub struct TransferDatum {
+    pub source: String,
+    pub destination: String,
+    pub amount: u64
 }
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
@@ -173,8 +178,8 @@ pub async fn fragment_instruction(
                     //     freeze_authority,
                     // )
                     let table_data = TableData {
-                        schema: (*NATIVE_ASSOCIATED_TOKEN_ACCOUNT_SCHEMA).clone(),
-                        table_name: NATIVE_ASSOCIATED_TOKEN_ACCOUNT_NEW_TABLE.to_string(),
+                        schema: (*NATIVE_TOKEN_MINT_STATE_SCHEMA).clone(),
+                        table_name: NATIVE_TOKEN_MINT_STATE_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::State(
                                 MintState {
@@ -298,7 +303,7 @@ pub async fn fragment_instruction(
                     //     ]
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(
@@ -340,7 +345,7 @@ pub async fn fragment_instruction(
                     //         }
                     //     ]
                     // })
-                    let table_data = TableData {
+                    let mut table_data = TableData {
                         schema: (*NATIVE_TOKEN_MINT_MOVEMENT_SCHEMA).clone(),
                         table_name: NATIVE_TOKEN_MINT_MOVEMENT_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::NativeToken(
@@ -348,7 +353,6 @@ pub async fn fragment_instruction(
                                 MintMovement {
                                     destination: instruction.accounts[0].account.to_string(),
                                     source: instruction.accounts[1].account.to_string(),
-                                    mint: None,
                                     amount: amount as i64,
                                     decimals: None,
                                     owner: instruction.accounts[2].account.to_string(),
@@ -374,7 +378,6 @@ pub async fn fragment_instruction(
                                     delegation_type: DelegationType::Approve as i16,
                                     delegate: instruction.accounts[1].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
-                                    mint: None,
                                     amount: amount as i64,
                                     decimals: None,
                                     owner: instruction.accounts[2].account.to_string(),
@@ -400,10 +403,13 @@ pub async fn fragment_instruction(
                                     delegation_type: DelegationType::Revoke as i16,
                                     delegate: instruction.accounts[1].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
-                                    mint: None,
                                     amount: -1,
                                     decimals: None,
-                                    owner: instruction.accounts[2].account.to_string(),
+                                    owner: if instruction.accounts.len() >= 3 {
+                                        instruction.accounts[2].account.to_string()
+                                    } else {
+                                        instruction.accounts[1].account.to_string()
+                                    },
                                     timestamp: instruction.timestamp
                                 }
                             )
@@ -521,7 +527,6 @@ pub async fn fragment_instruction(
                                 MintMovement {
                                     destination: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
-                                    mint: Some(instruction.accounts[1].account.to_string()),
                                     amount: amount as i64,
                                     decimals: Some(decimals as i16),
                                     owner: instruction.accounts[3].account.to_string(),
@@ -547,7 +552,6 @@ pub async fn fragment_instruction(
                                     delegation_type: DelegationType::Approve as i16,
                                     delegate: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
-                                    mint: Some(instruction.accounts[1].account.to_string()),
                                     amount: amount as i64,
                                     decimals: Some(decimals as i16),
                                     owner: instruction.accounts[3].account.to_string(),

@@ -24,6 +24,7 @@ use crate::programs::native_token_lending::TokenLendingDatum;
 use crate::programs::native_token_swap::NativeTokenSwapDatum;
 use crate::programs::native_vote::VoteDatum;
 use crate::programs::serum_market::SerumMarketDatum;
+use crate::programs::step_token_swap::StepTokenSwapDatum;
 
 #[derive(Clone, Serialize)]
 pub struct AccountInstruction {
@@ -57,43 +58,6 @@ pub struct Instruction {
     pub accounts: Vec<AccountInstruction>,
     // The time this log was created in our time
     pub timestamp: i64
-}
-
-#[derive(Clone, Serialize)]
-pub struct InstructionFunction {
-    // The local unique identifier of the instruction according to the transaction (not based on solana)
-    pub tx_instruction_id: i16,
-    // The transaction this instruction belongs to.
-    pub transaction_hash: String,
-    // If this is an inner instruction, we should depend on this
-    pub parent_index: i16,
-    // Which program does this function belong to?
-    pub program: String,
-    // Which function is this function? (Well duh)
-    pub function_name: String,
-    // Like what it means dude.
-    pub timestamp: i64
-}
-
-#[derive(Clone, Serialize)]
-pub struct InstructionProperty {
-    // The local unique identifier of the instruction according to the transaction (not based on solana)
-    pub tx_instruction_id: i16,
-    // The local unique identifier of the instruction type (not based on solana)
-    pub transaction_hash: String,
-    // If this is an inner instruction, we should depend on this
-    pub parent_index: i16,
-    pub key: String,
-    pub value: String,
-    pub parent_key: String,
-    pub timestamp: i64,
-}
-
-#[derive(Clone, Serialize)]
-pub struct InstructionSet {
-    /// The name of the table to be inserted into BT
-    pub table_name: String,
-    pub properties: Vec<InstructionProperty>
 }
 
 pub const ACCOUNT_TABLE_NAME: &str = "accounts";
@@ -163,7 +127,9 @@ pub enum TypedDatum {
     NativeTokenSwap(NativeTokenSwapDatum),
     NativeVote(VoteDatum),
     SerumMarket(SerumMarketDatum),
-    SolendTokenLending
+    SolendTokenLending,
+    StepTokenSwap(StepTokenSwapDatum),
+    MetaplexTokenMetadata,
 }
 
 #[derive(Serialize)]
@@ -239,7 +205,12 @@ pub async fn process(
                             .await
                     }
                     programs::native_vote::PROGRAM_ADDRESS => {
-                        crate::programs::native_vote::fragment_instruction(instruction)
+                        crate::programs::native_vote::fragment_instruction(instruction,
+                                                                           tx)
+                            .await
+                    },
+                    programs::step_token_swap::PROGRAM_ADDRESS => {
+                        crate::programs::step_token_swap::fragment_instruction(instruction)
                             .await
                     }
                     _ => {

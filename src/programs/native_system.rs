@@ -2,6 +2,7 @@ use avro_rs::schema::Schema;
 use bincode::{deserialize};
 use serde::Serialize;
 use solana_program::system_instruction::SystemInstruction;
+use solana_sdk::transaction::Transaction;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
@@ -14,12 +15,13 @@ pub const NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE: &str = "native_system_account_t
 pub const NATIVE_SYSTEM_NONCE_ADVANCEMENTS_TABLE: &str = "native_system_nonce_advancements";
 pub const NATIVE_SYSTEM_NONCE_WITHDRAWALS_TABLE: &str = "native_system_nonce_withdrawals";
 lazy_static! {
-    pub static ref NATIVE_ACCOUNT_CREATION_SCHEMA: Schema = Schema::parse_str(
+    pub static ref NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
         "name": "native_account_creation",
         "fields": [
+            {"name": "address", "type": "string"},
             {"name": "lamports", "type": "long"},
             {"name": "owner", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
@@ -28,7 +30,7 @@ lazy_static! {
     "#
     )
     .unwrap();
-    pub static ref NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA: Schema = Schema::parse_str(
+    pub static ref NATIVE_SYSTEM_ACCOUNT_ASSIGNMENT_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
@@ -42,7 +44,7 @@ lazy_static! {
     "#
     )
     .unwrap();
-    pub static ref NATIVE_ACCOUNT_TRANSFER_SCHEMA: Schema = Schema::parse_str(
+    pub static ref NATIVE_SYSTEM_ACCOUNT_TRANSFER_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
@@ -108,7 +110,7 @@ pub struct AccountCreation {
     /// The owner of the account.
     pub owner: String,
     /// Account state at the recorded timestamp.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -118,7 +120,7 @@ pub struct AccountAssignment {
     /// The owner program of the account.
     pub program: String,
     /// Account state at the recorded timestamp.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -130,7 +132,7 @@ pub struct AccountTransfer {
     /// The amount of this transfer.
     pub amount: i64,
     /// Account state at the recorded timestamp.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -140,7 +142,7 @@ pub struct NonceAdvancement {
     /// The account approving this advancement.
     pub nonce_authority: String,
     /// The time this advancement was done.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 #[derive(Serialize)]
@@ -154,7 +156,7 @@ pub struct NonceWithdrawal {
     /// The amount withdrawn.
     pub amount: i64,
     /// The time this advancement was done.
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
@@ -165,7 +167,7 @@ pub async fn fragment_instruction(
     // The instruction
     instruction: Instruction
 ) -> Option<Vec<TableData>> {
-    let sdr = deserialize::<SystemInstruction>(
+    let sdr = bincode::deserialize::<SystemInstruction>(
         &instruction.data.as_slice());
 
     return match sdr {
@@ -190,7 +192,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(
@@ -201,7 +203,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -218,7 +220,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountAssignment(
@@ -228,7 +230,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -247,7 +249,7 @@ pub async fn fragment_instruction(
                     // })
                     // check_num_system_accounts(&instruction.accounts, 2)?;
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_TRANSFER_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_TRANSFER_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountTransfer(
@@ -258,7 +260,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -286,7 +288,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_CREATION_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_CREATION_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_CREATIONS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(
@@ -297,7 +299,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -326,7 +328,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -360,7 +362,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -437,7 +439,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_ASSIGNMENT_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_ASSIGNMENTS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountAssignment(
@@ -447,7 +449,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -472,7 +474,7 @@ pub async fn fragment_instruction(
                     //     }),
                     // })
                     let table_data = TableData {
-                        schema: (*NATIVE_ACCOUNT_TRANSFER_SCHEMA).clone(),
+                        schema: (*NATIVE_SYSTEM_ACCOUNT_TRANSFER_SCHEMA).clone(),
                         table_name: NATIVE_SYSTEM_ACCOUNT_TRANSFERS_TABLE.to_string(),
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountTransfer(
@@ -483,7 +485,7 @@ pub async fn fragment_instruction(
                                     timestamp: instruction.timestamp,
                                 }
                             )
-                        )]
+                        )],
                     };
 
                     response.push(table_data);
@@ -492,11 +494,13 @@ pub async fn fragment_instruction(
                 }
             }
         }
-        Err(_) => { // Error provided has no utility at the moment.
-            error!("{}", "[spi-wrapper/programs/native_system] Error deserializing this system \
-        instruction!".to_string());
+        Err(_) => {
+            // Error provided has no utility at the moment.
+            error!("[spi-wrapper/programs/native_system] Error deserializing this system \
+        instruction! tx: {}, tx_instruction_id: {}, parent_idx: {}", instruction.transaction_hash,
+                                     instruction.tx_instruction_id, instruction.parent_index);
 
             None
         }
-    }
+    };
 }

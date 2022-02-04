@@ -1,3 +1,18 @@
 [submodule "submodules/solana-program-library"]
 	path = submodules/solana-program-library
 	url = https://github.com/solana-labs/solana-program-library.git
+[submodule "submodules/serum-dex"]
+	path = submodules/serum-dex
+	url = https://github.com/project-serum/serum-dex.git
+[submodule "submodules/step-program-library"]
+	path = submodules/step-program-library
+	url = https://github.com/step-finance/solana-program-library.git
+[submodule "submodules/--help"]
+	path = submodules/--help
+	url = https://github.com/step-finance/solana-program-library.git
+[submodule "submodules/metaplex-program-library"]
+	path = submodules/metaplex-program-library
+	url = https://github.com/metaplex-foundation/metaplex-program-library.git
+[submodule "submodules/solana"]
+	path = submodules/solana
+	url = https://github.com/nixxholas/solana.git
