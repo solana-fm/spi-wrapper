@@ -13,3 +13,6 @@
 [submodule "submodules/metaplex-program-library"]
 	path = submodules/metaplex-program-library
 	url = https://github.com/metaplex-foundation/metaplex-program-library.git
+[submodule "submodules/solana"]
+	path = submodules/solana
+	url = https://github.com/nixxholas/solana.git
