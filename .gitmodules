@@ -10,3 +10,6 @@
 [submodule "submodules/--help"]
 	path = submodules/--help
 	url = https://github.com/step-finance/solana-program-library.git
+[submodule "submodules/metaplex-program-library"]
+	path = submodules/metaplex-program-library
+	url = https://github.com/metaplex-foundation/metaplex-program-library.git
