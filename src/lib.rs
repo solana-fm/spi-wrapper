@@ -129,7 +129,12 @@ pub enum TypedDatum {
     SerumMarket(SerumMarketDatum),
     SolendTokenLending,
     StepTokenSwap(StepTokenSwapDatum),
+    MetaplexAuction,
+    MetaplexAuctionHouse,
+    MetaplexCandyMachine,
+    Metaplex,
     MetaplexTokenMetadata,
+    MetaplexTokenVault
 }
 
 #[derive(Serialize)]
