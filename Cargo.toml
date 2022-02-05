@@ -28,6 +28,7 @@ overflow-checks = false
 
 [dependencies]
 avro-rs = "0.13.0"
+borsh = "0.9.3"
 bs58 = "0.4.0"
 base64 = "0.13.0"
 bincode = "1.3.3"
