@@ -13,6 +13,7 @@ use tracing::info;
 
 use crate::programs::bpf_loader::BpfLoaderDatum;
 use crate::programs::bpf_loader_upgradeable::BpfUpgradeableLoaderDatum;
+use crate::programs::metaplex_auction::MetaplexAuctionDatum;
 use crate::programs::native_associated_token_account::NativeAssociatedTokenAccountDatum;
 use crate::programs::native_config::NativeConfigDatum;
 use crate::programs::native_loader::NativeLoaderDatum;
@@ -129,7 +130,7 @@ pub enum TypedDatum {
     SerumMarket(SerumMarketDatum),
     SolendTokenLending,
     StepTokenSwap(StepTokenSwapDatum),
-    MetaplexAuction,
+    MetaplexAuction(MetaplexAuctionDatum),
     MetaplexAuctionHouse,
     MetaplexCandyMachine,
     Metaplex,
@@ -216,6 +217,10 @@ pub async fn process(
                     },
                     programs::step_token_swap::PROGRAM_ADDRESS => {
                         crate::programs::step_token_swap::fragment_instruction(instruction)
+                            .await
+                    }
+                    programs::metaplex_auction::PROGRAM_ADDRESS => {
+                        crate::programs::metaplex_auction::fragment_instruction(instruction)
                             .await
                     }
                     _ => {

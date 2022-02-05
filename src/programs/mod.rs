@@ -1,5 +1,6 @@
 pub mod bpf_loader;
 pub mod bpf_loader_upgradeable;
+pub mod metaplex_auction;
 pub mod native_associated_token_account;
 pub mod native_config;
 pub mod native_loader;
