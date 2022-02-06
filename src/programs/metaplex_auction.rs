@@ -27,6 +27,7 @@ lazy_static! {
         "fields": [
             {"name": "bidder", "type": "string"},
             {"name": "bidder_token_account", "type": "string"},
+            {"name": "resource", "type": "string"},
             {"name": "pot", "type": "string"},
             {"name": "pot_account", "type": "string"},
             {"name": "metadata", "type": "string"},
