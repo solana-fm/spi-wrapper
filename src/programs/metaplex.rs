@@ -13,6 +13,7 @@ use crate::{Instruction, TableData, TypedDatum};
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
 pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+pub const METAPLEX_REDEEM_PRINTING_V2_BID_TABLE_NAME: &str = "metaplex_redeem_printing_v2_bids";
 pub const METAPLEX_WITHDRAW_MASTER_EDITION_TABLE_NAME: &str = "metaplex_withdraw_master_edition";
 pub const METAPLEX_REDEEMED_PARTICIPATION_BID_V2_TABLE_NAME: &str = "metaplex_redeemed_participation_bids_v2";
 pub const METAPLEX_INIT_AUCTION_MANAGER_V2_TABLE_NAME: &str = "metaplex_init_auction_managers_v2";
@@ -31,6 +32,41 @@ lazy_static! {
         "fields": [
             {"name": "transaction_hash", "type": "string"},
             {"name": "program", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_REDEEM_PRINTING_V2_BID_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_redeem_printing_v2_bid",
+        "fields": [
+            {"name": "auction_manager", "type": "string"},
+            {"name": "safety_deposit_token_storage", "type": "string"},
+            {"name": "new_mint_type_account", "type": "string"},
+            {"name": "bid_redemption_key", "type": "string"},
+            {"name": "safety_deposit_box_account", "type": "string"},
+            {"name": "vault_account", "type": "string"},
+            {"name": "safety_deposit_config_account", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "bidder_metadata", "type": "string"},
+            {"name": "bidder", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "prize_tracking_account", "type": "string"},
+            {"name": "new_metadata", "type": "string"},
+            {"name": "new_edition", "type": "string"},
+            {"name": "master_edition", "type": "string"},
+            {"name": "new_token_mint", "type": "string"},
+            {"name": "edition_pda", "type": "string"},
+            {"name": "new_mint_authority", "type": "string"},
+            {"name": "vault_metadata", "type": "string"},
+            {"name": "auction_extended", "type": "string"},
+            {"name": "edition_offset", "type": "long"},
+            {"name": "win_index", "type": "long"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -404,7 +440,30 @@ pub struct DecommissionedAuctionManager {
 
 #[derive(Serialize)]
 pub struct RedeemedPrintingV2Bid {
-
+    pub auction_manager: String,
+    pub safety_deposit_token_storage: String,
+    pub new_mint_type_account: String,
+    pub bid_redemption_key: String,
+    pub safety_deposit_box_account: String,
+    pub vault_account: String,
+    pub safety_deposit_config: String,
+    pub auction: String,
+    pub bidder_metadata: String,
+    pub bidder: String,
+    pub payer: String,
+    pub store: String,
+    pub prize_tracking_account: String,
+    pub new_metadata: String,
+    pub new_edition: String,
+    pub master_edition: String,
+    pub new_token_mint: String,
+    pub edition_pda: String,
+    pub new_mint_authority: String,
+    pub vault_metadata: String,
+    pub auction_extended: String,
+    pub edition_offset: i64,
+    pub win_index: i64,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -778,13 +837,49 @@ pub async fn fragment_instruction(
                     process_decommission_auction_manager(program_id, accounts)
                 }
                 MetaplexInstruction::RedeemPrintingV2Bid(args) => {
-                    msg!("Instruction: Redeem Printing V2 Bid");
-                    process_redeem_printing_v2_bid(
-                        program_id,
-                        accounts,
-                        args.edition_offset,
-                        args.win_index,
-                    )
+                    // msg!("Instruction: Redeem Printing V2 Bid");
+                    // process_redeem_printing_v2_bid(
+                    //     program_id,
+                    //     accounts,
+                    //     args.edition_offset,
+                    //     args.win_index,
+                    // )
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_REDEEM_PRINTING_V2_BID_SCHEMA).clone(),
+                        table_name: METAPLEX_REDEEM_PRINTING_V2_BID_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemPrintingV2Bid(
+                            RedeemedPrintingV2Bid {
+                                auction_manager: instruction.accounts[0].account.to_string(),
+                                safety_deposit_token_storage: instruction.accounts[1].account.to_string(),
+                                new_mint_type_account: instruction.accounts[2].account.to_string(),
+                                bid_redemption_key: instruction.accounts[3].account.to_string(),
+                                safety_deposit_box_account: instruction.accounts[4].account.to_string(),
+                                vault_account: instruction.accounts[5].account.to_string(),
+                                safety_deposit_config: instruction.accounts[6].account.to_string(),
+                                auction: instruction.accounts[7].account.to_string(),
+                                bidder_metadata: instruction.accounts[8].account.to_string(),
+                                bidder: instruction.accounts[9].account.to_string(),
+                                payer: instruction.accounts[10].account.to_string(),
+                                store: instruction.accounts[14].account.to_string(),
+                                prize_tracking_account: instruction.accounts[17].account.to_string(),
+                                new_metadata: instruction.accounts[18].account.to_string(),
+                                new_edition: instruction.accounts[19].account.to_string(),
+                                master_edition: instruction.accounts[20].account.to_string(),
+                                new_token_mint: instruction.accounts[21].account.to_string(),
+                                edition_pda: instruction.accounts[22].account.to_string(),
+                                new_mint_authority: instruction.accounts[23].account.to_string(),
+                                vault_metadata: instruction.accounts[24].account.to_string(),
+                                auction_extended: instruction.accounts[25].account.to_string(),
+                                edition_offset: args.edition_offset as i64,
+                                win_index: args.win_index as i64,
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::WithdrawMasterEdition => {
                     // msg!("Instruction: Withdraw Master Edition");
