@@ -397,7 +397,7 @@ lazy_static! {
             {"name": "bid_redemption_key", "type": "string"},
             {"name": "safety_deposit_box_account", "type": "string"},
             {"name": "vault_account", "type": "string"},
-            {"name": "safety_deposit_config_account", "type": "string"},
+            {"name": "safety_deposit_config", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "bidder_metadata", "type": "string"},
             {"name": "bidder", "type": "string"},
