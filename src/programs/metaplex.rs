@@ -13,6 +13,7 @@ use crate::{Instruction, TableData, TypedDatum};
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
 pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+pub const METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_TABLE_NAME: &str = "metaplex_deprecated_validate_participations";
 pub const METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_TABLE_NAME: &str = "metaplex_populated_participation_printing_accounts";
 pub const METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
 pub const METAPLEX_DECOMMISSION_AUCTION_MANAGER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
@@ -35,6 +36,28 @@ lazy_static! {
         "fields": [
             {"name": "transaction_hash", "type": "string"},
             {"name": "program", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_deprecated_validate_participation",
+        "fields": [
+            {"name": "auction_manager", "type": "string"},
+            {"name": "open_edition_metadata", "type": "string"},
+            {"name": "open_edition_master_edition", "type": "string"},
+            {"name": "printing_authorization_holding_account", "type": "string"},
+            {"name": "auction_manager_authority", "type": "string"},
+            {"name": "whitelisted_creators", "type": "string"},
+            {"name": "auction_manager_store", "type": "string"},
+            {"name": "safety_deposit_box", "type": "string"},
+            {"name": "safety_deposit_token_store", "type": "string"},
+            {"name": "vault", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -482,7 +505,17 @@ pub struct SetWhitelistedCreator {
 
 #[derive(Serialize)]
 pub struct ValidatedParticipation {
-
+    pub auction_manager: String,
+    pub open_edition_metadata: String,
+    pub open_edition_master_edition: String,
+    pub printing_authorization_holding_account: String,
+    pub auction_manager_authority: String,
+    pub whitelisted_creators: String,
+    pub auction_manager_store: String,
+    pub safety_deposit_box: String,
+    pub safety_deposit_token_store: String,
+    pub vault: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -908,8 +941,31 @@ pub async fn fragment_instruction(
                     process_set_whitelisted_creator(program_id, accounts, args.activated)
                 }
                 MetaplexInstruction::DeprecatedValidateParticipation => {
-                    msg!("Instruction: Deprecated Validate Open Edition");
-                    process_deprecated_validate_participation(program_id, accounts)
+                    // msg!("Instruction: Deprecated Validate Open Edition");
+                    // process_deprecated_validate_participation(program_id, accounts)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_SCHEMA).clone(),
+                        table_name: METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedValidateParticipation(
+                            ValidatedParticipation {
+                                auction_manager: instruction.accounts[0].account.to_string(),
+                                open_edition_metadata: instruction.accounts[1].account.to_string(),
+                                open_edition_master_edition: instruction.accounts[2].account.to_string(),
+                                printing_authorization_holding_account: instruction.accounts[3].account.to_string(),
+                                auction_manager_authority: instruction.accounts[4].account.to_string(),
+                                whitelisted_creators: instruction.accounts[5].account.to_string(),
+                                auction_manager_store: instruction.accounts[6].account.to_string(),
+                                safety_deposit_box: instruction.accounts[7].account.to_string(),
+                                safety_deposit_token_store: instruction.accounts[8].account.to_string(),
+                                vault: instruction.accounts[9].account.to_string(),
+                                timestamp: instruction.timestamp
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::DeprecatedPopulateParticipationPrintingAccount => {
                     // msg!("Instruction: Deprecated Populate Participation Printing Account");
