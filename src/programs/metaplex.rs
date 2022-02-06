@@ -12,7 +12,8 @@ use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
-pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+pub const METAPLEX_SET_STORE_V2_TABLE_NAME: &str = "metaplex_v2_set_stores";
+pub const METAPLEX_SET_WHITELISTED_CREATOR_TABLE_NAME: &str = "metaplex_set_whitelisted_creators";
 pub const METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_TABLE_NAME: &str = "metaplex_deprecated_validate_participations";
 pub const METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_TABLE_NAME: &str = "metaplex_populated_participation_printing_accounts";
 pub const METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
@@ -28,14 +29,36 @@ pub const METAPLEX_SET_STORE_INDEX_TABLE_NAME: &str = "metaplex_set_store_indice
 pub const METAPLEX_SET_AUCTION_CACHE_TABLE_NAME: &str = "metaplex_set_auction_caches";
 
 lazy_static! {
-    pub static ref NATIVE_BPF_LOADER_WRITE_SCHEMA: Schema = Schema::parse_str(
+    pub static ref METAPLEX_SET_STORE_V2_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
-        "name": "native_bpf_write",
+        "name": "metaplex_v2_set_store",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
-            {"name": "program", "type": "string"},
+            {"name": "store_key", "type": "string"},
+            {"name": "store_config_key", "type": "string"},
+            {"name": "admin", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "public", "type": "boolean"},
+            {"name": "settings_uri", "type": ["null","string"]},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_SET_WHITELISTED_CREATOR_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_set_whitelisted_creator",
+        "fields": [
+            {"name": "whitelisted_creator", "type": "string"},
+            {"name": "admin", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "creator", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "activated", "type": "boolean"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -500,7 +523,13 @@ pub struct SetStore {
 
 #[derive(Serialize)]
 pub struct SetWhitelistedCreator {
-
+    pub whitelisted_creator: String,
+    pub admin: String,
+    pub payer: String,
+    pub creator: String,
+    pub store: String,
+    pub activated: bool,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -918,8 +947,8 @@ pub async fn fragment_instruction(
                     // process_set_store_v2(program_id, accounts, args.public, args.settings_uri)
 
                     let table_data = TableData {
-                        schema: (*NATIVE_BPF_LOADER_WRITE_SCHEMA).clone(),
-                        table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
+                        schema: (*METAPLEX_SET_STORE_V2_SCHEMA).clone(),
+                        table_name: METAPLEX_SET_STORE_V2_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetStoreV2(
                             SetStoreV2 {
                                 store_key: instruction.accounts[0].account.to_string(),
@@ -937,8 +966,27 @@ pub async fn fragment_instruction(
                     Some(response)
                 }
                 MetaplexInstruction::SetWhitelistedCreator(args) => {
-                    msg!("Instruction: Set Whitelisted Creator");
-                    process_set_whitelisted_creator(program_id, accounts, args.activated)
+                    // msg!("Instruction: Set Whitelisted Creator");
+                    // process_set_whitelisted_creator(program_id, accounts, args.activated)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_SET_WHITELISTED_CREATOR_SCHEMA).clone(),
+                        table_name: METAPLEX_SET_WHITELISTED_CREATOR_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetWhitelistedCreator(
+                            SetWhitelistedCreator {
+                                whitelisted_creator: instruction.accounts[0].account.to_string(),
+                                admin: instruction.accounts[1].account.to_string(),
+                                payer: instruction.accounts[2].account.to_string(),
+                                creator: instruction.accounts[3].account.to_string(),
+                                store: instruction.accounts[4].account.to_string(),
+                                activated: args.activated,
+                                timestamp: instruction.timestamp
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::DeprecatedValidateParticipation => {
                     // msg!("Instruction: Deprecated Validate Open Edition");
