@@ -527,7 +527,7 @@ lazy_static! {
             {"name": "winning_config_type", "type": "int"},
             {"name": "amount_type", "type": "int"},
             {"name": "length_type", "type": "int"},
-            {"name": "amount_ranges", "type": "array", "items" : "long"]},
+            {"name": "amount_ranges", "type": "array", "items" : "long"},
             {"name": "winning_constraint", "type": ["null","int"]},
             {"name": "non_winning_constraint", "type": ["null","int"]},
             {"name": "fixed_price", "type": ["null","long"]},
@@ -1874,6 +1874,10 @@ pub async fn fragment_instruction(
                 MetaplexInstruction::ValidateSafetyDepositBoxV2(safety_deposit_config) => {
                     // msg!("Instruction: Validate Safety Deposit Box V2");
                     // process_validate_safety_deposit_box_v2(program_id, accounts, safety_deposit_config)
+                    let mut amount_ranges = Vec::new();
+                    for amount_range in &safety_deposit_config.amount_ranges {
+                        amount_ranges.append(&mut vec![amount_range.0 as i64, amount_range.1 as i64]);
+                    }
 
                     let table_data = TableData {
                         schema: (*METAPLEX_VALIDATED_SAFETY_DEPOSIT_V2_SCHEMA).clone(),
@@ -1885,10 +1889,7 @@ pub async fn fragment_instruction(
                                 winning_config_type: safety_deposit_config.winning_config_type as i16,
                                 amount_type: safety_deposit_config.amount_type as i16,
                                 length_type: safety_deposit_config.length_type as i16,
-                                amount_ranges: vec![safety_deposit_config.amount_ranges[0].0 as i64,
-                                                    safety_deposit_config.amount_ranges[0].1 as i64,
-                                                    safety_deposit_config.amount_ranges[1].0 as i64,
-                                                    safety_deposit_config.amount_ranges[1].1 as i64],
+                                amount_ranges,
                                 winning_constraint: if let Some(pc) = &safety_deposit_config.participation_config {
                                     Some(pc.winner_constraint as i16)
                                 } else {
