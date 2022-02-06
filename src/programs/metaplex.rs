@@ -13,6 +13,7 @@ use crate::{Instruction, TableData, TypedDatum};
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
 pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+pub const METAPLEX_REDEEMED_PARTICIPATION_BID_V2_TABLE_NAME: &str = "metaplex_redeemed_participation_bids_v2";
 pub const METAPLEX_INIT_AUCTION_MANAGER_V2_TABLE_NAME: &str = "metaplex_init_auction_managers_v2";
 pub const METAPLEX_VALIDATED_SAFETY_DEPOSIT_V2_TABLE_NAME: &str = "metaplex_validated_safety_deposits_v2";
 pub const METAPLEX_REDEEMED_PARTICIPATION_BID_V3_TABLE_NAME: &str = "metaplex_redeemed_participation_bids_v3";
@@ -29,6 +30,42 @@ lazy_static! {
         "fields": [
             {"name": "transaction_hash", "type": "string"},
             {"name": "program", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_REDEEMED_PARTICIPATION_BID_V2_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_redeemed_participation_bid_v2",
+        "fields": [
+            {"name": "auction_manager", "type": "string"},
+            {"name": "safety_deposit_storage_account", "type": "string"},
+            {"name": "new_mint_type_account", "type": "string"},
+            {"name": "bid_redemption_key", "type": "string"},
+            {"name": "safety_deposit_box_account", "type": "string"},
+            {"name": "vault_account", "type": "string"},
+            {"name": "safety_deposit_config_account", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "bidder_metadata", "type": "string"},
+            {"name": "bidder", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "transfer_authority", "type": "string"},
+            {"name": "accept_payment_account", "type": "string"},
+            {"name": "potential_paying_token_account", "type": "string"},
+            {"name": "prize_tracking_ticket", "type": "string"},
+            {"name": "new_metadata_key", "type": "string"},
+            {"name": "new_edition", "type": "string"},
+            {"name": "master_edition", "type": "string"},
+            {"name": "new_token_mint", "type": "string"},
+            {"name": "edition_pda", "type": "string"},
+            {"name": "new_mint_mint_authority", "type": "string"},
+            {"name": "vault_token_metadata", "type": "string"},
+            {"name": "auction_data_extended_account", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -340,7 +377,39 @@ pub struct WithdrawnMasterEdition {
 
 #[derive(Serialize)]
 pub struct RedeemedParticipationBidV2 {
-
+    pub auction_manager: String,
+    /// Safety deposit token storage account
+    pub safety_deposit_storage_account: String,
+    /// Account containing 1 token of your new mint type.
+    /// MUST be an associated token account of pda [wallet, token program, mint] relative to ata program.
+    pub new_mint_type_account: String,
+    pub bid_redemption_key: String,
+    pub safety_deposit_box_account: String,
+    pub vault_account: String,
+    /// Safety deposit config pda of ['metaplex', program id, auction manager, safety deposit]
+    /// This account will only get used in the event this is an AuctionManagerV2
+    pub safety_deposit_config_account: String,
+    pub auction: String,
+    pub bidder_metadata: String,
+    pub bidder: String,
+    pub payer: String,
+    pub store: String,
+    /// Transfer authority to move the payment in the auction's token_mint coin from the bidder account for the participation_fixed_price
+    /// on the auction manager to the auction manager account itself.
+    pub transfer_authority: String,
+    pub accept_payment_account: String,
+    /// The token account you will potentially pay for the open edition bid with if necessary.
+    pub potential_paying_token_account: String,
+    pub prize_tracking_ticket: String,
+    pub new_metadata_key: String,
+    pub new_edition: String,
+    pub master_edition: String,
+    pub new_token_mint: String,
+    pub edition_pda: String,
+    pub new_mint_mint_authority: String,
+    pub vault_token_metadata: String,
+    pub auction_data_extended_account: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -672,8 +741,45 @@ pub async fn fragment_instruction(
                     process_withdraw_master_edition(program_id, accounts)
                 }
                 MetaplexInstruction::DeprecatedRedeemParticipationBidV2 => {
-                    msg!("Instruction: Deprecated Redeem Participation Bid V2");
-                    process_redeem_participation_bid(program_id, accounts, false, None)
+                    // msg!("Instruction: Deprecated Redeem Participation Bid V2");
+                    // process_redeem_participation_bid(program_id, accounts, false, None)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_REDEEMED_PARTICIPATION_BID_V2_SCHEMA).clone(),
+                        table_name: METAPLEX_REDEEMED_PARTICIPATION_BID_V2_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedRedeemParticipationBidV2(
+                            RedeemedParticipationBidV2 {
+                                auction_manager: instruction.accounts[0].account.to_string(),
+                                safety_deposit_storage_account: instruction.accounts[1].account.to_string(),
+                                new_mint_type_account: instruction.accounts[2].account.to_string(),
+                                bid_redemption_key: instruction.accounts[3].account.to_string(),
+                                safety_deposit_box_account: instruction.accounts[4].account.to_string(),
+                                vault_account: instruction.accounts[5].account.to_string(),
+                                safety_deposit_config_account: instruction.accounts[6].account.to_string(),
+                                auction: instruction.accounts[7].account.to_string(),
+                                bidder_metadata: instruction.accounts[8].account.to_string(),
+                                bidder: instruction.accounts[9].account.to_string(),
+                                payer: instruction.accounts[10].account.to_string(),
+                                store: instruction.accounts[14].account.to_string(),
+                                transfer_authority: instruction.accounts[17].account.to_string(),
+                                accept_payment_account: instruction.accounts[18].account.to_string(),
+                                potential_paying_token_account: instruction.accounts[19].account.to_string(),
+                                prize_tracking_ticket: instruction.accounts[20].account.to_string(),
+                                new_metadata_key: instruction.accounts[21].account.to_string(),
+                                new_edition: instruction.accounts[22].account.to_string(),
+                                master_edition: instruction.accounts[23].account.to_string(),
+                                new_token_mint: instruction.accounts[24].account.to_string(),
+                                edition_pda: instruction.accounts[25].account.to_string(),
+                                new_mint_mint_authority: instruction.accounts[26].account.to_string(),
+                                vault_token_metadata: instruction.accounts[27].account.to_string(),
+                                auction_data_extended_account: instruction.accounts[28].account.to_string(),
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::InitAuctionManagerV2(args) => {
                     // msg!("Instruction: Init Auction Manager V2");
