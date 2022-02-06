@@ -13,6 +13,8 @@ use crate::{Instruction, TableData, TypedDatum};
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
 pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+pub const METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_TABLE_NAME: &str = "metaplex_populated_participation_printing_accounts";
+pub const METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
 pub const METAPLEX_DECOMMISSION_AUCTION_MANAGER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
 pub const METAPLEX_REDEEM_PRINTING_V2_BID_TABLE_NAME: &str = "metaplex_redeem_printing_v2_bids";
 pub const METAPLEX_WITHDRAW_MASTER_EDITION_TABLE_NAME: &str = "metaplex_withdraw_master_edition";
@@ -33,6 +35,46 @@ lazy_static! {
         "fields": [
             {"name": "transaction_hash", "type": "string"},
             {"name": "program", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_populated_participation_printing_account",
+        "fields": [
+            {"name": "safety_deposit_token_store", "type": "string"},
+            {"name": "transient_account", "type": "string"},
+            {"name": "printing_token_account", "type": "string"},
+            {"name": "printing_authorization_mint", "type": "string"},
+            {"name": "printing_mint", "type": "string"},
+            {"name": "safety_deposit_account", "type": "string"},
+            {"name": "vault_info", "type": "string"},
+            {"name": "fraction_mint", "type": "string"},
+            {"name": "auction_info", "type": "string"},
+            {"name": "auction_manager_info", "type": "string"},
+            {"name": "auction_manager_store", "type": "string"},
+            {"name": "master_edition", "type": "string"},
+            {"name": "transfer_authority", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_redeem_unused_winning_config_items_as_auctioneer",
+        "fields": [
+            {"name": "winning_config_item_index", "type": "int"},
+            {"name": "proxy_call", "type": "int"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -445,12 +487,30 @@ pub struct ValidatedParticipation {
 
 #[derive(Serialize)]
 pub struct PopulatedParticipationPrintingAccount {
-
+    pub safety_deposit_token_store: String,
+    /// Transient account with mint of one time authorization account on master edition - you can delete after this txn
+    pub transient_account: String,
+    /// The printing token account on the participation state of the auction manager
+    pub printing_token_account: String,
+    pub printing_authorization_mint: String,
+    pub printing_mint: String,
+    pub safety_deposit_account: String,
+    pub vault_info: String,
+    pub fraction_mint: String,
+    pub auction_info: String,
+    pub auction_manager_info: String,
+    pub auction_manager_store: String,
+    pub master_edition: String,
+    pub transfer_authority: String,
+    pub payer: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
 pub struct RedeemedUnusedWinningConfigItemsAsAuctioneer {
-
+    pub winning_config_item_index: i16,
+    pub proxy_call: i16,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -852,12 +912,54 @@ pub async fn fragment_instruction(
                     process_deprecated_validate_participation(program_id, accounts)
                 }
                 MetaplexInstruction::DeprecatedPopulateParticipationPrintingAccount => {
-                    msg!("Instruction: Deprecated Populate Participation Printing Account");
-                    process_deprecated_populate_participation_printing_account(program_id, accounts)
+                    // msg!("Instruction: Deprecated Populate Participation Printing Account");
+                    // process_deprecated_populate_participation_printing_account(program_id, accounts)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_SCHEMA).clone(),
+                        table_name: METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedPopulateParticipationPrintingAccount(
+                            PopulatedParticipationPrintingAccount {
+                                safety_deposit_token_store: instruction.accounts[0].account.to_string(),
+                                transient_account: instruction.accounts[1].account.to_string(),
+                                printing_token_account: instruction.accounts[2].account.to_string(),
+                                printing_authorization_mint: instruction.accounts[3].account.to_string(),
+                                printing_mint: instruction.accounts[4].account.to_string(),
+                                safety_deposit_account: instruction.accounts[5].account.to_string(),
+                                vault_info: instruction.accounts[6].account.to_string(),
+                                fraction_mint: instruction.accounts[7].account.to_string(),
+                                auction_info: instruction.accounts[8].account.to_string(),
+                                auction_manager_info: instruction.accounts[9].account.to_string(),
+                                auction_manager_store: instruction.accounts[13].account.to_string(),
+                                master_edition: instruction.accounts[14].account.to_string(),
+                                transfer_authority: instruction.accounts[15].account.to_string(),
+                                payer: instruction.accounts[16].account.to_string(),
+                                timestamp: instruction.timestamp
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::RedeemUnusedWinningConfigItemsAsAuctioneer(args) => {
-                    msg!("Instruction: Redeem Unused Winning Config Items As Auctioneer");
-                    process_redeem_unused_winning_config_items_as_auctioneer(program_id, accounts, args)
+                    // msg!("Instruction: Redeem Unused Winning Config Items As Auctioneer");
+                    // process_redeem_unused_winning_config_items_as_auctioneer(program_id, accounts, args)
+
+                    let table_data = TableData {
+                        schema: (*NATIVE_BPF_LOADER_WRITE_SCHEMA).clone(),
+                        table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemUnusedWinningConfigItemsAsAuctioneer(
+                            RedeemedUnusedWinningConfigItemsAsAuctioneer {
+                                winning_config_item_index: (&args.winning_config_item_index).clone() as i16,
+                                proxy_call: (&args.proxy_call).clone() as i16,
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::DecommissionAuctionManager => {
                     // msg!("Instruction: Decomission Auction Manager");
