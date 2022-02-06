@@ -12,6 +12,7 @@ use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
+pub const METAPLEX_SET_STORE_TABLE_NAME: &str = "metaplex_set_stores";
 pub const METAPLEX_SET_STORE_V2_TABLE_NAME: &str = "metaplex_v2_set_stores";
 pub const METAPLEX_SET_WHITELISTED_CREATOR_TABLE_NAME: &str = "metaplex_set_whitelisted_creators";
 pub const METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_TABLE_NAME: &str = "metaplex_deprecated_validate_participations";
@@ -29,6 +30,23 @@ pub const METAPLEX_SET_STORE_INDEX_TABLE_NAME: &str = "metaplex_set_store_indice
 pub const METAPLEX_SET_AUCTION_CACHE_TABLE_NAME: &str = "metaplex_set_auction_caches";
 
 lazy_static! {
+    pub static ref METAPLEX_SET_STORE_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_set_store",
+        "fields": [
+            {"name": "store_key", "type": "string"},
+            {"name": "admin", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "auction_program", "type": "string"},
+            {"name": "public", "type": "boolean"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
     pub static ref METAPLEX_SET_STORE_V2_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
@@ -518,7 +536,12 @@ pub struct EmptiedPaymentAccount {
 
 #[derive(Serialize)]
 pub struct SetStore {
-
+    pub store_key: String,
+    pub admin: String,
+    pub payer: String,
+    pub auction_program: String,
+    pub public: bool,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -939,8 +962,26 @@ pub async fn fragment_instruction(
                     process_empty_payment_account(program_id, accounts, args)
                 }
                 MetaplexInstruction::SetStore(args) => {
-                    msg!("Instruction: Set Store");
-                    process_set_store(program_id, accounts, args.public)
+                    // msg!("Instruction: Set Store");
+                    // process_set_store(program_id, accounts, args.public)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_SET_STORE_SCHEMA).clone(),
+                        table_name: METAPLEX_SET_STORE_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetStore(
+                            SetStore {
+                                store_key: instruction.accounts[0].account.to_string(),
+                                admin: instruction.accounts[1].account.to_string(),
+                                payer: instruction.accounts[2].account.to_string(),
+                                auction_program: instruction.accounts[6].account.to_string(),
+                                public: args.public,
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::SetStoreV2(args) => {
                     // msg!("Instruction: Set Store V2");
