@@ -13,6 +13,9 @@ use crate::{Instruction, TableData, TypedDatum};
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
 pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+pub const METAPLEX_REDEEMED_PARTICIPATION_BID_V3_TABLE_NAME: &str = "metaplex_redeemed_participation_bids_v3";
+pub const METAPLEX_ENDED_AUCTION_TABLE_NAME: &str = "metaplex_ended_auctions";
+pub const METAPLEX_SET_STORE_INDEX_TABLE_NAME: &str = "metaplex_set_store_indices";
 pub const METAPLEX_SET_AUCTION_CACHE_TABLE_NAME: &str = "metaplex_set_auction_caches";
 
 lazy_static! {
@@ -24,6 +27,82 @@ lazy_static! {
         "fields": [
             {"name": "transaction_hash", "type": "string"},
             {"name": "program", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_REDEEMED_PARTICIPATION_BID_V3_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_redeemed_participation_bid_v3",
+        "fields": [
+            {"name": "win_index", "type": ["null","long"]},
+            {"name": "auction_manager", "type": "string"},
+            {"name": "safety_deposit_storage_account", "type": "string"},
+            {"name": "new_mint_type_account", "type": "string"},
+            {"name": "bid_redemption_key", "type": "string"},
+            {"name": "safety_deposit_box_account", "type": "string"},
+            {"name": "vault_account", "type": "string"},
+            {"name": "safety_deposit_config_account", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "bidder_metadata", "type": "string"},
+            {"name": "bidder", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "transfer_authority", "type": "string"},
+            {"name": "accept_payment_account", "type": "string"},
+            {"name": "potential_paying_token_account", "type": "string"},
+            {"name": "prize_tracking_ticket", "type": "string"},
+            {"name": "new_metadata_key", "type": "string"},
+            {"name": "new_edition", "type": "string"},
+            {"name": "master_edition", "type": "string"},
+            {"name": "new_token_mint", "type": "string"},
+            {"name": "edition_pda", "type": "string"},
+            {"name": "new_mint_mint_authority", "type": "string"},
+            {"name": "vault_token_metadata", "type": "string"},
+            {"name": "auction_data_extended_account", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_ENDED_AUCTION_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_ended_auction",
+        "fields": [
+            {"name": "auction_manager", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "auction_extended_data_account", "type": "string"},
+            {"name": "auction_manager_authority", "type": "string"},
+            {"name": "store_key", "type": "string"},
+            {"name": "auction_program", "type": "string"},
+            {"name": "reveal", "type": ["null","array"], "items" : "long"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_SET_STORE_INDEX_TABLE_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_set_store_index",
+        "fields": [
+            {"name": "store_index", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "auction_cache", "type": "string"},
+            {"name": "store_key", "type": "string"},
+            {"name": "page", "type": "long"},
+            {"name": "offset", "type": "long"},
+            {"name": "auction_cache_above_current", "type": ["null","string"]},
+            {"name": "auction_cache_below_current", "type": ["null","string"]},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -500,8 +579,8 @@ pub async fn fragment_instruction(
                     // process_redeem_participation_bid(program_id, accounts, false, args.win_index)
 
                     let table_data = TableData {
-                        schema: (*NATIVE_BPF_LOADER_WRITE_SCHEMA).clone(),
-                        table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
+                        schema: (*METAPLEX_REDEEMED_PARTICIPATION_BID_V3_SCHEMA).clone(),
+                        table_name: METAPLEX_REDEEMED_PARTICIPATION_BID_V3_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemParticipationBidV3(
                             RedeemedParticipationBidV3 {
                                 win_index: if let Some(win_index) = args.win_index {
@@ -546,8 +625,8 @@ pub async fn fragment_instruction(
                     // process_end_auction(program_id, accounts, args)
 
                     let table_data = TableData {
-                        schema: (*NATIVE_BPF_LOADER_WRITE_SCHEMA).clone(),
-                        table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
+                        schema: (*METAPLEX_ENDED_AUCTION_SCHEMA).clone(),
+                        table_name: METAPLEX_ENDED_AUCTION_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::EndAuction(
                             EndedAuction {
                                 auction_manager: instruction.accounts[0].account.to_string(),
@@ -574,8 +653,8 @@ pub async fn fragment_instruction(
                     // process_set_store_index(program_id, accounts, args)
 
                     let table_data = TableData {
-                        schema: (*NATIVE_BPF_LOADER_WRITE_SCHEMA).clone(),
-                        table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
+                        schema: (*METAPLEX_SET_STORE_INDEX_TABLE_SCHEMA).clone(),
+                        table_name: METAPLEX_SET_STORE_INDEX_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetStoreIndex(
                             SetStoreIndex {
                                 store_index: instruction.accounts[0].account.to_string(),
