@@ -13,6 +13,7 @@ use tracing::info;
 
 use crate::programs::bpf_loader::BpfLoaderDatum;
 use crate::programs::bpf_loader_upgradeable::BpfUpgradeableLoaderDatum;
+use crate::programs::metaplex::MetaplexMainDatum;
 use crate::programs::metaplex_auction::MetaplexAuctionDatum;
 use crate::programs::native_associated_token_account::NativeAssociatedTokenAccountDatum;
 use crate::programs::native_config::NativeConfigDatum;
@@ -133,7 +134,7 @@ pub enum TypedDatum {
     MetaplexAuction(MetaplexAuctionDatum),
     MetaplexAuctionHouse,
     MetaplexCandyMachine,
-    Metaplex,
+    Metaplex(MetaplexMainDatum),
     MetaplexTokenMetadata,
     MetaplexTokenVault
 }
@@ -221,6 +222,10 @@ pub async fn process(
                     }
                     programs::metaplex_auction::PROGRAM_ADDRESS => {
                         crate::programs::metaplex_auction::fragment_instruction(instruction)
+                            .await
+                    }
+                    programs::metaplex::PROGRAM_ADDRESS => {
+                        crate::programs::metaplex::fragment_instruction(instruction)
                             .await
                     }
                     _ => {
