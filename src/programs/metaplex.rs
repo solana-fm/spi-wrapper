@@ -13,6 +13,7 @@ use crate::{Instruction, TableData, TypedDatum};
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
 pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+pub const METAPLEX_DECOMMISSION_AUCTION_MANAGER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
 pub const METAPLEX_REDEEM_PRINTING_V2_BID_TABLE_NAME: &str = "metaplex_redeem_printing_v2_bids";
 pub const METAPLEX_WITHDRAW_MASTER_EDITION_TABLE_NAME: &str = "metaplex_withdraw_master_edition";
 pub const METAPLEX_REDEEMED_PARTICIPATION_BID_V2_TABLE_NAME: &str = "metaplex_redeemed_participation_bids_v2";
@@ -32,6 +33,25 @@ lazy_static! {
         "fields": [
             {"name": "transaction_hash", "type": "string"},
             {"name": "program", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_DECOMISSION_AUCTION_MANAGER_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_decomission_auction_manager",
+        "fields": [
+            {"name": "auction_manager", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "authority", "type": "string"},
+            {"name": "vault", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "auction_program", "type": "string"},
+            {"name": "vault_program", "type": ["null","string"]},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -435,7 +455,14 @@ pub struct RedeemedUnusedWinningConfigItemsAsAuctioneer {
 
 #[derive(Serialize)]
 pub struct DecommissionedAuctionManager {
-
+    pub auction_manager: String,
+    pub auction: String,
+    pub authority: String,
+    pub vault: String,
+    pub store: String,
+    pub auction_program: String,
+    pub vault_program: Option<String>,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -833,8 +860,32 @@ pub async fn fragment_instruction(
                     process_redeem_unused_winning_config_items_as_auctioneer(program_id, accounts, args)
                 }
                 MetaplexInstruction::DecommissionAuctionManager => {
-                    msg!("Instruction: Decomission Auction Manager");
-                    process_decommission_auction_manager(program_id, accounts)
+                    // msg!("Instruction: Decomission Auction Manager");
+                    // process_decommission_auction_manager(program_id, accounts)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_DECOMISSION_AUCTION_MANAGER_SCHEMA).clone(),
+                        table_name: METAPLEX_DECOMMISSION_AUCTION_MANAGER_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DecommissionAuctionManager(
+                            DecommissionedAuctionManager {
+                                auction_manager: instruction.accounts[0].account.to_string(),
+                                auction: instruction.accounts[1].account.to_string(),
+                                authority: instruction.accounts[2].account.to_string(),
+                                vault: instruction.accounts[3].account.to_string(),
+                                store: instruction.accounts[4].account.to_string(),
+                                auction_program: instruction.accounts[5].account.to_string(),
+                                vault_program: if instruction.accounts.len() > 7 {
+                                    Some(instruction.accounts[7].account.to_string())
+                                } else {
+                                    None
+                                },
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::RedeemPrintingV2Bid(args) => {
                     // msg!("Instruction: Redeem Printing V2 Bid");
