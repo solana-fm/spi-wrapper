@@ -521,7 +521,6 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_validated_safety_deposit_v2",
         "fields": [
-            {"name": "win_index", "type": ["null","long"]},
             {"name": "key", "type": "int"},
             {"name": "order", "type": "long"},
             {"name": "winning_config_type", "type": "int"},
@@ -531,6 +530,7 @@ lazy_static! {
             {"name": "winning_constraint", "type": ["null","int"]},
             {"name": "non_winning_constraint", "type": ["null","int"]},
             {"name": "fixed_price", "type": ["null","long"]},
+            {"name": "collected_to_accept_payment", "type": ["null","long"]},
             {"name": "safety_deposit_config", "type": "string"},
             {"name": "auction_winner_token_type_tracker", "type": "string"},
             {"name": "auction_manager", "type": "string"},
