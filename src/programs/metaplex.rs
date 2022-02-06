@@ -1199,8 +1199,8 @@ pub async fn fragment_instruction(
                     // process_redeem_unused_winning_config_items_as_auctioneer(program_id, accounts, args)
 
                     let table_data = TableData {
-                        schema: (*NATIVE_BPF_LOADER_WRITE_SCHEMA).clone(),
-                        table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
+                        schema: (*METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_SCHEMA).clone(),
+                        table_name: METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemUnusedWinningConfigItemsAsAuctioneer(
                             RedeemedUnusedWinningConfigItemsAsAuctioneer {
                                 winning_config_item_index: (&args.winning_config_item_index).clone() as i16,
