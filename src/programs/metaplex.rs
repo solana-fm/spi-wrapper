@@ -12,6 +12,7 @@ use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
+pub const METAPLEX_CLAIMED_BID_TABLE_NAME: &str = "metaplex_claimed_bids";
 pub const METAPLEX_EMPTIED_PAYMENT_ACCOUNT_TABLE_NAME: &str = "metaplex_emptied_payment_accounts";
 pub const METAPLEX_SET_STORE_TABLE_NAME: &str = "metaplex_set_stores";
 pub const METAPLEX_SET_STORE_V2_TABLE_NAME: &str = "metaplex_v2_set_stores";
@@ -31,6 +32,29 @@ pub const METAPLEX_SET_STORE_INDEX_TABLE_NAME: &str = "metaplex_set_store_indice
 pub const METAPLEX_SET_AUCTION_CACHE_TABLE_NAME: &str = "metaplex_set_auction_caches";
 
 lazy_static! {
+    pub static ref METAPLEX_CLAIMED_BID_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_claimed_bid",
+        "fields": [
+            {"name": "accept_payment_account", "type": "string"},
+            {"name": "bidder_pot_token_account", "type": "string"},
+            {"name": "bidder_pot_pda", "type": "string"},
+            {"name": "auction_manager", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "bidder", "type": "string"},
+            {"name": "token_mint", "type": "string"},
+            {"name": "vault", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "auction_program", "type": "string"},
+            {"name": "auction_extended", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
     pub static ref METAPLEX_EMPTIED_PAYMENT_ACCOUNT_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
@@ -554,7 +578,18 @@ pub struct StartedAuction {
 
 #[derive(Serialize)]
 pub struct ClaimedBid {
-
+    pub accept_payment_account: String,
+    pub bidder_pot_token_account: String,
+    pub bidder_pot_pda: String,
+    pub auction_manager: String,
+    pub auction: String,
+    pub bidder: String,
+    pub token_mint: String,
+    pub vault: String,
+    pub store: String,
+    pub auction_program: String,
+    pub auction_extended: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -997,8 +1032,32 @@ pub async fn fragment_instruction(
                     process_start_auction(program_id, accounts)
                 }
                 MetaplexInstruction::ClaimBid => {
-                    msg!("Instruction: Claim Bid");
-                    process_claim_bid(program_id, accounts)
+                    // msg!("Instruction: Claim Bid");
+                    // process_claim_bid(program_id, accounts)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_CLAIMED_BID_SCHEMA).clone(),
+                        table_name: METAPLEX_CLAIMED_BID_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::ClaimBid(
+                            ClaimedBid {
+                                accept_payment_account: instruction.accounts[0].account.to_string(),
+                                bidder_pot_token_account: instruction.accounts[1].account.to_string(),
+                                bidder_pot_pda: instruction.accounts[2].account.to_string(),
+                                auction_manager: instruction.accounts[3].account.to_string(),
+                                auction: instruction.accounts[4].account.to_string(),
+                                bidder: instruction.accounts[5].account.to_string(),
+                                token_mint: instruction.accounts[6].account.to_string(),
+                                vault: instruction.accounts[7].account.to_string(),
+                                auction_program: instruction.accounts[9].account.to_string(),
+                                auction_extended: instruction.accounts[12].account.to_string(),
+                                store: instruction.accounts[8].account.to_string(),
+                                timestamp: instruction.timestamp
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::EmptyPaymentAccount(args) => {
                     // msg!("Instruction: Empty Payment Account");
