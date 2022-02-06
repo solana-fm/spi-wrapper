@@ -1,10 +1,8 @@
-use std::convert::TryFrom;
 use avro_rs::schema::Schema;
 use borsh::BorshDeserialize;
 use serde::Serialize;
 use mpl_auction::{ instruction::AuctionInstruction};
 use mpl_auction::processor::{PriceFloor, WinnerLimit};
-use spl_token_lending::pyth::Price;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};

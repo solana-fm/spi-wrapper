@@ -1,17 +1,21 @@
 use avro_rs::schema::Schema;
 use borsh::BorshDeserialize;
-use itertools::rev;
 use mpl_metaplex::deprecated_state::WinningConfigItem;
 use mpl_metaplex::instruction::MetaplexInstruction;
 use mpl_metaplex::state::{NonWinningConstraint, WinningConfigType, WinningConstraint};
 use serde::Serialize;
-use solana_sdk::loader_instruction::LoaderInstruction;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
+pub const METAPLEX_INIT_AUCTION_MANAGER_TABLE_NAME: &str = "metaplex_init_auction_managers";
+pub const METAPLEX_VALIDATED_SAFETY_DEPOSIT_BOX_TABLE_NAME: &str = "metaplex_validated_safety_deposit_boxes";
+pub const METAPLEX_REDEEMED_BID_TABLE_NAME: &str = "metaplex_redeemed_bids";
+pub const METAPLEX_REDEEMED_FULL_RIGHTS_TRANSFER_BID_TABLE_NAME: &str = "metaplex_redeemed_full_rights_transfer_bids";
+pub const METAPLEX_REDEEMED_PARTICIPATION_BID_TABLE_NAME: &str = "metaplex_redeemed_participation_bids";
+pub const METAPLEX_START_AUCTION_TABLE_NAME: &str = "metaplex_started_auctions";
 pub const METAPLEX_CLAIMED_BID_TABLE_NAME: &str = "metaplex_claimed_bids";
 pub const METAPLEX_EMPTIED_PAYMENT_ACCOUNT_TABLE_NAME: &str = "metaplex_emptied_payment_accounts";
 pub const METAPLEX_SET_STORE_TABLE_NAME: &str = "metaplex_set_stores";
@@ -32,6 +36,171 @@ pub const METAPLEX_SET_STORE_INDEX_TABLE_NAME: &str = "metaplex_set_store_indice
 pub const METAPLEX_SET_AUCTION_CACHE_TABLE_NAME: &str = "metaplex_set_auction_caches";
 
 lazy_static! {
+    pub static ref METAPLEX_INIT_AUCTION_MANAGER_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_init_auction_manager",
+        "fields": [
+            {"name": "account", "type": "string"},
+            {"name": "vault_account", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "payment_account", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "winning_config_items", "type": "array", "items": {
+                "type": "record",
+                "name": "winning_config_item",
+                "fields": [,
+                    {"name": "safety_deposit_box_index", "type": "int"},
+                    {"name": "amount", "type": "int"},
+                    {"name": "item_type", "type": "int"}
+                ]
+            }},
+            {"name": "winning_constraint", "type": ["null","int"]},
+            {"name": "non_winning_constraint", "type": ["null","int"]},
+            {"name": "safety_deposit_box_index", "type": ["null","int"]},
+            {"name": "fixed_price", "type": ["null","long"]},
+            {"name": "authority", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_VALIDATED_SAFETY_DEPOSIT_BOX_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_validated_safety_deposit",
+        "fields": [
+            {"name": "safety_deposit_validation_ticket", "type": "string"},
+            {"name": "auction_manager", "type": "string"},
+            {"name": "metadata", "type": "string"},
+            {"name": "og_authority_lookup", "type": "string"},
+            {"name": "whitelisted_creators", "type": "string"},
+            {"name": "auction_manager_store_key", "type": "string"},
+            {"name": "safety_deposit_box", "type": "string"},
+            {"name": "safety_deposit_box_storage", "type": "string"},
+            {"name": "mint", "type": "string"},
+            {"name": "edition_record", "type": "string"},
+            {"name": "vault_account", "type": "string"},
+            {"name": "authority", "type": "string"},
+            {"name": "metadata_authority", "type": ["null","string"]},
+            {"name": "payer", "type": "string"},
+            {"name": "token_metadata_program", "type": "string"},
+            {"name": "limited_ed_printing_mint", "type": "string"},
+            {"name": "limited_ed_printing_mint_authority", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_REDEEMED_BID_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_redeemed_bid",
+        "fields": [
+            {"name": "auction_manager", "type": "string"},
+            {"name": "safety_deposit_storage", "type": "string"},
+            {"name": "destination", "type": "string"},
+            {"name": "bid_redemption_key", "type": "string"},
+            {"name": "safety_deposit_box", "type": "string"},
+            {"name": "vault", "type": "string"},
+            {"name": "vault_fraction_mint", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "bidder_metadata", "type": "string"},
+            {"name": "bidder", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "transfer_authority", "type": "string"},
+            {"name": "master_edition", "type": "string"},
+            {"name": "reservation_list", "type": "string"},
+            {"name": "safety_deposit_config", "type": "string"},
+            {"name": "auction_extended", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_REDEEMED_FULL_RIGHTS_TRANSFER_BID_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_redeemed_full_rights_transfer_bid",
+        "fields": [
+            {"name": "auction_manager", "type": "string"},
+            {"name": "safety_deposit_storage", "type": "string"},
+            {"name": "destination", "type": "string"},
+            {"name": "bid_redemption_key", "type": "string"},
+            {"name": "safety_deposit_box", "type": "string"},
+            {"name": "vault", "type": "string"},
+            {"name": "vault_fraction_mint", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "bidder_metadata", "type": "string"},
+            {"name": "bidder", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "master_metadata", "type": "string"},
+            {"name": "new_master_metadata_authority", "type": "string"},
+            {"name": "transfer_authority", "type": "string"},
+            {"name": "safety_deposit_config", "type": "string"},
+            {"name": "auction_extended", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_REDEEMED_PARTICIPATION_BID_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_redeemed_participation_bid",
+        "fields": [
+            {"name": "auction_manager", "type": "string"},
+            {"name": "safety_deposit_storage_account", "type": "string"},
+            {"name": "destination_account", "type": "string"},
+            {"name": "bid_redemption_key", "type": "string"},
+            {"name": "safety_deposit_box", "type": "string"},
+            {"name": "vault_account", "type": "string"},
+            {"name": "safety_deposit_config", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "bidder_metadata", "type": "string"},
+            {"name": "bidder", "type": ["null","string"}],
+            {"name": "payer", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "transfer_authority", "type": "string"},
+            {"name": "accept_payment_account", "type": "string"},
+            {"name": "potential_paying_token_account", "type": "string"},
+            {"name": "participation_holding_account", "type": "string"},
+            {"name": "auction_data_extended_account", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_START_AUCTION_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_started_auction",
+        "fields": [
+            {"name": "store_key", "type": "string"},
+            {"name": "admin", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "auction_program", "type": "string"},
+            {"name": "public", "type": "boolean"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
     pub static ref METAPLEX_CLAIMED_BID_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
@@ -553,27 +722,108 @@ pub struct InitAuctionManager {
 
 #[derive(Serialize)]
 pub struct ValidateSafetyDepositBox {
-
+    pub safety_deposit_validation_ticket: String,
+    pub auction_manager: String,
+    pub metadata: String,
+    pub og_authority_lookup: String,
+    pub whitelisted_creators: String,
+    pub auction_manager_store_key: String,
+    pub safety_deposit_box: String,
+    /// Safety deposit box storage account where the actual nft token is stored
+    pub safety_deposit_box_storage: String,
+    pub mint: String,
+    pub edition_record: String,
+    pub vault_account: String,
+    pub authority: String,
+    pub metadata_authority: String,
+    pub payer: String,
+    pub token_metadata_program: String,
+    pub limited_ed_printing_mint: String,
+    pub limited_ed_printing_mint_authority: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
 pub struct RedeemedBid {
-
+    pub auction_manager: String,
+    pub safety_deposit_storage: String,
+    pub destination: String,
+    pub bid_redemption_key: String,
+    pub safety_deposit_box: String,
+    pub vault: String,
+    pub vault_fraction_mint: String,
+    pub auction: String,
+    pub bidder_metadata: String,
+    pub bidder: String,
+    pub payer: String,
+    pub store: String,
+    pub transfer_authority: String,
+    pub master_edition: String,
+    pub reservation_list: String,
+    pub safety_deposit_config: String,
+    pub auction_extended: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
 pub struct RedeemedFullRightsTransferBid {
-
+    pub auction_manager: String,
+    pub safety_deposit_storage: String,
+    pub destination: String,
+    pub bid_redemption_key: String,
+    pub safety_deposit_box: String,
+    pub vault: String,
+    pub vault_fraction_mint: String,
+    pub auction: String,
+    pub bidder_metadata: String,
+    pub bidder: String,
+    pub payer: String,
+    pub store: String,
+    pub master_metadata: String,
+    pub new_master_metadata_authority: String,
+    pub transfer_authority: String,
+    pub safety_deposit_config: String,
+    pub auction_extended: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
 pub struct RedeemedParticipationBid {
-
+    pub auction_manager: String,
+    /// Safety deposit token storage account
+    pub safety_deposit_storage: String,
+    /// Destination account for limited edition authority token. Must be same mint as master edition Printing mint.
+    pub destination_account: String,
+    pub bid_redemption_key: String,
+    pub safety_deposit_box: String,
+    pub vault_account: String,
+    /// Safety deposit config pda of ['metaplex', program id, auction manager, safety deposit]
+    /// This account will only get used in the event this is an AuctionManagerV2
+    pub safety_deposit_config: String,
+    pub auction: String,
+    pub bidder_metadata: String,
+    pub bidder: Option<String>,
+    pub payer: String,
+    pub store: String,
+    /// Transfer authority to move the payment in the auction's token_mint coin from the bidder account for the participation_fixed_price
+    /// on the auction manager to the auction manager account itself.
+    pub transfer_authority: String,
+    pub accept_payment_account: String,
+    /// The token account you will potentially pay for the open edition bid with if necessary.
+    pub potential_paying_token_account: String,
+    pub participation_holding_account: String,
+    pub auction_data_extended_account: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
 pub struct StartedAuction {
-
+    pub auction_manager: String,
+    pub auction: String,
+    pub auction_manager_authority: String,
+    pub store: String,
+    pub auction_program: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -960,8 +1210,8 @@ pub async fn fragment_instruction(
                     }
 
                     let table_data = TableData {
-                        schema: (*NATIVE_BPF_LOADER_WRITE_SCHEMA).clone(),
-                        table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
+                        schema: (*METAPLEX_INIT_AUCTION_MANAGER_SCHEMA).clone(),
+                        table_name: METAPLEX_INIT_AUCTION_MANAGER_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedInitAuctionManagerV1(
                             InitAuctionManager {
                                 account: instruction.accounts[0].account.to_string(),
@@ -1012,24 +1262,194 @@ pub async fn fragment_instruction(
                     Some(response)
                 }
                 MetaplexInstruction::DeprecatedValidateSafetyDepositBoxV1 => {
-                    msg!("Instruction: Deprecated Validate Safety Deposit Box V1");
-                    process_deprecated_validate_safety_deposit_box_v1(program_id, accounts)
+                    // msg!("Instruction: Deprecated Validate Safety Deposit Box V1");
+                    // process_deprecated_validate_safety_deposit_box_v1(program_id, accounts)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_VALIDATED_SAFETY_DEPOSIT_BOX_SCHEMA).clone(),
+                        table_name: METAPLEX_VALIDATED_SAFETY_DEPOSIT_BOX_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedValidateSafetyDepositBoxV1(
+                            ValidateSafetyDepositBox {
+                                safety_deposit_validation_ticket: instruction.accounts[0].account.to_string(),
+                                auction_manager: instruction.accounts[1].account.to_string(),
+                                metadata: instruction.accounts[2].account.to_string(),
+                                og_authority_lookup: instruction.accounts[3].account.to_string(),
+                                whitelisted_creators: instruction.accounts[4].account.to_string(),
+                                auction_manager_store_key: instruction.accounts[5].account.to_string(),
+                                safety_deposit_box: instruction.accounts[6].account.to_string(),
+                                safety_deposit_box_storage: instruction.accounts[7].account.to_string(),
+                                mint: instruction.accounts[8].account.to_string(),
+                                edition_record: instruction.accounts[9].account.to_string(),
+                                vault_account: instruction.accounts[10].account.to_string(),
+                                authority: instruction.accounts[11].account.to_string(),
+                                metadata_authority: instruction.accounts[12].account.to_string(),
+                                payer: instruction.accounts[13].account.to_string(),
+                                token_metadata_program: instruction.accounts[14].account.to_string(),
+                                limited_ed_printing_mint: instruction.accounts[17].account.to_string(),
+                                limited_ed_printing_mint_authority: instruction.accounts[18].account.to_string(),
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::RedeemBid => {
-                    msg!("Instruction: Redeem Normal Token Bid");
-                    process_redeem_bid(program_id, accounts, None)
+                    // msg!("Instruction: Redeem Normal Token Bid");
+                    // process_redeem_bid(program_id, accounts, None)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_REDEEMED_BID_SCHEMA).clone(),
+                        table_name: METAPLEX_REDEEMED_BID_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemBid(
+                            RedeemedBid {
+                                auction_manager: instruction.accounts[0].account.to_string(),
+                                safety_deposit_storage: instruction.accounts[1].account.to_string(),
+                                destination: instruction.accounts[2].account.to_string(),
+                                bid_redemption_key: instruction.accounts[3].account.to_string(),
+                                safety_deposit_box: instruction.accounts[4].account.to_string(),
+                                vault: instruction.accounts[5].account.to_string(),
+                                vault_fraction_mint: instruction.accounts[6].account.to_string(),
+                                auction: instruction.accounts[7].account.to_string(),
+                                bidder_metadata: instruction.accounts[8].account.to_string(),
+                                bidder: instruction.accounts[9].account.to_string(),
+                                payer: instruction.accounts[10].account.to_string(),
+                                store: instruction.accounts[14].account.to_string(),
+                                transfer_authority: instruction.accounts[17].account.to_string(),
+                                master_edition: instruction.accounts[18].account.to_string(),
+                                reservation_list: instruction.accounts[19].account.to_string(),
+                                safety_deposit_config: instruction.accounts[20].account.to_string(),
+                                auction_extended: instruction.accounts[21].account.to_string(),
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::RedeemFullRightsTransferBid => {
-                    msg!("Instruction: Redeem Full Rights Transfer Bid");
-                    process_full_rights_transfer_bid(program_id, accounts, None)
+                    // msg!("Instruction: Redeem Full Rights Transfer Bid");
+                    // process_full_rights_transfer_bid(program_id, accounts, None)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_REDEEMED_FULL_RIGHTS_TRANSFER_BID_SCHEMA).clone(),
+                        table_name: METAPLEX_REDEEMED_FULL_RIGHTS_TRANSFER_BID_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemFullRightsTransferBid(
+                            RedeemedFullRightsTransferBid {
+                                auction_manager: instruction.accounts[0].account.to_string(),
+                                safety_deposit_storage: instruction.accounts[1].account.to_string(),
+                                destination: instruction.accounts[2].account.to_string(),
+                                bid_redemption_key: instruction.accounts[3].account.to_string(),
+                                safety_deposit_box: instruction.accounts[4].account.to_string(),
+                                vault: instruction.accounts[5].account.to_string(),
+                                vault_fraction_mint: instruction.accounts[6].account.to_string(),
+                                auction: instruction.accounts[7].account.to_string(),
+                                bidder_metadata: instruction.accounts[8].account.to_string(),
+                                bidder: instruction.accounts[9].account.to_string(),
+                                payer: instruction.accounts[10].account.to_string(),
+                                store: instruction.accounts[14].account.to_string(),
+                                master_metadata: instruction.accounts[17].account.to_string(),
+                                new_master_metadata_authority: instruction.accounts[18].account.to_string(),
+                                transfer_authority: instruction.accounts[19].account.to_string(),
+                                safety_deposit_config: instruction.accounts[20].account.to_string(),
+                                auction_extended: instruction.accounts[21].account.to_string(),
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::DeprecatedRedeemParticipationBid => {
-                    msg!("Instruction: Deprecated Redeem Participation Bid");
-                    process_redeem_participation_bid(program_id, accounts, true, None)
+                    // msg!("Instruction: Deprecated Redeem Participation Bid");
+                    // process_redeem_participation_bid(program_id, accounts, true, None)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_REDEEMED_PARTICIPATION_BID_SCHEMA).clone(),
+                        table_name: METAPLEX_REDEEMED_PARTICIPATION_BID_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedRedeemParticipationBid(
+                            RedeemedParticipationBid {
+                                auction_manager: instruction.accounts[0].account.to_string(),
+                                safety_deposit_storage: instruction.accounts[1].account.to_string(),
+                                destination_account: instruction.accounts[2].account.to_string(),
+                                bid_redemption_key: instruction.accounts[3].account.to_string(),
+                                safety_deposit_box: instruction.accounts[4].account.to_string(),
+                                vault_account: instruction.accounts[5].account.to_string(),
+                                safety_deposit_config: instruction.accounts[6].account.to_string(),
+                                auction: instruction.accounts[7].account.to_string(),
+                                bidder_metadata: instruction.accounts[8].account.to_string(),
+                                bidder: if instruction.accounts.len() > 21 {
+                                    Some(instruction.accounts[9].account.to_string())
+                                } else {
+                                    None
+                                },
+                                payer: if instruction.accounts.len() > 21 {
+                                    instruction.accounts[10].account.to_string()
+                                } else {
+                                    instruction.accounts[9].account.to_string()
+                                },
+                                store: if instruction.accounts.len() > 21 {
+                                    instruction.accounts[11].account.to_string()
+                                } else {
+                                    instruction.accounts[10].account.to_string()
+                                },
+                                transfer_authority: if instruction.accounts.len() > 21 {
+                                    instruction.accounts[12].account.to_string()
+                                } else {
+                                    instruction.accounts[11].account.to_string()
+                                },
+                                accept_payment_account: if instruction.accounts.len() > 21 {
+                                    instruction.accounts[13].account.to_string()
+                                } else {
+                                    instruction.accounts[12].account.to_string()
+                                },
+                                potential_paying_token_account: if instruction.accounts.len() > 21 {
+                                    instruction.accounts[14].account.to_string()
+                                } else {
+                                     instruction.accounts[13].account.to_string()
+                                },
+                                participation_holding_account: if instruction.accounts.len() > 21 {
+                                    instruction.accounts[15].account.to_string()
+                                } else {
+                                    instruction.accounts[14].account.to_string()
+                                },
+                                auction_data_extended_account: if instruction.accounts.len() > 21 {
+                                    instruction.accounts[16].account.to_string()
+                                } else {
+                                    instruction.accounts[15].account.to_string()
+                                },
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::StartAuction => {
-                    msg!("Instruction: Start Auction");
-                    process_start_auction(program_id, accounts)
+                    // msg!("Instruction: Start Auction");
+                    // process_start_auction(program_id, accounts)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_START_AUCTION_SCHEMA).clone(),
+                        table_name: METAPLEX_START_AUCTION_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::StartAuction(
+                            StartedAuction {
+                                auction_manager: instruction.accounts[0].account.to_string(),
+                                auction: instruction.accounts[1].account.to_string(),
+                                auction_manager_authority: instruction.accounts[2].account.to_string(),
+                                auction_program: instruction.accounts[5].account.to_string(),
+                                store: instruction.accounts[4].account.to_string(),
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::ClaimBid => {
                     // msg!("Instruction: Claim Bid");

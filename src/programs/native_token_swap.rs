@@ -3,7 +3,6 @@ use serde::Serialize;
 use spl_token_swap::instruction::{unpack, SwapInstruction};
 
 use crate::{Instruction, TableData};
-use crate::programs::native_token::*;
 
 pub const PROGRAM_ADDRESS: &str = "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8";
 
