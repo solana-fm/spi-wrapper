@@ -13,6 +13,8 @@ use crate::{Instruction, TableData, TypedDatum};
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
 pub const NATIVE_BPF_LOADER_WRITE_TABLE_NAME: &str = "native_bpf_writes";
+pub const METAPLEX_INIT_AUCTION_MANAGER_V2_TABLE_NAME: &str = "metaplex_init_auction_managers_v2";
+pub const METAPLEX_VALIDATED_SAFETY_DEPOSIT_V2_TABLE_NAME: &str = "metaplex_validated_safety_deposits_v2";
 pub const METAPLEX_REDEEMED_PARTICIPATION_BID_V3_TABLE_NAME: &str = "metaplex_redeemed_participation_bids_v3";
 pub const METAPLEX_ENDED_AUCTION_TABLE_NAME: &str = "metaplex_ended_auctions";
 pub const METAPLEX_SET_STORE_INDEX_TABLE_NAME: &str = "metaplex_set_store_indices";
@@ -27,6 +29,66 @@ lazy_static! {
         "fields": [
             {"name": "transaction_hash", "type": "string"},
             {"name": "program", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_INIT_AUCTION_MANAGER_V2_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_init_auction_manager_v2",
+        "fields": [
+            {"name": "auction_manager_account", "type": "string"},
+            {"name": "auction_winner_token_type_tracker", "type": "string"},
+            {"name": "combined_vault_account", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "authority", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "payment_account", "type": "string"},
+            {"name": "store", "type": "string"},
+            {"name": "amount_type", "type": "int"},
+            {"name": "length_type", "type": "int"},
+            {"name": "max_ranges", "type": "long"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_VALIDATED_SAFETY_DEPOSIT_V2_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_validated_safety_deposit_v2",
+        "fields": [
+            {"name": "win_index", "type": ["null","long"]},
+            {"name": "key", "type": "int"},
+            {"name": "order", "type": "long"},
+            {"name": "winning_config_type", "type": "int"},
+            {"name": "amount_type", "type": "int"},
+            {"name": "length_type", "type": "int"},
+            {"name": "amount_ranges", "type": "array", "items" : "long"]},
+            {"name": "winning_constraint", "type": ["null","int"]},
+            {"name": "non_winning_constraint", "type": ["null","int"]},
+            {"name": "fixed_price", "type": ["null","long"]},
+            {"name": "safety_deposit_config", "type": "string"},
+            {"name": "auction_winner_token_type_tracker", "type": "string"},
+            {"name": "auction_manager", "type": "string"},
+            {"name": "metadata", "type": "string"},
+            {"name": "og_authority_lookup", "type": "string"},
+            {"name": "whitelisted_creators", "type": "string"},
+            {"name": "auction_manager_store_key", "type": "string"},
+            {"name": "safety_deposit_box", "type": "string"},
+            {"name": "safety_deposit_box_storage", "type": "string"},
+            {"name": "mint", "type": "string"},
+            {"name": "edition_record", "type": "string"},
+            {"name": "vault_account", "type": "string"},
+            {"name": "authority", "type": "string"},
+            {"name": "metadata_authority", "type": ["null","string"]},
+            {"name": "payer", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -283,12 +345,65 @@ pub struct RedeemedParticipationBidV2 {
 
 #[derive(Serialize)]
 pub struct InitAuctionManagerV2 {
-
+    pub auction_manager_account: String,
+    pub auction_winner_token_type_tracker: String,
+    pub combined_vault_account: String,
+    pub auction: String,
+    pub authority: String,
+    pub payer: String,
+    pub payment_account: String,
+    pub store: String,
+    pub amount_type: i16,
+    pub length_type: i16,
+    pub max_ranges: i64,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
 pub struct ValidatedSafetyDepositBoxV2 {
-
+    pub key: i16,
+    /// safety deposit order
+    pub order: i64,
+    pub winning_config_type: i16,
+    pub amount_type: i16,
+    pub length_type: i16,
+    pub amount_ranges: Vec<i64>,
+    /// Setups:
+    /// 0. Winners get participation + not charged extra
+    /// 1. Winners dont get participation prize
+    pub winning_constraint: Option<i16>,
+    /// Setups:
+    /// 0. Losers get prize for free
+    /// 1. Losers get prize but pay fixed price
+    /// 2. Losers get prize but pay bid price
+    pub non_winning_constraint: Option<i16>,
+    /// Setting this field disconnects the participation prizes price from the bid. Any bid you submit, regardless
+    /// of amount, charges you the same fixed price.
+    pub fixed_price: Option<i64>,
+    /// We have this variable below to keep track in the case of the participation NFTs, whose
+    /// income will trickle in over time, how much the artists have in the escrow account and
+    /// how much would/should be owed to them if they try to claim it relative to the winning bids.
+    /// It's  abit tougher than a straightforward bid which has a price attached to it, because
+    /// there are many bids of differing amounts (in the case of GivenForBidPrice) and they dont all
+    /// come in at one time, so this little ledger here keeps track.
+    pub collected_to_accept_payment: Option<i64>,
+    pub safety_deposit_config: String,
+    pub auction_winner_token_type_tracker: String,
+    pub auction_manager: String,
+    pub metadata: String,
+    pub og_authority_lookup: String,
+    pub whitelisted_creators: String,
+    pub auction_manager_store_key: String,
+    pub safety_deposit_box: String,
+    /// Safety deposit box storage account where the actual nft token is stored
+    pub safety_deposit_box_storage: String,
+    pub mint: String,
+    pub edition_record: String,
+    pub vault_account: String,
+    pub authority: String,
+    pub metadata_authority: Option<String>,
+    pub payer: String,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -561,18 +676,113 @@ pub async fn fragment_instruction(
                     process_redeem_participation_bid(program_id, accounts, false, None)
                 }
                 MetaplexInstruction::InitAuctionManagerV2(args) => {
-                    msg!("Instruction: Init Auction Manager V2");
-                    process_init_auction_manager_v2(
-                        program_id,
-                        accounts,
-                        args.amount_type,
-                        args.length_type,
-                        args.max_ranges,
-                    )
+                    // msg!("Instruction: Init Auction Manager V2");
+                    // process_init_auction_manager_v2(
+                    //     program_id,
+                    //     accounts,
+                    //     args.amount_type,
+                    //     args.length_type,
+                    //     args.max_ranges,
+                    // )
+                    // msg!("Instruction: End auction");
+                    // process_end_auction(program_id, accounts, args)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_INIT_AUCTION_MANAGER_V2_SCHEMA).clone(),
+                        table_name: METAPLEX_INIT_AUCTION_MANAGER_V2_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::InitAuctionManagerV2(
+                            InitAuctionManagerV2 {
+                                auction_manager_account: instruction.accounts[0].account.to_string(),
+                                auction_winner_token_type_tracker: instruction.accounts[1].account.to_string(),
+                                combined_vault_account: instruction.accounts[2].account.to_string(),
+                                auction: instruction.accounts[3].account.to_string(),
+                                authority: instruction.accounts[4].account.to_string(),
+                                payer: instruction.accounts[5].account.to_string(),
+                                payment_account: instruction.accounts[6].account.to_string(),
+                                store: instruction.accounts[7].account.to_string(),
+                                amount_type: args.amount_type as i16,
+                                length_type: args.length_type as i16,
+                                max_ranges: args.max_ranges as i64,
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::ValidateSafetyDepositBoxV2(safety_deposit_config) => {
-                    msg!("Instruction: Validate Safety Deposit Box V2");
-                    process_validate_safety_deposit_box_v2(program_id, accounts, safety_deposit_config)
+                    // msg!("Instruction: Validate Safety Deposit Box V2");
+                    // process_validate_safety_deposit_box_v2(program_id, accounts, safety_deposit_config)
+
+                    let table_data = TableData {
+                        schema: (*METAPLEX_VALIDATED_SAFETY_DEPOSIT_V2_SCHEMA).clone(),
+                        table_name: METAPLEX_VALIDATED_SAFETY_DEPOSIT_V2_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::Metaplex(MetaplexMainDatum::ValidateSafetyDepositBoxV2(
+                            ValidatedSafetyDepositBoxV2 {
+                                key: safety_deposit_config.key as i16,
+                                order: safety_deposit_config.order as i64,
+                                winning_config_type: safety_deposit_config.winning_config_type as i16,
+                                amount_type: safety_deposit_config.amount_type as i16,
+                                length_type: safety_deposit_config.length_type as i16,
+                                amount_ranges: vec![safety_deposit_config.amount_ranges[0].0 as i64,
+                                                    safety_deposit_config.amount_ranges[0].1 as i64,
+                                                    safety_deposit_config.amount_ranges[1].0 as i64,
+                                                    safety_deposit_config.amount_ranges[1].1 as i64],
+                                winning_constraint: if let Some(pc) = &safety_deposit_config.participation_config {
+                                    Some(pc.winner_constraint as i16)
+                                } else {
+                                    None
+                                },
+                                non_winning_constraint: if let Some(pc) = &safety_deposit_config.participation_config {
+                                    Some(pc.non_winning_constraint as i16)
+                                } else {
+                                    None
+                                },
+                                fixed_price: if let Some(pc) = &safety_deposit_config.participation_config {
+                                    if let Some(fp) = pc.fixed_price {
+                                        Some(fp as i64)
+                                    } else {
+                                        None
+                                    }
+                                } else {
+                                    None
+                                },
+                                collected_to_accept_payment: if let Some(ps) = &safety_deposit_config.participation_state {
+                                    Some(ps.collected_to_accept_payment as i64)
+                                } else {
+                                    None
+                                },
+                                safety_deposit_config: instruction.accounts[0].account.to_string(),
+                                auction_winner_token_type_tracker: instruction.accounts[1].account.to_string(),
+                                auction_manager: instruction.accounts[2].account.to_string(),
+                                metadata: instruction.accounts[3].account.to_string(),
+                                og_authority_lookup: instruction.accounts[4].account.to_string(),
+                                whitelisted_creators: instruction.accounts[5].account.to_string(),
+                                auction_manager_store_key: instruction.accounts[6].account.to_string(),
+                                safety_deposit_box: instruction.accounts[7].account.to_string(),
+                                safety_deposit_box_storage: instruction.accounts[8].account.to_string(),
+                                mint: instruction.accounts[9].account.to_string(),
+                                edition_record: instruction.accounts[10].account.to_string(),
+                                vault_account: instruction.accounts[11].account.to_string(),
+                                authority: instruction.accounts[12].account.to_string(),
+                                metadata_authority: if instruction.accounts.len() < 18 {
+                                    None
+                                } else {
+                                    Some(instruction.accounts[13].account.to_string())
+                                },
+                                payer: if instruction.accounts.len() < 18 {
+                                    instruction.accounts[13].account.to_string()
+                                } else {
+                                    instruction.accounts[14].account.to_string()
+                                },
+                                timestamp: instruction.timestamp,
+                            }))]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 MetaplexInstruction::RedeemParticipationBidV3(args) => {
                     // msg!("Instruction: Redeem Participation Bid V3");
