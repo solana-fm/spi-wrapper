@@ -191,10 +191,10 @@ pub enum MetaplexTokenMetadataDatum {
     DeprecatedMintPrintingTokens(MintPrintingTokens),
     CreateMasterEdition(CreatedMasterEdition),
     MintNewEditionFromMasterEditionViaToken(MintedNewEditionFromMasterEditionViaToken),
-    ConvertMasterEditionV1ToV2,
-    MintNewEditionFromMasterEditionViaVaultProxy,
-    PuffMetadata,
-    UpdateMetadataAccountV2,
+    ConvertMasterEditionV1ToV2(ConvertMasterEditionV1ToV2),
+    MintNewEditionFromMasterEditionViaVaultProxy(MintedNewEditionFromMasterEditionViaVaultProxy),
+    PuffMetadata(PuffedMetadata),
+    UpdateMetadataAccountV2(UpdatedMetadataAccountV2),
     CreateMetadataAccountV2,
     CreateMasterEditionV3,
     VerifyCollection,
@@ -367,7 +367,62 @@ pub struct MintedNewEditionFromMasterEditionViaToken {
 
 #[derive(Serialize)]
 pub struct ConvertMasterEditionV1ToV2 {
-    
+    pub master_record_edition: String,
+    pub one_time_authorization_mint: String,
+    pub printing_mint: String,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct MintedNewEditionFromMasterEditionViaVaultProxy {
+    pub metadata: String,
+    pub new_edition: String,
+    pub master_record_edition: String,
+    pub mint: String,
+    pub edition_pda: String,
+    pub mint_authority: String,
+    pub payer: String,
+    pub vault_authority: String,
+    pub safety_deposit_token_store: String,
+    pub safety_deposit_box: String,
+    pub vault: String,
+    pub update_authority_info: String,
+    pub master_record_metadata: String,
+    pub edition: i64,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct PuffedMetadata {
+    pub metadata: String,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct Collection {
+    pub verified: bool,
+    pub key: String
+}
+
+#[derive(Serialize)]
+pub struct UpdatedMetadataAccountV2 {
+    pub metadata: String,
+    pub update_authority: String,
+    /// The name of the asset
+    pub name: Option<String>,
+    /// The symbol for the asset
+    pub symbol: Option<String>,
+    /// URI pointing to JSON representing the asset
+    pub uri: Option<String>,
+    /// Royalty basis points that goes to creators in secondary sales (0-10000)
+    pub seller_fee_basis_points: Option<u16>,
+    pub collection: Option<Vec<Collection>>,
+    pub use_method: Option<i16>,
+    pub remaining: Option<i64>,
+    pub uses_total: Option<i64>,
+    pub primary_sale_happened: Option<bool>,
+    pub is_mutable: Option<bool>,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
