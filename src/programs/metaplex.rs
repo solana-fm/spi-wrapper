@@ -601,7 +601,7 @@ lazy_static! {
             {"name": "auction_manager_authority", "type": "string"},
             {"name": "store_key", "type": "string"},
             {"name": "auction_program", "type": "string"},
-            {"name": "reveal", "type": ["null","array"], "items" : "long"},
+            {"name": "reveal", "type": ["null", { "type": "array", "items": "long" }], "default": null},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
