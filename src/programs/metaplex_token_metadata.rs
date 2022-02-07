@@ -1,4 +1,3 @@
-use core::num::flt2dec::Sign;
 use avro_rs::schema::Schema;
 use borsh::BorshDeserialize;
 use mpl_token_metadata::deprecated_instruction::SetReservationListArgs;
@@ -8,7 +7,6 @@ use sha3::digest::Update;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
-use crate::MetaplexTokenMetadataDatum::{CreateMetadataAccount, DeprecatedCreateMasterEdition, DeprecatedMintNewEditionFromMasterEditionViaPrintingToken, UpdateMetadataAccount, UpdatePrimarySaleHappenedViaToken};
 
 pub const PROGRAM_ADDRESS: &str = "auctxRXPeJoc4817jDhf4HbjnhEcr1cCXenosMhK5R8";
 
@@ -189,7 +187,7 @@ pub enum MetaplexTokenMetadataDatum {
     CreateMetadataAccount(CreatedMetadata),
     UpdateMetadataAccount(UpdatedMetadata),
     DeprecatedCreateMasterEdition(CreatedMasterEdition),
-    DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(DeprecatedMintNewEditionFromMasterEditionViaPrintingToken),
+    DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(MintNewEditionFromMasterEditionViaPrintingToken),
     UpdatePrimarySaleHappenedViaToken(UpdatePrimarySaleHappenedViaToken),
     DeprecatedSetReservationList(SetReservationList),
     DeprecatedCreateReservationList(CreateReservationList),
@@ -499,7 +497,7 @@ pub async fn fragment_instruction(
                         schema: (*METAPLEX_TOKEN_METADATA_CREATED_METADATA_SCHEMA).clone(),
                         table_name: METAPLEX_TOKEN_METADATA_CREATED_METADATA_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
-                            CreateMetadataAccount(CreatedMetadata {
+                            MetaplexTokenMetadataDatum::CreateMetadataAccount(CreatedMetadata {
                                 metadata: instruction.accounts[0].account.to_string(),
                                 mint: instruction.accounts[1].account.to_string(),
                                 mint_authority: instruction.accounts[2].account.to_string(),
@@ -542,13 +540,29 @@ pub async fn fragment_instruction(
                         schema: (*METAPLEX_UPDATE_METADATA_ACCOUNT).clone(),
                         table_name: METAPLEX_UPDATE_METADATA_ACCOUNT_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
-                            UpdateMetadataAccount(UpdatedMetadata {
+                            MetaplexTokenMetadataDatum::UpdateMetadataAccount(UpdatedMetadata {
                                 metadata: instruction.accounts[0].account.to_string(),
                                 update_authority: instruction.accounts[1].account.to_string(),
-                                name: mtm_ix.data.name.to_string(),
-                                symbol: mtm_ix.data.symbol.to_string(),
-                                uri: mtm_ix.data.uri.to_string(),
-                                seller_fee_bips: mtm_ix.data.seller_fee_basis_points.unwrap(),
+                                name: if let Some(data) = &mtm_ix.data {
+                                    Some(data.name.to_string())
+                                } else {
+                                    None
+                                },
+                                symbol: if let Some(data) = &mtm_ix.data {
+                                    Some(data.symbol.to_string())
+                                } else {
+                                    None
+                                },
+                                uri: if let Some(data) = &mtm_ix.data {
+                                    Some(data.uri.to_string())
+                                } else {
+                                    None
+                                },
+                                seller_fee_bips: if let Some(data) = &mtm_ix.data {
+                                    Some(data.seller_fee_basis_points as i32)
+                                } else {
+                                    None
+                                },
                                 timestamp: instruction.timestamp,
                             })
                         )],
@@ -560,7 +574,7 @@ pub async fn fragment_instruction(
                         schema: (*METAPLEX_DEPRECATED_CREATE_MASTER_EDITION).clone(),
                         table_name: METAPLEX_DEPRECATED_CREATE_MASTER_EDITION_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
-                            DeprecatedCreateMasterEdition(CreatedMasterEdition {
+                            MetaplexTokenMetadataDatum::DeprecatedCreateMasterEdition(CreatedMasterEdition {
                                 account: instruction.accounts[0].account.to_string(),
                                 metadata_mint: instruction.accounts[1].account.to_string(),
                                 printing_mint: instruction.accounts[2].account.to_string(),
@@ -571,8 +585,11 @@ pub async fn fragment_instruction(
                                 metadata: instruction.accounts[7].account.to_string(),
                                 payer: instruction.accounts[8].account.to_string(),
                                 one_time_authorization_printing_mint_authority: instruction.accounts[9].account.to_string(),
-                                ///Unsure
-                                max_supply: mtm.ix.max_supply.unwrap(),
+                                max_supply: if let Some(ms) = mtm_ix.max_supply {
+                                    Some(ms as i64)
+                                } else {
+                                    None
+                                },
                                 timestamp: instruction.timestamp,
                             })
                         )],
@@ -584,7 +601,7 @@ pub async fn fragment_instruction(
                         schema: (*METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN).clone(),
                         table_name: METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_VIA_EDITION_PRINTING_TOKEN_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
-                            DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(MintNewEditionFromMasterEditionViaPrintingToken {
+                            MetaplexTokenMetadataDatum::DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(MintNewEditionFromMasterEditionViaPrintingToken {
                                 new_metadata_key: instruction.accounts[0].account.to_string(),
                                 new_edition: instruction.accounts[1].account.to_string(),
                                 master_record_edition: instruction.accounts[2].account.to_string(),
@@ -597,7 +614,11 @@ pub async fn fragment_instruction(
                                 payer: instruction.accounts[9].account.to_string(),
                                 update_authority: instruction.accounts[10].account.to_string(),
                                 master_record_metadata: instruction.accounts[10].account.to_string(),
-                                reservation_list: instruction.accounts[11].account.to_string().unwrap(),
+                                reservation_list: if instruction.accounts.len() > 15 {
+                                    Some(instruction.accounts[11].account.to_string())
+                                } else {
+                                    None
+                                },
                                 timestamp: instruction.timestamp
                             })
                         )],
@@ -610,7 +631,7 @@ pub async fn fragment_instruction(
                         schema: (*METAPLEX_UPDATE_PRIMARY_SALE_HAPPENED).clone(),
                         table_name: METAPLEX_UPDATE_PRIMARY_SALE_HAPPENED_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
-                            UpdatePrimarySaleHappenedViaToken(UpdatePrimarySaleHappenedViaToken {
+                            MetaplexTokenMetadataDatum::UpdatePrimarySaleHappenedViaToken(UpdatePrimarySaleHappenedViaToken {
                                 metadata: instruction.accounts[0].account.to_string(),
                                 owner: instruction.accounts[1].account.to_string(),
                                 metadata_mint_tokens_account: instruction.accounts[2].account.to_string(),
