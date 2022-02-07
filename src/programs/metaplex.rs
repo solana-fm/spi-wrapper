@@ -190,11 +190,11 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_started_auction",
         "fields": [
-            {"name": "store_key", "type": "string"},
-            {"name": "admin", "type": "string"},
-            {"name": "payer", "type": "string"},
+            {"name": "auction_manager", "type": "string"},
+            {"name": "auction", "type": "string"},
+            {"name": "auction_manager_authority", "type": "string"},
+            {"name": "store", "type": "string"},
             {"name": "auction_program", "type": "string"},
-            {"name": "public", "type": "boolean"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
