@@ -8,7 +8,7 @@ use sha3::digest::Update;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
-use crate::MetaplexTokenMetadataDatum::{CreateMetadataAccount, DeprecatedCreateMasterEdition, DeprecatedMintNewEditionFromMasterEditionViaPrintingToken, UpdateMetadataAccount};
+use crate::MetaplexTokenMetadataDatum::{CreateMetadataAccount, DeprecatedCreateMasterEdition, DeprecatedMintNewEditionFromMasterEditionViaPrintingToken, UpdateMetadataAccount, UpdatePrimarySaleHappenedViaToken};
 
 pub const PROGRAM_ADDRESS: &str = "auctxRXPeJoc4817jDhf4HbjnhEcr1cCXenosMhK5R8";
 
@@ -572,7 +572,7 @@ pub async fn fragment_instruction(
                                 payer: instruction.accounts[8].account.to_string(),
                                 one_time_authorization_printing_mint_authority: instruction.accounts[9].account.to_string(),
                                 ///Unsure
-                                max_supply:  None,
+                                max_supply: mtm.ix.max_supply.unwrap(),
                                 timestamp: instruction.timestamp,
                             })
                         )],
@@ -585,19 +585,19 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_VIA_EDITION_PRINTING_TOKEN_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(MintNewEditionFromMasterEditionViaPrintingToken {
-                                new_metadata_key: instructions.accounts[0].account.to_string(),
-                                new_edition: instructions.accounts[1].account.to_string(),
-                                master_record_edition: instructions.accounts[2].account.to_string(),
-                                new_token_mint: instructions.accounts[3].account.to_string(),
-                                mint_authority: instructions.accounts[4].account.to_string(),
-                                printing_mint_master: instructions.accounts[5].account.to_string(),
-                                printing_mint_token_account: instructions.accounts[6].account.to_string(),
-                                marked_creation_edition_pda: instructions.accounts[7].account.to_string(),
-                                burn_authority: instructions.accounts[8].account.to_string(),
-                                payer: instructions.accounts[9].account.to_string(),
-                                update_authority: instructions.accounts[10].account.to_string(),
-                                master_record_metadata: instructions.accounts[10].account.to_string(),
-                                reservation_list: instructions.accounts[11].account.to_string(),
+                                new_metadata_key: instruction.accounts[0].account.to_string(),
+                                new_edition: instruction.accounts[1].account.to_string(),
+                                master_record_edition: instruction.accounts[2].account.to_string(),
+                                new_token_mint: instruction.accounts[3].account.to_string(),
+                                mint_authority: instruction.accounts[4].account.to_string(),
+                                printing_mint_master: instruction.accounts[5].account.to_string(),
+                                printing_mint_token_account: instruction.accounts[6].account.to_string(),
+                                marked_creation_edition_pda: instruction.accounts[7].account.to_string(),
+                                burn_authority: instruction.accounts[8].account.to_string(),
+                                payer: instruction.accounts[9].account.to_string(),
+                                update_authority: instruction.accounts[10].account.to_string(),
+                                master_record_metadata: instruction.accounts[10].account.to_string(),
+                                reservation_list: instruction.accounts[11].account.to_string().unwrap(),
                                 timestamp: instruction.timestamp
                             })
                         )],
@@ -606,9 +606,37 @@ pub async fn fragment_instruction(
                     Some(response)
                 }
                 MetadataInstruction::UpdatePrimarySaleHappenedViaToken => {
-                    Some(response)
+                    response.push(TableData{
+                        schema: (*METAPLEX_UPDATE_PRIMARY_SALE_HAPPENED).clone(),
+                        table_name: METAPLEX_UPDATE_PRIMARY_SALE_HAPPENED_TABLE.to_string(),
+                        data: vec![TypedDatum::MetaplexTokenMetadata(
+                            UpdatePrimarySaleHappenedViaToken(UpdatePrimarySaleHappenedViaToken {
+                                metadata: instruction.accounts[0].account.to_string(),
+                                owner: instruction.accounts[1].account.to_string(),
+                                metadata_mint_tokens_account: instruction.accounts[2].account.to_string(),
+                                timestamp: instruction.timestamp
+                            })
+                        )],
+                    });
+
+                        Some(response)
                 }
                 MetadataInstruction::DeprecatedSetReservationList(ref mtm_ix) => {
+                    // response.push(TableData{
+                    //     schema: (*METAPLEX_RESERVATION).clone(),
+                    //     table_name: METAPLEX_RESERVATION_TABLE.to_string(),
+                    //     data: vec![TypedDatum::MetaplexTokenMetadata(
+                    //         SetReservationList(SetReservationList {
+                    //             master_edition: instruction.accounts[0].account.to_string(),
+                    //             reservation_list: instruction.accounts[1].account.to_string(),
+                    //             reservation_list_resource: instruction.accounts[2].account.to_string(),
+                    //             total_reservation_spots: None,
+                    //             offset: 0,
+                    //             total_spot_offset: 0,
+                    //             timestamp: 0
+                    //         })
+                    //     )],
+                    // });
                     Some(response)
                 }
                 MetadataInstruction::DeprecatedCreateReservationList => {
