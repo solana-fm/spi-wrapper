@@ -149,7 +149,7 @@ pub enum MetaplexTokenMetadataDatum {
     MintNewEditionFromMasterEditionViaVaultProxy(MintedNewEditionFromMasterEditionViaVaultProxy),
     PuffMetadata(PuffedMetadata),
     UpdateMetadataAccountV2(UpdatedMetadataAccountV2),
-    CreateMetadataAccountV2,
+    CreateMetadataAccountV2(CreatedMetadataAccountV2),
     CreateMasterEditionV3,
     VerifyCollection,
     Utilize,
@@ -376,6 +376,29 @@ pub struct UpdatedMetadataAccountV2 {
     pub uses_total: Option<i64>,
     pub primary_sale_happened: Option<bool>,
     pub is_mutable: Option<bool>,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct CreatedMetadataAccountV2 {
+    pub metadata: String,
+    pub mint: String,
+    pub mint_authority: String,
+    pub payer: String,
+    pub update_authority: String,
+    /// The name of the asset
+    pub name: String,
+    /// The symbol for the asset
+    pub symbol: String,
+    /// URI pointing to JSON representing the asset
+    pub uri: String,
+    /// Royalty basis points that goes to creators in secondary sales (0-10000)
+    pub seller_fee_basis_points: i32,
+    pub collection: Option<Vec<Collection>>,
+    pub use_method: Option<i16>,
+    pub remaining: Option<i64>,
+    pub uses_total: Option<i64>,
+    pub is_mutable: bool,
     pub timestamp: i64
 }
 
