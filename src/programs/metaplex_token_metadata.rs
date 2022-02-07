@@ -8,13 +8,15 @@ use sha3::digest::Update;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
-use crate::MetaplexTokenMetadataDatum::{CreateMetadataAccount, UpdateMetadataAccount};
+use crate::MetaplexTokenMetadataDatum::{CreateMetadataAccount, DeprecatedCreateMasterEdition, DeprecatedMintNewEditionFromMasterEditionViaPrintingToken, UpdateMetadataAccount};
 
 pub const PROGRAM_ADDRESS: &str = "auctxRXPeJoc4817jDhf4HbjnhEcr1cCXenosMhK5R8";
 
 pub const METAPLEX_TOKEN_METADATA_CREATED_METADATA_TABLE: &str = "metaplex_token_metadata_created_metadatas";
 pub const METAPLEX_TOKEN_METADATA_CREATOR_TABLE: &str = "metaplex_token_metadata_creators";
 pub const METAPLEX_UPDATE_METADATA_ACCOUNT_TABLE: &str = "metaplex_update_metadata_accounts";
+pub const METAPLEX_DEPRECATED_CREATE_MASTER_EDITION_TABLE: &str = "metaplex-deprecated_create_master_editions";
+pub const METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_VIA_EDITION_PRINTING_TOKEN_TABLE: &str = "metaplex-deprecated_mint_new_edition_from_master_edition_via_printing_token";
 pub const METAPLEX_MINTED_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN_TABLE: &str = "metaplex_minted_from_master_editions";
 pub const METAPLEX_UPDATE_PRIMARY_SALE_HAPPENED_TABLE: &str = "metaplex_update_primary_sale_happened_via_tokens";
 pub const METAPLEX_RESERVATION_TABLE: &str = "metaplex_reservations";
@@ -75,11 +77,62 @@ lazy_static! {
         "#
     )
     .unwrap();
+
+    pub static ref METAPLEX_DEPRECATED_CREATE_MASTER_EDITION: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex-deprecated_create_master_edition,
+        "fields": [
+            {"name": "account", "type": "string"},
+            {"name": "metadata_mint", "type": "string"},
+            {"name": "printing_mint", "type": "string"},
+            {"name": "one_time_authorization_printing_mint", "type": "string"},
+            {"name": "update_authority", "type": "string"},
+            {"name": "printing_mint_authority", "type": "string"},
+            {"name": "metadata_mint_authority", "type": "string"},
+            {"name": "metadata", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "one_time_authorization_printing_mint_authority", "type": "string"},
+            {"name": "max_supply", "type": ["null", "int"]},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+        "#
+    )
+    .unwrap();
+
+    pub static ref METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex-deprecated_mint_new_edition_from_master_edition_via_printing_token,
+        "fields": [
+            {"name": "new_metadata_key", "type": "string"},
+            {"name": "new_edition", "type": "string"},
+            {"name": "master_record_edition", "type": "string"},
+            {"name": "new_token_mint", "type": "string"},
+            {"name": "mint_authority", "type": "string"},
+            {"name": "printing_mint_master", "type": "string"},
+            {"name": "printing_mint_token_account", "type": "string"},
+            {"name": "marked_creation_edition_pda", "type": "string"},
+            {"name": "burn_authority", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "update_authority", "type": "string"},
+            {"name": "master_record_metadata", "type": "string"},
+            {"name": "reservation_list", "type": ["null", "string"]},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+        "#
+    )
+    .unwrap();
+
     pub static ref METAPLEX_MINTED_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
-        "name": "metaplex_update_metadata_account",
+        "name": "metaplex_minted_new_edition_from_master_edition_via_printing_token",
         "fields": [
             {"name": "metadata", "type": "string"},
             {"name": "new_edition", "type": "string"},
@@ -103,7 +156,7 @@ lazy_static! {
         r#"
     {
         "type": "record",
-        "name": "metaplex_update_metadata_account",
+        "name": "metaplex_update_primary_sale_happened",
         "fields": [
             {"name": "metadata", "type": "string"},
             {"name": "owner", "type": "string"},
@@ -118,7 +171,7 @@ lazy_static! {
         r#"
     {
         "type": "record",
-        "name": "metaplex_update_metadata_account",
+        "name": "metaplex_reservation",
         "fields": [
             {"name": "address", "type": "string"},
             {"name": "spots_remaining", "type": "int"},
@@ -136,7 +189,7 @@ pub enum MetaplexTokenMetadataDatum {
     CreateMetadataAccount(CreatedMetadata),
     UpdateMetadataAccount(UpdatedMetadata),
     DeprecatedCreateMasterEdition(CreatedMasterEdition),
-    DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(MintNewEditionFromMasterEditionViaPrintingToken),
+    DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(DeprecatedMintNewEditionFromMasterEditionViaPrintingToken),
     UpdatePrimarySaleHappenedViaToken(UpdatePrimarySaleHappenedViaToken),
     DeprecatedSetReservationList(SetReservationList),
     DeprecatedCreateReservationList(CreateReservationList),
@@ -380,7 +433,7 @@ pub struct UpdatedMetadataAccountV2 {
 }
 
 #[derive(Serialize)]
-pub struct MintNewEditionFromMasterEditionViaPrintingToken {
+pub struct DeprecatedMintNewEditionFromMasterEditionViaPrintingToken {
     /// New Metadata key (pda of ['metadata', program id, mint id])
     pub new_metadata_key: String,
     /// New Edition V1 (pda of ['metadata', program id, mint id, 'edition'])
@@ -468,11 +521,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             UpdateMetadataAccount(UpdatedMetadata {
                                 metadata: instruction.accounts[0].account.to_string(),
-                                update_authority: if let Some(ua) = mtm_ix.data.update_authority.
-
-
-                                },
-                                
+                                update_authority: instruction.accounts[1].account.to_string(),
                                 name: mtm_ix.data.name.to_string(),
                                 symbol: mtm_ix.data.symbol.to_string(),
                                 uri: mtm_ix.data.uri.to_string(),
@@ -481,13 +530,56 @@ pub async fn fragment_instruction(
                             })
                         )],
                     });
-
-
+                    Some(response)
                 }
                 MetadataInstruction::DeprecatedCreateMasterEdition(ref mtm_ix) => {
+                    response.push(TableData{
+                        schema: (*METAPLEX_DEPRECATED_CREATE_MASTER_EDITION).clone(),
+                        table_name: METAPLEX_DEPRECATED_CREATE_MASTER_EDITION_TABLE.to_string(),
+                        data: vec![TypedDatum::MetaplexTokenMetadata(
+                            DeprecatedCreateMasterEdition(CreatedMasterEdition {
+                                account: instruction.accounts[0].account.to_string(),
+                                metadata_mint: instruction.accounts[1].account.to_string(),
+                                printing_mint: instruction.accounts[2].account.to_string(),
+                                one_time_authorization_printing_mint: instruction.accounts[3].account.to_string(),
+                                update_authority: instruction.accounts[4].account.to_string(),
+                                printing_mint_authority: instruction.accounts[5].account.to_string(),
+                                metadata_mint_authority: instruction.accounts[6].account.to_string(),
+                                metadata: instruction.accounts[7].account.to_string(),
+                                payer: instruction.accounts[8].account.to_string(),
+                                one_time_authorization_printing_mint_authority: instruction.accounts[9].account.to_string(),
+                                ///Unsure
+                                max_supply:  None,
+                                timestamp: instruction.timestamp,
+                            })
+                        )],
+                    });
                     Some(response)
                 }
                 MetadataInstruction::DeprecatedMintNewEditionFromMasterEditionViaPrintingToken => {
+                    response.push(TableData{
+                        schema: (*METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN).clone(),
+                        table_name: METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_VIA_EDITION_PRINTING_TOKEN_TABLE.to_string(),
+                        data: vec![TypedDatum::MetaplexTokenMetadata(
+                            DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(DeprecatedMintNewEditionFromMasterEditionViaPrintingToken {
+                                new_metadata_key: instructions.accounts[0].account.to_string(),
+                                new_edition: instructions.accounts[1].account.to_string(),
+                                master_record_edition: instructions.accounts[2].account.to_string(),
+                                new_token_mint: instructions.accounts[3].account.to_string(),
+                                mint_authority: instructions.accounts[4].account.to_string(),
+                                printing_mint_master: instructions.accounts[5].account.to_string(),
+                                printing_mint_token_account: instructions.accounts[6].account.to_string(),
+                                marked_creation_edition_pda: instructions.accounts[7].account.to_string(),
+                                burn_authority: instructions.accounts[8].account.to_string(),
+                                payer: instructions.accounts[9].account.to_string(),
+                                update_authority: instructions.accounts[10].account.to_string(),
+                                master_record_metadata: instructions.accounts[10].account.to_string(),
+                                reservation_list: instructions.accounts[11].account.to_string(),
+                                timestamp: instruction.timestamp
+                            })
+                        )],
+                    });
+
                     Some(response)
                 }
                 MetadataInstruction::UpdatePrimarySaleHappenedViaToken => {
