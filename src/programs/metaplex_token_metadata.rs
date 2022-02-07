@@ -1,5 +1,7 @@
+use core::num::flt2dec::Sign;
 use avro_rs::schema::Schema;
 use borsh::BorshDeserialize;
+use mpl_token_metadata::deprecated_instruction::SetReservationListArgs;
 use serde::Serialize;
 use mpl_token_metadata::instruction::MetadataInstruction;
 use sha3::digest::Update;
@@ -182,13 +184,13 @@ pub enum MetaplexTokenMetadataDatum {
     DeprecatedCreateMasterEdition(CreatedMasterEdition),
     DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(MintNewEditionFromMasterEditionViaPrintingToken),
     UpdatePrimarySaleHappenedViaToken(UpdatePrimarySaleHappenedViaToken),
-    DeprecatedSetReservationList,
-    DeprecatedCreateReservationList,
-    SignMetadata,
-    DeprecatedMintPrintingTokensViaToken,
-    DeprecatedMintPrintingTokens,
-    CreateMasterEdition,
-    MintNewEditionFromMasterEditionViaToken,
+    DeprecatedSetReservationList(SetReservationList),
+    DeprecatedCreateReservationList(CreateReservationList),
+    SignMetadata(SignedMetadata),
+    DeprecatedMintPrintingTokensViaToken(MintPrintingTokensViaToken),
+    DeprecatedMintPrintingTokens(MintPrintingTokens),
+    CreateMasterEdition(CreatedMasterEdition),
+    MintNewEditionFromMasterEditionViaToken(MintedNewEditionFromMasterEditionViaToken),
     ConvertMasterEditionV1ToV2,
     MintNewEditionFromMasterEditionViaVaultProxy,
     PuffMetadata,
@@ -242,26 +244,6 @@ pub struct UpdatedMetadata {
 }
 
 #[derive(Serialize)]
-pub struct CreatedMasterEdition {
-    /// Unallocated edition V1 account with address as pda of ['metadata', program id, mint, 'edition']
-    pub account: String,
-    pub metadata_mint: String,
-    /// Printing mint - A mint you control that can mint tokens that can be exchanged for limited editions of your
-    /// master edition via the MintNewEditionFromMasterEditionViaToken endpoint
-    pub printing_mint: String,
-    pub one_time_authorization_printing_mint: String,
-    pub update_authority: String,
-    pub printing_mint_authority: String,
-    pub metadata_mint_authority: String,
-    pub metadata: String,
-    pub payer: String,
-    pub one_time_authorization_printing_mint_authority: String,
-    /// If set, means that no more than this number of editions can ever be minted. This is immutable.
-    pub max_supply: Option<i64>,
-    pub timestamp: i64
-}
-
-#[derive(Serialize)]
 pub struct MintedNewEditionFromMasterEditionViaPrintingToken {
     pub metadata: String,
     pub new_edition: String,
@@ -303,6 +285,89 @@ pub struct SetReservationList {
     pub offset: i64,
     pub total_spot_offset: i64,
     pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct CreateReservationList {
+    pub pda: String,
+    pub payer: String,
+    pub update_authority: String,
+    pub master_edition: String,
+    pub reservation_list_resource: String,
+    pub metadata: String,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct SignedMetadata {
+    pub metadata: String,
+    pub creator: String,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct MintPrintingTokensViaToken {
+    pub destination: String,
+    pub one_time_auth_token_account: String,
+    pub one_time_auth_mint: String,
+    pub printing_mint: String,
+    pub burn_authority: String,
+    pub metadata: String,
+    pub master_edition: String,
+    pub supply: i64,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct MintPrintingTokens {
+    pub destination: String,
+    pub printing_mint: String,
+    pub update_authority: String,
+    pub metadata: String,
+    pub master_edition: String,
+    pub supply: i64,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct CreatedMasterEdition {
+    /// Unallocated edition V1 account with address as pda of ['metadata', program id, mint, 'edition']
+    pub account: String,
+    pub metadata_mint: String,
+    /// Printing mint - A mint you control that can mint tokens that can be exchanged for limited editions of your
+    /// master edition via the MintNewEditionFromMasterEditionViaToken endpoint
+    pub printing_mint: String,
+    pub one_time_authorization_printing_mint: String,
+    pub update_authority: String,
+    pub printing_mint_authority: String,
+    pub metadata_mint_authority: String,
+    pub metadata: String,
+    pub payer: String,
+    pub one_time_authorization_printing_mint_authority: String,
+    /// If set, means that no more than this number of editions can ever be minted. This is immutable.
+    pub max_supply: Option<i64>,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct MintedNewEditionFromMasterEditionViaToken {
+    pub metadata: String,
+    pub new_edition: String,
+    pub master_record_edition: String,
+    pub mint: String,
+    pub edition_pda: String,
+    pub mint_authority: String,
+    pub payer: String,
+    pub owner: String,
+    pub master_metadata_mint_token_account: String,
+    pub update_authority: String,
+    pub edition: i64,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct ConvertMasterEditionV1ToV2 {
+    
 }
 
 #[derive(Serialize)]
