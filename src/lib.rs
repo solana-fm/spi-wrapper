@@ -15,6 +15,7 @@ use crate::programs::bpf_loader::BpfLoaderDatum;
 use crate::programs::bpf_loader_upgradeable::BpfUpgradeableLoaderDatum;
 use crate::programs::metaplex::MetaplexMainDatum;
 use crate::programs::metaplex_auction::MetaplexAuctionDatum;
+use crate::programs::metaplex_token_metadata::MetaplexTokenMetadataDatum;
 use crate::programs::native_associated_token_account::NativeAssociatedTokenAccountDatum;
 use crate::programs::native_config::NativeConfigDatum;
 use crate::programs::native_loader::NativeLoaderDatum;
@@ -135,7 +136,7 @@ pub enum TypedDatum {
     MetaplexAuctionHouse,
     MetaplexCandyMachine,
     Metaplex(MetaplexMainDatum),
-    MetaplexTokenMetadata,
+    MetaplexTokenMetadata(MetaplexTokenMetadataDatum),
     MetaplexTokenVault
 }
 
