@@ -8,16 +8,16 @@ use sha3::digest::Update;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
-use crate::MetaplexTokenMetadataDatum::CreateMetadataAccount;
+use crate::MetaplexTokenMetadataDatum::{CreateMetadataAccount, UpdateMetadataAccount};
 
 pub const PROGRAM_ADDRESS: &str = "auctxRXPeJoc4817jDhf4HbjnhEcr1cCXenosMhK5R8";
 
 pub const METAPLEX_TOKEN_METADATA_CREATED_METADATA_TABLE: &str = "metaplex_token_metadata_created_metadatas";
 pub const METAPLEX_TOKEN_METADATA_CREATOR_TABLE: &str = "metaplex_token_metadata_creators";
-pub const METAPLEX_CLAIMED_BID_TABLE: &str = "metaplex_claimed_bids";
-pub const METAPLEX_ENDED_AUCTION_TABLE: &str = "metaplex_ended_auctions";
-pub const METAPLEX_STARTED_AUCTION_TABLE: &str = "metaplex_started_auctions";
-pub const METAPLEX_SET_AUTHORITY_TABLE: &str = "metaplex_set_authority";
+pub const METAPLEX_UPDATE_METADATA_ACCOUNT_TABLE: &str = "metaplex_update_metadata_accounts";
+pub const METAPLEX_MINTED_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN_TABLE: &str = "metaplex_minted_from_master_editions";
+pub const METAPLEX_UPDATE_PRIMARY_SALE_HAPPENED_TABLE: &str = "metaplex_update_primary_sale_happened_via_tokens";
+pub const METAPLEX_RESERVATION_TABLE: &str = "metaplex_reservations";
 
 lazy_static! {
     pub static ref METAPLEX_TOKEN_METADATA_CREATED_METADATA_SCHEMA: Schema = Schema::parse_str(
@@ -57,122 +57,76 @@ lazy_static! {
     "#
     )
     .unwrap();
-    pub static ref METAPLEX_CLAIMED_BID_SCHEMA: Schema = Schema::parse_str(
+    pub static ref METAPLEX_UPDATE_METADATA_ACCOUNT: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
-        "name": "metaplex_claimed_bid",
+        "name": "metaplex_update_metadata_account",
         "fields": [
-            {"name": "auction", "type": "string"},
-            {"name": "destination", "type": "string"},
-            {"name": "bidder", "type": "string"},
-            {"name": "bidder_pot_token_account", "type": "string"},
-            {"name": "bidder_pot_pda", "type": "string"},
-            {"name": "authority", "type": "string"},
-            {"name": "auction_mint", "type": "string"},
-            {"name": "token_program", "type": "string"},
-            {"name": "auction_extended", "type": "string"},
-            {"name": "resource", "type": "string"},
-            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
-        ]
-    }
-    "#
-    )
-    .unwrap();
-    pub static ref METAPLEX_ENDED_AUCTION_SCHEMA: Schema = Schema::parse_str(
-        r#"
-    {
-        "type": "record",
-        "name": "metaplex_ended_auction",
-        "fields": [
-            {"name": "auction", "type": "string"},
-            {"name": "authority", "type": "string"},
-            {"name": "resource", "type": "string"},
-            {"name": "revealed_price", "type": ["null", "long"]},
-            {"name": "revealed_salt", "type": ["null", "long"]},
-            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
-        ]
-    }
-    "#
-    )
-    .unwrap();
-    pub static ref METAPLEX_STARTED_AUCTION_SCHEMA: Schema = Schema::parse_str(
-        r#"
-    {
-        "type": "record",
-        "name": "metaplex_started_auction",
-        "fields": [
-            {"name": "creator", "type": "string"},
-            {"name": "auction", "type": "string"},
-            {"name": "resource", "type": "string"},
-            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
-        ]
-    }
-    "#
-    )
-    .unwrap();
-    pub static ref METAPLEX_SET_AUTHORITY_SCHEMA: Schema = Schema::parse_str(
-        r#"
-    {
-        "type": "record",
-        "name": "metaplex_set_authority",
-        "fields": [
-            {"name": "auction", "type": "string"},
-            {"name": "authority", "type": "string"},
-            {"name": "new_authority", "type": "string"},
-            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
-        ]
-    }
-    "#
-    )
-    .unwrap();
-    pub static ref METAPLEX_PLACED_BIDS_SCHEMA: Schema = Schema::parse_str(
-        r#"
-    {
-        "type": "record",
-        "name": "metaplex_placed_bid",
-        "fields": [
-            {"name": "auction", "type": "string"},
-            {"name": "bidder", "type": "string"},
-            {"name": "bidder_paying_account", "type": "string"},
-            {"name": "pot", "type": "string"},
-            {"name": "pot_spl", "type": "string"},
             {"name": "metadata", "type": "string"},
-            {"name": "token_mint", "type": "string"},
-            {"name": "transfer_authority", "type": "string"},
-            {"name": "payer", "type": "string"},
-            {"name": "amount", "type": "long"},
-            {"name": "resource", "type": "string"},
+            {"name": "update_authority", "type": "string"},
+            {"name": "name", "type": ["null", "string"]},
+            {"name": "symbol", "type": ["null", "string"]},
+            {"name": "uri", "type": ["null", "string"]},
+            {"name": "seller_fee_bips", "type": ["null", "int"]},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
-    "#
+        "#
     )
     .unwrap();
-    pub static ref METAPLEX_CREATED_AUCTIONS_V2_SCHEMA: Schema = Schema::parse_str(
+    pub static ref METAPLEX_MINTED_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
-        "name": "metaplex_created_auction_v2",
+        "name": "metaplex_update_metadata_account",
         "fields": [
-            {"name": "auction", "type": "string"},
-            {"name": "auction_extended", "type": "string"},
-            {"name": "winners", "type": "long"},
-            {"name": "end_auction_at", "type": ["null", "long"]},
-            {"name": "end_auction_gap", "type": ["null", "long"]},
-            {"name": "token_mint", "type": "string"},
-            {"name": "authority", "type": "string"},
-            {"name": "resource", "type": "string"},
-            {"name": "price_floor", "type": "int"},
-            {"name": "tick_size", "type": ["null", "long"]},
-            {"name": "gap_tick_size_percentage", "type": ["null", "int"]},
-            {"name": "instant_sale_price", "type": ["null", "long"]},
-            {"name": "name", "type": ["null", "string"]},
-            {"name": "creator", "type": "string"},
+            {"name": "metadata", "type": "string"},
+            {"name": "new_edition", "type": "string"},
+            {"name": "master_record_edition", "type": "string"},
+            {"name": "mint", "type": "string"},
+            {"name": "mint_authority", "type": "string"},
+            {"name": "master_record_printing_mint", "type": "string"},
+            {"name": "edition_pda_mark_creation", "type": "string"},
+            {"name": "burn_authority", "type": "string"},
+            {"name": "payer", "type": "string"},
+            {"name": "update_authority", "type": "string"},
+            {"name": "master_record_metadata", "type": "string"},
+            {"name": "reservation_list", "type": ["null", "string"]},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
-    "#
+        "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_UPDATE_PRIMARY_SALE_HAPPENED: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_update_metadata_account",
+        "fields": [
+            {"name": "metadata", "type": "string"},
+            {"name": "owner", "type": "string"},
+            {"name": "metadata_mint_tokens_account", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+        "#
+    )
+    .unwrap();
+    pub static ref METAPLEX_RESERVATION: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "metaplex_update_metadata_account",
+        "fields": [
+            {"name": "address", "type": "string"},
+            {"name": "spots_remaining", "type": "int"},
+            {"name": "total_spots", "type": "int"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+        "#
     )
     .unwrap();
 }
@@ -454,10 +408,26 @@ pub async fn fragment_instruction(
                 }
                 MetadataInstruction::UpdateMetadataAccount(ref mtm_ix) => {
                     response.push(TableData{
-                        schema: (*).clone(),
-                        table_name: .to_string(),
-                        data: vec![TypedDatum::]
-                    })
+                        schema: (*METAPLEX_UPDATE_METADATA_ACCOUNT).clone(),
+                        table_name: METAPLEX_UPDATE_METADATA_ACCOUNT_TABLE.to_string(),
+                        data: vec![TypedDatum::MetaplexTokenMetadata(
+                            UpdateMetadataAccount(UpdatedMetadata {
+                                metadata: instruction.accounts[0].account.to_string(),
+                                update_authority: if let Some(ua) = mtm_ix.data.update_authority.
+
+
+                                },
+                                
+                                name: mtm_ix.data.name.to_string(),
+                                symbol: mtm_ix.data.symbol.to_string(),
+                                uri: mtm_ix.data.uri.to_string(),
+                                seller_fee_bips: mtm_ix.data.seller_fee_basis_points.unwrap(),
+                                timestamp: instruction.timestamp,
+                            })
+                        )],
+                    });
+
+
                 }
                 MetadataInstruction::DeprecatedCreateMasterEdition(ref mtm_ix) => {
                     Some(response)
