@@ -67,5 +67,5 @@ num-derive = "0.3.3"
 num-traits = "0.2.14"
 thiserror = "1.0.30"
 uint = "0.9.1"
-zeta-sdk = {path = "submodules/zeta-sdk", version = "0.9.1"}
-zeta-fuze = { path = "submodules/zeta-fuze/vault", version = "0.1.0" }
+#zeta-sdk = {path = "submodules/zeta-sdk", version = "0.9.1"}
+vault = { path = "submodules/zeta-fuze/vault/programs/vault", version = "0.1.0" }
