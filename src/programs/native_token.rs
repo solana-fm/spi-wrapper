@@ -24,6 +24,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_mint_state",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "decimals", "type": "int"},
             {"name": "mint_authority", "type": "string"},
             {"name": "freeze_authority", "type": "string"},
@@ -39,6 +40,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_mint_inflation",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "mint", "type": "string"},
             {"name": "amount", "type": "long"},
@@ -56,6 +58,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_mint_movement",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "source", "type": "string"},
             {"name": "destination", "type": "string"},
             {"name": "amount", "type": "long"},
@@ -73,6 +76,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_mint_delegation",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "delegation_type", "type": "int"},
             {"name": "source", "type": "string"},
             {"name": "delegate", "type": "string"},
@@ -97,6 +101,7 @@ pub enum NativeTokenDatum {
 
 #[derive(Serialize)]
 pub struct MintState {
+    pub tx_hash : String,
     pub decimals: i16,
     pub mint_authority: String,
     pub freeze_authority: String,
@@ -105,6 +110,7 @@ pub struct MintState {
 
 #[derive(Serialize)]
 pub struct MintInflation {
+    pub tx_hash : String,
     pub account: String,
     pub mint: String,
     pub amount: i64,
@@ -115,6 +121,7 @@ pub struct MintInflation {
 
 #[derive(Serialize)]
 pub struct MintMovement {
+    pub tx_hash : String,
     pub source: String,
     pub destination: String,
     pub amount: i64,
@@ -131,6 +138,7 @@ pub enum DelegationType {
 
 #[derive(Serialize)]
 pub struct MintDelegation {
+    pub tx_hash : String,
     pub delegation_type: i16,
     pub source: String,
     pub delegate: String,
@@ -143,6 +151,7 @@ pub struct MintDelegation {
 // Native json data
 #[derive(Deserialize)]
 pub struct TransferDatum {
+    pub tx_hash : String,
     pub source: String,
     pub destination: String,
     pub amount: u64
@@ -183,6 +192,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::State(
                                 MintState {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     decimals: decimals as i16,
                                     mint_authority: mint_authority.to_string(),
                                     freeze_authority: if freeze_authority.is_some() {
@@ -220,7 +230,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeAssocicatedTokenAccount(
                             NativeAssociatedTokenAccountDatum::NewAccount(
                                 NewAssociatedTokenAccount {
-                                    transaction_hash: instruction.transaction_hash.to_string(),
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     ata_address: instruction.accounts[0].account.to_string(),
                                     wallet_address: instruction.accounts[2].account.to_string(),
                                     mint: instruction.accounts[1].account.to_string(),
@@ -264,7 +274,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeAssocicatedTokenAccount(
                             NativeAssociatedTokenAccountDatum::NewAccount(
                                 NewAssociatedTokenAccount {
-                                    transaction_hash: instruction.transaction_hash.to_string(),
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     ata_address: instruction.accounts[0].account.to_string(),
                                     wallet_address: owner.to_string(),
                                     mint: instruction.accounts[1].account.to_string(),
@@ -308,6 +318,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(
                                 AccountCreation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     address: instruction.accounts[0].account.to_string(),
                                     lamports: 0,
                                     owner: instruction.accounts[2].account.to_string(),
@@ -351,6 +362,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Movement(
                                 MintMovement {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     destination: instruction.accounts[0].account.to_string(),
                                     source: instruction.accounts[1].account.to_string(),
                                     amount: amount as i64,
@@ -375,6 +387,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Delegation(
                                 MintDelegation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     delegation_type: DelegationType::Approve as i16,
                                     delegate: instruction.accounts[1].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
@@ -400,6 +413,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Delegation(
                                 MintDelegation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     delegation_type: DelegationType::Revoke as i16,
                                     delegate: instruction.accounts[1].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
@@ -438,6 +452,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Inflation(
                                 MintInflation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[1].account.to_string(),
                                     mint: instruction.accounts[0].account.to_string(),
                                     amount: amount as i64,
@@ -462,6 +477,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Inflation(
                                 MintInflation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.to_string(),
                                     mint: instruction.accounts[1].account.to_string(),
                                     amount: -1 * (amount as i64),
@@ -525,6 +541,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Movement(
                                 MintMovement {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     destination: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
                                     amount: amount as i64,
@@ -549,6 +566,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Delegation(
                                 MintDelegation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     delegation_type: DelegationType::Approve as i16,
                                     delegate: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
@@ -574,6 +592,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Inflation(
                                 MintInflation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[1].account.to_string(),
                                     mint: instruction.accounts[0].account.to_string(),
                                     amount: amount as i64,
@@ -598,6 +617,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeToken(
                             NativeTokenDatum::Inflation(
                                 MintInflation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.to_string(),
                                     mint: instruction.accounts[1].account.to_string(),
                                     amount: -1 * (amount as i64),

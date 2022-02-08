@@ -15,6 +15,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_swap_peg",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "market_account", "type": "string"},
             {"name": "token_program", "type": "string"},
             {"name": "oracle_program", "type": "string"},
@@ -35,6 +36,7 @@ pub enum NativeTokenSwapDatum {
 /// A peg = a new swap pegging between token A and B.
 #[derive(Serialize)]
 pub struct Peg {
+    pub tx_hash : String,
     /// The pegging account, account that stores the peg data (i.e. SRM-SOL)
     pub token_swap: String,
     /// The authority of the swap, basically the program that handles this swap.
@@ -47,6 +49,7 @@ pub struct Peg {
 }
 
 pub struct PegFee {
+    pub tx_hash : String,
     /// Trade fees are extra token amounts that are held inside the token
     /// accounts during a trade, making the value of liquidity tokens rise.
     /// Trade fee numerator
@@ -79,6 +82,7 @@ pub struct PegFee {
 
 #[derive(Serialize)]
 pub struct Swap {
+    pub tx_hash : String,
     /// The authority of the swap, basically the user that started this swap.
     /// Is usually -> "token_(A|B) Base Account to swap INTO.  Must be the SOURCE token.", amount is transferable by $authority,
     pub source: String,

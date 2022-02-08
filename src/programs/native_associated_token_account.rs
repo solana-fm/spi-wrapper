@@ -14,7 +14,7 @@ lazy_static! {
         "type": "record",
         "name": "native_new_associated_token_account",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
+            {"name": "tx_hash", "type": "string"},
             {"name": "ata_address", "type": "string"},
             {"name": "wallet_address", "type": "string"},
             {"name": "mint", "type": "string"},
@@ -34,7 +34,7 @@ pub enum NativeAssociatedTokenAccountDatum {
 /// Struct tables
 #[derive(Serialize)]
 pub struct NewAssociatedTokenAccount {
-    pub transaction_hash: String,
+    pub tx_hash: String,
     pub ata_address: String,
     pub wallet_address: String,
     pub mint: String,
@@ -73,7 +73,7 @@ pub async fn fragment_instruction(
         data: vec![TypedDatum::NativeAssocicatedTokenAccount(
             NativeAssociatedTokenAccountDatum::NewAccount(
                 NewAssociatedTokenAccount {
-                    transaction_hash: instruction.transaction_hash.to_string(),
+                    tx_hash: instruction.transaction_hash.to_string(),
                     ata_address: instruction.accounts[1].account.to_string(),
                     wallet_address: instruction.accounts[2].account.to_string(),
                     mint: instruction.accounts[3].account.to_string(),
