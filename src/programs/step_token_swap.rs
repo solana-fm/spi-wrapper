@@ -427,7 +427,6 @@ pub async fn fragment_instruction(
                                 flags: swap.flags as i16,
                                 pool_mint: instruction.accounts[7].account.to_string(),
                                 pool_fee_account: instruction.accounts[8].account.to_string(),
-                                refund_account: instruction.accounts[9].account.to_string(),
                                 timestamp: instruction.timestamp,
                             })
                         )],
@@ -636,7 +635,6 @@ pub async fn fragment_instruction(
                                     flags: swap.flags as i16,
                                     pool_mint: instruction.accounts[7].account.to_string(),
                                     pool_fee_account: instruction.accounts[8].account.to_string(),
-                                    refund_account: instruction.accounts[17].account.to_string(),
                                     timestamp: instruction.timestamp,
                                 })
                             ),
@@ -654,7 +652,6 @@ pub async fn fragment_instruction(
                                     flags: swap.flags as i16,
                                     pool_mint: instruction.accounts[15].account.to_string(),
                                     pool_fee_account: instruction.accounts[16].account.to_string(),
-                                    refund_account: instruction.accounts[17].account.to_string(),
                                     timestamp: instruction.timestamp,
                                 })
                             )
