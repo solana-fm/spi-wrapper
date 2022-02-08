@@ -51,7 +51,7 @@ lazy_static! {
             {"name": "winning_config_items", "type": "array", "items": {
                 "type": "record",
                 "name": "winning_config_item",
-                "fields": [,
+                "fields": [
                     {"name": "safety_deposit_box_index", "type": "int"},
                     {"name": "amount", "type": "int"},
                     {"name": "item_type", "type": "int"}
