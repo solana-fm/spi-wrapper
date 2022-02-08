@@ -1177,7 +1177,7 @@ pub struct EndedAuction {
     pub auction_manager_authority: String,
     pub store_key: String,
     pub auction_program: String,
-    pub reveal: Option<Vec<i64>>,
+    pub reveal: Vec<i64>,
     pub timestamp: i64
 }
 
@@ -2081,9 +2081,9 @@ pub async fn fragment_instruction(
                                 store_key: instruction.accounts[4].account.to_string(),
                                 auction_program: instruction.accounts[5].account.to_string(),
                                 reveal: if let Some(reveal) = args.reveal {
-                                    Some(vec![reveal.0 as i64, reveal.1 as i64])
+                                    vec![reveal.0 as i64, reveal.1 as i64]
                                 } else {
-                                    None
+                                    vec![]
                                 },
                                 timestamp: instruction.timestamp,
                             }))]
