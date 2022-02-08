@@ -7,6 +7,7 @@ use serde::Serialize;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
+use crate::programs::metaplex_auction::{ClaimedBid, METAPLEX_CLAIMED_BID_SCHEMA, METAPLEX_CLAIMED_BIDS_TABLE};
 
 pub const PROGRAM_ADDRESS: &str = "p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98";
 
@@ -16,7 +17,7 @@ pub const METAPLEX_REDEEMED_BID_TABLE_NAME: &str = "metaplex_redeemed_bids";
 pub const METAPLEX_REDEEMED_FULL_RIGHTS_TRANSFER_BID_TABLE_NAME: &str = "metaplex_redeemed_full_rights_transfer_bids";
 pub const METAPLEX_REDEEMED_PARTICIPATION_BID_TABLE_NAME: &str = "metaplex_redeemed_participation_bids";
 pub const METAPLEX_START_AUCTION_TABLE_NAME: &str = "metaplex_started_auctions";
-pub const METAPLEX_CLAIMED_BID_TABLE_NAME: &str = "metaplex_claimed_bids";
+// pub const METAPLEX_CLAIMED_BID_TABLE_NAME: &str = "metaplex_claimed_bids";
 pub const METAPLEX_EMPTIED_PAYMENT_ACCOUNT_TABLE_NAME: &str = "metaplex_emptied_payment_accounts";
 pub const METAPLEX_SET_STORE_TABLE_NAME: &str = "metaplex_set_stores";
 pub const METAPLEX_SET_STORE_V2_TABLE_NAME: &str = "metaplex_v2_set_stores";
@@ -207,30 +208,30 @@ lazy_static! {
     "#
     )
     .unwrap();
-    pub static ref METAPLEX_CLAIMED_BID_SCHEMA: Schema = Schema::parse_str(
-        r#"
-    {
-        "type": "record",
-        "name": "metaplex_claimed_bid",
-        "fields": [
-            {"name": "tx_hash", "type": "string"},
-            {"name": "accept_payment_account", "type": "string"},
-            {"name": "bidder_pot_token_account", "type": "string"},
-            {"name": "bidder_pot_pda", "type": "string"},
-            {"name": "auction_manager", "type": "string"},
-            {"name": "auction", "type": "string"},
-            {"name": "bidder", "type": "string"},
-            {"name": "token_mint", "type": "string"},
-            {"name": "vault", "type": "string"},
-            {"name": "store", "type": "string"},
-            {"name": "auction_program", "type": "string"},
-            {"name": "auction_extended", "type": "string"},
-            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
-        ]
-    }
-    "#
-    )
-    .unwrap();
+    // pub static ref METAPLEX_CLAIMED_BID_SCHEMA: Schema = Schema::parse_str(
+    //     r#"
+    // {
+    //     "type": "record",
+    //     "name": "metaplex_claimed_bid",
+    //     "fields": [
+    //         {"name": "tx_hash", "type": "string"},
+    //         {"name": "accept_payment_account", "type": "string"},
+    //         {"name": "bidder_pot_token_account", "type": "string"},
+    //         {"name": "bidder_pot_pda", "type": "string"},
+    //         {"name": "auction_manager", "type": "string"},
+    //         {"name": "auction", "type": "string"},
+    //         {"name": "bidder", "type": "string"},
+    //         {"name": "token_mint", "type": "string"},
+    //         {"name": "vault", "type": "string"},
+    //         {"name": "store", "type": "string"},
+    //         {"name": "auction_program", "type": "string"},
+    //         {"name": "auction_extended", "type": "string"},
+    //         {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+    //     ]
+    // }
+    // "#
+    // )
+    // .unwrap();
     pub static ref METAPLEX_EMPTIED_PAYMENT_ACCOUNT_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
@@ -857,22 +858,22 @@ pub struct StartedAuction {
     pub timestamp: i64
 }
 
-#[derive(Serialize)]
-pub struct ClaimedBid {
-    pub tx_hash : String,
-    pub accept_payment_account: String,
-    pub bidder_pot_token_account: String,
-    pub bidder_pot_pda: String,
-    pub auction_manager: String,
-    pub auction: String,
-    pub bidder: String,
-    pub token_mint: String,
-    pub vault: String,
-    pub store: String,
-    pub auction_program: String,
-    pub auction_extended: String,
-    pub timestamp: i64
-}
+// #[derive(Serialize)]
+// pub struct ClaimedBid {
+//     pub tx_hash : String,
+//     pub accept_payment_account: String,
+//     pub bidder_pot_token_account: String,
+//     pub bidder_pot_pda: String,
+//     pub auction_manager: String,
+//     pub auction: String,
+//     pub bidder: String,
+//     pub token_mint: String,
+//     pub vault: String,
+//     pub store: String,
+//     pub auction_program: String,
+//     pub auction_extended: String,
+//     pub timestamp: i64
+// }
 
 #[derive(Serialize)]
 pub struct EmptiedPaymentAccount {
@@ -1514,22 +1515,23 @@ pub async fn fragment_instruction(
 
                     let table_data = TableData {
                         schema: (*METAPLEX_CLAIMED_BID_SCHEMA).clone(),
-                        table_name: METAPLEX_CLAIMED_BID_TABLE_NAME.to_string(),
+                        table_name: METAPLEX_CLAIMED_BIDS_TABLE.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::ClaimBid(
                             ClaimedBid {
                                 tx_hash: instruction.transaction_hash.to_string(),
-                                accept_payment_account: instruction.accounts[0].account.to_string(),
+                                destination: instruction.accounts[0].account.to_string(),
                                 bidder_pot_token_account: instruction.accounts[1].account.to_string(),
                                 bidder_pot_pda: instruction.accounts[2].account.to_string(),
-                                auction_manager: instruction.accounts[3].account.to_string(),
+                                authority: instruction.accounts[3].account.to_string(),
+                                auction_mint: instruction.accounts[6].account.to_string(),
                                 auction: instruction.accounts[4].account.to_string(),
                                 bidder: instruction.accounts[5].account.to_string(),
-                                token_mint: instruction.accounts[6].account.to_string(),
-                                vault: instruction.accounts[7].account.to_string(),
+                                resource: instruction.accounts[7].account.to_string(),
                                 auction_program: instruction.accounts[9].account.to_string(),
                                 auction_extended: instruction.accounts[12].account.to_string(),
-                                store: instruction.accounts[8].account.to_string(),
-                                timestamp: instruction.timestamp
+                                store: Some(instruction.accounts[8].account.to_string()),
+                                timestamp: instruction.timestamp,
+                                token_program: "".to_string()
                             }))]
                     };
 

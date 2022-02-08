@@ -9,14 +9,14 @@ use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "auctxRXPeJoc4817jDhf4HbjnhEcr1cCXenosMhK5R8";
 
-pub const METAPLEX_CANCELLED_BIDS_TABLE: &str = "metaplex_cancelled_bids";
-pub const METAPLEX_CREATED_AUCTIONS_TABLE: &str = "metaplex_created_auctions";
-pub const METAPLEX_CLAIMED_BIDS_TABLE: &str = "metaplex_claimed_bids";
-pub const METAPLEX_ENDED_AUCTIONS_TABLE: &str = "metaplex_ended_auctions";
-pub const METAPLEX_STARTED_AUCTIONS_TABLE: &str = "metaplex_started_auctions";
-pub const METAPLEX_SET_AUTHORITY_TABLE: &str = "metaplex_set_authorities";
-pub const METAPLEX_PLACED_BIDS_TABLE: &str = "metaplex_placed_bids";
-pub const METAPLEX_CREATED_AUCTIONS_V2_TABLE: &str = "metaplex_created_auctions_v2";
+pub const METAPLEX_CANCELLED_BIDS_TABLE: &str = "metaplex_auction_cancelled_bids";
+pub const METAPLEX_CREATED_AUCTIONS_TABLE: &str = "metaplex_auction_created_auctions";
+pub const METAPLEX_CLAIMED_BIDS_TABLE: &str = "metaplex_auction_claimed_bids";
+pub const METAPLEX_ENDED_AUCTIONS_TABLE: &str = "metaplex_auction_ended_auctions";
+pub const METAPLEX_STARTED_AUCTIONS_TABLE: &str = "metaplex_auction_started_auctions";
+pub const METAPLEX_SET_AUTHORITY_TABLE: &str = "metaplex_auction_set_authorities";
+pub const METAPLEX_PLACED_BIDS_TABLE: &str = "metaplex_auction_placed_bids";
+pub const METAPLEX_CREATED_AUCTIONS_V2_TABLE: &str = "metaplex_auction_created_auctions_v2";
 
 lazy_static! {
     pub static ref METAPLEX_CANCELLED_BID_SCHEMA: Schema = Schema::parse_str(
@@ -81,6 +81,8 @@ lazy_static! {
             {"name": "auction_mint", "type": "string"},
             {"name": "token_program", "type": "string"},
             {"name": "auction_extended", "type": "string"},
+            {"name": "auction_program", "type": "string"},
+            {"name": "store", "type": ["null","string"]},
             {"name": "resource", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
@@ -274,6 +276,8 @@ pub struct ClaimedBid {
     pub token_program: String,
     /// Auction extended (pda relative to auction of ['auction', program id, vault key, 'extended'])
     pub auction_extended: String,
+    pub auction_program: String,
+    pub store: Option<String>,
     pub resource: String,
     pub timestamp: i64
 }
@@ -485,6 +489,8 @@ pub async fn fragment_instruction(
                                     auction_mint: instruction.accounts[6].account.to_string(),
                                     token_program: instruction.accounts[8].account.to_string(),
                                     auction_extended: instruction.accounts[9].account.to_string(),
+                                    auction_program: PROGRAM_ADDRESS.to_string(),
+                                    store: None,
                                     resource: claimed_bid.resource.to_string(),
                                     timestamp: instruction.timestamp
                                 }
