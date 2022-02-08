@@ -82,7 +82,6 @@ lazy_static! {
             {"name": "flags", "type": "int"},
             {"name": "pool_mint", "type": "string"},
             {"name": "pool_fee_account", "type": "string"},
-            {"name": "refund_account", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -288,8 +287,6 @@ pub struct StepSwap {
     pub pool_mint: String,
     /// Pool fee account
     pub pool_fee_account: String,
-    /// Refund account to unwrap WSOL to
-    pub refund_account: String,
     pub timestamp: i64,
 }
 
