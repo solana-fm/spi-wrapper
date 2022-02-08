@@ -25,6 +25,7 @@ lazy_static! {
         "type": "record",
         "name": "step_token_swap_peg",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "peg_pda", "type": "string"},
             {"name": "curve_type", "type": "int"},
             {"name": "nonce", "type": "int"},
@@ -47,6 +48,7 @@ lazy_static! {
         "type": "record",
         "name": "step_token_swap_peg_fee_update",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "swap_location", "type": "string"},
             {"name": "trade_fee_numerator", "type": "long"},
             {"name": "trade_fee_denominator", "type": "long"},
@@ -68,6 +70,7 @@ lazy_static! {
         "type": "record",
         "name": "step_token_swap_swap",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "swap_type", "type": "int"},
             {"name": "source", "type": "string"},
             {"name": "destination", "type": "string"},
@@ -79,7 +82,6 @@ lazy_static! {
             {"name": "flags", "type": "int"},
             {"name": "pool_mint", "type": "string"},
             {"name": "pool_fee_account", "type": "string"},
-            {"name": "refund_account", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -92,6 +94,7 @@ lazy_static! {
         "type": "record",
         "name": "step_token_swap_peg_flow",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "flow_type", "type": "int"},
             {"name": "peg_pda", "type": "string"},
             {"name": "swap_authority", "type": "string"},
@@ -115,6 +118,7 @@ lazy_static! {
         "type": "record",
         "name": "step_token_swap_new_registry",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "deployer", "type": "string"},
             {"name": "registry", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
@@ -129,6 +133,7 @@ lazy_static! {
         "type": "record",
         "name": "step_token_swap_pool_deregister",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "pool_idx", "type": "long"},
             {"name": "deployer", "type": "string"},
             {"name": "registry", "type": "string"},
@@ -144,6 +149,7 @@ lazy_static! {
         "type": "record",
         "name": "step_token_swap_repair_cfa
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "token_swap_account", "type": "string"},
             {"name": "old_fee_account_to_close", "type": "string"},
             {"name": "new_fee_account", "type": "string"},
@@ -192,6 +198,7 @@ impl CurveType {
 /// A peg = a new swap pegging between token A and B.
 #[derive(Serialize)]
 pub struct Peg {
+    pub tx_hash : String,
     /// The peg's program derived account, account that stores the peg data (i.e. SRM-SOL)
     pub peg_pda: String,
     pub curve_type: i16,
@@ -214,6 +221,7 @@ pub struct Peg {
 /// Tracks the changes/updates made to the Peg's fees.
 #[derive(Serialize)]
 pub struct PegFee {
+    pub tx_hash : String,
     /// The PDA of the token-swap in question.
     pub swap_location: String,
     /// Trade fees are extra token amounts that are held inside the token
@@ -255,6 +263,7 @@ pub enum SwapType {
 
 #[derive(Serialize)]
 pub struct StepSwap {
+    pub tx_hash : String,
     pub swap_type: i16,
     /// The authority of the swap, basically the user that started this swap.
     pub source: String,
@@ -278,8 +287,6 @@ pub struct StepSwap {
     pub pool_mint: String,
     /// Pool fee account
     pub pool_fee_account: String,
-    /// Refund account to unwrap WSOL to
-    pub refund_account: String,
     pub timestamp: i64,
 }
 
@@ -291,6 +298,7 @@ pub enum FlowType {
 
 #[derive(Serialize)]
 pub struct PegFlow {
+    pub tx_hash : String,
     /// Which side? Deposit or Withdraw..
     pub flow_type: i16,
     pub peg_pda: String,
@@ -318,6 +326,7 @@ pub struct PegFlow {
 
 #[derive(Serialize)]
 pub struct Registry {
+    pub tx_hash : String,
     pub deployer: String,
     pub registry: String,
     pub timestamp: i64
@@ -325,6 +334,7 @@ pub struct Registry {
 
 #[derive(Serialize)]
 pub struct PoolDeregister {
+    pub tx_hash : String,
     pub pool_idx: i64,
     pub deployer: String,
     pub registry: String,
@@ -333,6 +343,7 @@ pub struct PoolDeregister {
 
 #[derive(Serialize)]
 pub struct RepairClosedFeeAccount {
+    pub tx_hash : String,
     pub token_swap_account: String,
     pub old_fee_account_to_close: String,
     pub new_fee_account: String,
@@ -361,6 +372,7 @@ pub async fn fragment_instruction(
                         table_name: STEP_TOKEN_SWAP_PEG_TABLE.to_string(),
                         data: vec![TypedDatum::StepTokenSwap(
                             NewSwapPeg(Peg {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 peg_pda: instruction.accounts[1].account.to_string(),
                                 curve_type: CurveType::from_native(initialize.swap_curve.curve_type) as i16,
                                 nonce: initialize.nonce as i16,
@@ -380,6 +392,7 @@ pub async fn fragment_instruction(
                         table_name: STEP_TOKEN_SWAP_FEE_UPDATE_TABLE.to_string(),
                         data: vec![TypedDatum::StepTokenSwap(
                             PegFeeUpdate(PegFee {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 swap_location: instruction.accounts[1].account.to_string(),
                                 trade_fee_numerator: initialize.fees.trade_fee_numerator as i64,
                                 trade_fee_denominator: initialize.fees.trade_fee_denominator as i64,
@@ -402,6 +415,7 @@ pub async fn fragment_instruction(
                         table_name: STEP_TOKEN_SWAP_SWAP_TABLE.to_string(),
                         data: vec![TypedDatum::StepTokenSwap(
                             Swap(StepSwap {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 swap_type: SwapType::Normal as i16,
                                 source: instruction.accounts[3].account.to_string(),
                                 destination: instruction.accounts[6].account.to_string(),
@@ -413,7 +427,6 @@ pub async fn fragment_instruction(
                                 flags: swap.flags as i16,
                                 pool_mint: instruction.accounts[7].account.to_string(),
                                 pool_fee_account: instruction.accounts[8].account.to_string(),
-                                refund_account: instruction.accounts[9].account.to_string(),
                                 timestamp: instruction.timestamp,
                             })
                         )],
@@ -428,13 +441,14 @@ pub async fn fragment_instruction(
                         data: vec![
                             TypedDatum::StepTokenSwap(
                                 Flow(PegFlow {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     flow_type: 0,
                                     peg_pda: instruction.accounts[0].account.to_string(),
                                     swap_authority: instruction.accounts[1].account.to_string(),
                                     user: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[3].account.to_string(),
                                     target: instruction.accounts[5].account.to_string(),
-                                    pool_token_amount: datt.pool_token_amount as i64,
+                                    pool_token_amount: (datt.pool_token_amount / 2) as i64,
                                     token_amount: datt.maximum_token_a_amount as i64,
                                     pool_account: instruction.accounts[8].account.to_string(),
                                     pool_mint_account: instruction.accounts[7].account.to_string(),
@@ -444,13 +458,14 @@ pub async fn fragment_instruction(
                             ),
                             TypedDatum::StepTokenSwap(
                                 Flow(PegFlow {
-                                    flow_type: 1,
+                                    tx_hash: instruction.transaction_hash.to_string(),
+                                    flow_type: 0,
                                     peg_pda: instruction.accounts[0].account.to_string(),
                                     swap_authority: instruction.accounts[1].account.to_string(),
                                     user: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[4].account.to_string(),
                                     target: instruction.accounts[6].account.to_string(),
-                                    pool_token_amount: datt.pool_token_amount as i64,
+                                    pool_token_amount: (datt.pool_token_amount - datt.pool_token_amount / 2) as i64,
                                     token_amount: datt.maximum_token_b_amount as i64,
                                     pool_account: instruction.accounts[8].account.to_string(),
                                     pool_mint_account: instruction.accounts[7].account.to_string(),
@@ -469,13 +484,15 @@ pub async fn fragment_instruction(
                         data: vec![
                             TypedDatum::StepTokenSwap(
                                 Flow(PegFlow {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     flow_type: 1,
                                     peg_pda: instruction.accounts[0].account.to_string(),
                                     swap_authority: instruction.accounts[1].account.to_string(),
                                     user: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[5].account.to_string(),
                                     target: instruction.accounts[7].account.to_string(),
-                                    pool_token_amount: watt.pool_token_amount as i64,
+                                    // https://stackoverflow.com/a/9842149/6811682
+                                    pool_token_amount: (watt.pool_token_amount / 2) as i64,
                                     token_amount: watt.minimum_token_a_amount as i64,
                                     pool_account: instruction.accounts[4].account.to_string(),
                                     pool_mint_account: instruction.accounts[3].account.to_string(),
@@ -485,13 +502,15 @@ pub async fn fragment_instruction(
                             ),
                             TypedDatum::StepTokenSwap(
                                 Flow(PegFlow {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     flow_type: 1,
                                     peg_pda: instruction.accounts[0].account.to_string(),
                                     swap_authority: instruction.accounts[1].account.to_string(),
                                     user: instruction.accounts[2].account.to_string(),
                                     source: instruction.accounts[6].account.to_string(),
                                     target: instruction.accounts[8].account.to_string(),
-                                    pool_token_amount: watt.pool_token_amount as i64,
+                                    // https://stackoverflow.com/a/9842149/6811682
+                                    pool_token_amount: (watt.pool_token_amount - watt.pool_token_amount / 2) as i64,
                                     token_amount: watt.minimum_token_b_amount as i64,
                                     pool_account: instruction.accounts[4].account.to_string(),
                                     pool_mint_account: instruction.accounts[3].account.to_string(),
@@ -587,6 +606,7 @@ pub async fn fragment_instruction(
                         table_name: STEP_TOKEN_SWAP_NEW_REGISTRY_TABLE.to_string(),
                         data: vec![TypedDatum::StepTokenSwap(
                             NewRegistry(Registry {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 deployer: instruction.accounts[0].account.to_string(),
                                 registry: instruction.accounts[1].account.to_string(),
                                 timestamp: instruction.timestamp,
@@ -603,6 +623,7 @@ pub async fn fragment_instruction(
                         data: vec![
                             TypedDatum::StepTokenSwap(
                                 Swap(StepSwap {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     swap_type: SwapType::Routed as i16,
                                     source: instruction.accounts[3].account.to_string(),
                                     destination: instruction.accounts[6].account.to_string(),
@@ -614,12 +635,12 @@ pub async fn fragment_instruction(
                                     flags: swap.flags as i16,
                                     pool_mint: instruction.accounts[7].account.to_string(),
                                     pool_fee_account: instruction.accounts[8].account.to_string(),
-                                    refund_account: instruction.accounts[17].account.to_string(),
                                     timestamp: instruction.timestamp,
                                 })
                             ),
                             TypedDatum::StepTokenSwap(
                                 Swap(StepSwap {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     swap_type: SwapType::Routed as i16,
                                     source: instruction.accounts[6].account.to_string(),
                                     destination: instruction.accounts[14].account.to_string(),
@@ -631,7 +652,6 @@ pub async fn fragment_instruction(
                                     flags: swap.flags as i16,
                                     pool_mint: instruction.accounts[15].account.to_string(),
                                     pool_fee_account: instruction.accounts[16].account.to_string(),
-                                    refund_account: instruction.accounts[17].account.to_string(),
                                     timestamp: instruction.timestamp,
                                 })
                             )
@@ -646,6 +666,7 @@ pub async fn fragment_instruction(
                         table_name: STEP_TOKEN_SWAP_POOL_DEREGISTER_TABLE.to_string(),
                         data: vec![TypedDatum::StepTokenSwap(
                             StepTokenSwapDatum::DeregisterPool(PoolDeregister {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 pool_idx: deregister_pool.pool_index as i64,
                                 registry: instruction.accounts[1].account.to_string(),
                                 deployer: instruction.accounts[0].account.to_string(),
@@ -662,6 +683,7 @@ pub async fn fragment_instruction(
                         table_name: STEP_TOKEN_SWAP_REPAIR_CFA_TABLE.to_string(),
                         data: vec![TypedDatum::StepTokenSwap(
                             RepairCFA(RepairClosedFeeAccount {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 token_swap_account: instruction.accounts[0].account.to_string(),
                                 old_fee_account_to_close: instruction.accounts[1].account.to_string(),
                                 new_fee_account: instruction.accounts[2].account.to_string(),

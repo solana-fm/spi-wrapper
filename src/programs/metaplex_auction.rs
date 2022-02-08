@@ -25,6 +25,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_cancelled_bid",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "bidder", "type": "string"},
             {"name": "bidder_token_account", "type": "string"},
             {"name": "resource", "type": "string"},
@@ -45,6 +46,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_created_auction",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "extended_data_account", "type": "string"},
             {"name": "winners", "type": "long"},
@@ -69,6 +71,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_claimed_bid",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "destination", "type": "string"},
             {"name": "bidder", "type": "string"},
@@ -91,6 +94,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_ended_auction",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "authority", "type": "string"},
             {"name": "resource", "type": "string"},
@@ -108,6 +112,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_started_auction",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "creator", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "resource", "type": "string"},
@@ -123,6 +128,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_set_authority",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "authority", "type": "string"},
             {"name": "new_authority", "type": "string"},
@@ -138,6 +144,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_placed_bid",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "bidder", "type": "string"},
             {"name": "bidder_paying_account", "type": "string"},
@@ -161,6 +168,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_created_auction_v2",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "auction_extended", "type": "string"},
             {"name": "winners", "type": "long"},
@@ -198,6 +206,7 @@ pub enum MetaplexAuctionDatum {
 /// Struct tables
 #[derive(Serialize)]
 pub struct CancelledBid {
+    pub tx_hash : String,
     /// The bidders primary account
     pub bidder: String,
     /// bidders token account
@@ -218,6 +227,7 @@ pub struct CancelledBid {
 
 #[derive(Serialize)]
 pub struct CreatedAuction {
+    pub tx_hash : String,
     /// The account creating the auction, which is authorised to make changes.
     pub auction_owner: String,
     /// Account holding this auction.
@@ -247,6 +257,7 @@ pub struct CreatedAuction {
 
 #[derive(Serialize)]
 pub struct ClaimedBid {
+    pub tx_hash : String,
     pub auction: String,
     /// The destination account
     pub destination: String,
@@ -269,6 +280,7 @@ pub struct ClaimedBid {
 
 #[derive(Serialize)]
 pub struct EndedAuction {
+    pub tx_hash : String,
     /// The auction..
     pub auction: String,
     /// Auction authority
@@ -284,6 +296,7 @@ pub struct EndedAuction {
 
 #[derive(Serialize)]
 pub struct StartedAuction {
+    pub tx_hash : String,
     /// The creator/authorised account.
     pub creator: String,
     /// Initialized auction account.
@@ -295,6 +308,7 @@ pub struct StartedAuction {
 
 #[derive(Serialize)]
 pub struct SetAuthority {
+    pub tx_hash : String,
     pub auction: String,
     pub authority: String,
     pub new_authority: String,
@@ -303,6 +317,7 @@ pub struct SetAuthority {
 
 #[derive(Serialize)]
 pub struct PlacedBid {
+    pub tx_hash : String,
     /// Auction account, containing data about the auction and item being bid on.
     pub auction: String,
     /// The bidders primary account, for PDA calculation/transit auth.
@@ -329,6 +344,7 @@ pub struct PlacedBid {
 
 #[derive(Serialize)]
 pub struct CreatedAuctionV2 {
+    pub tx_hash : String,
     pub auction: String,
     pub auction_extended: String,
     /// How many winners are allowed for this auction. See AuctionData.
@@ -380,6 +396,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexAuction(
                             MetaplexAuctionDatum::CancelBid(
                                 CancelledBid {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     bidder: instruction.accounts[0].account.to_string(),
                                     bidder_token_account: instruction.accounts[1].account.to_string(),
                                     resource: cancel_bid.resource.to_string(),
@@ -405,6 +422,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexAuction(
                             MetaplexAuctionDatum::CreateAuction(
                                 CreatedAuction {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     auction_owner: instruction.accounts[0].account.to_string(),
                                     auction: instruction.accounts[1].account.to_string(),
                                     extended_data_account: instruction.accounts[2].account.to_string(),
@@ -457,6 +475,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexAuction(
                             MetaplexAuctionDatum::ClaimBid(
                                 ClaimedBid {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     auction: instruction.accounts[4].account.to_string(),
                                     destination: instruction.accounts[0].account.to_string(),
                                     bidder: instruction.accounts[5].account.to_string(),
@@ -484,6 +503,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexAuction(
                             MetaplexAuctionDatum::EndAuction(
                                 EndedAuction {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     auction: instruction.accounts[1].account.to_string(),
                                     authority: instruction.accounts[0].account.to_string(),
                                     resource: ended_auction.resource.to_string(),
@@ -514,6 +534,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexAuction(
                             MetaplexAuctionDatum::StartAuction(
                                 StartedAuction {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     creator: instruction.accounts[0].account.to_string(),
                                     auction: instruction.accounts[1].account.to_string(),
                                     resource: started_auction.resource.to_string(),
@@ -534,6 +555,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexAuction(
                             MetaplexAuctionDatum::SetAuthority(
                                 SetAuthority {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     auction: instruction.accounts[0].account.to_string(),
                                     authority: instruction.accounts[1].account.to_string(),
                                     new_authority: instruction.accounts[2].account.to_string(),
@@ -554,6 +576,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexAuction(
                             MetaplexAuctionDatum::PlaceBid(
                                 PlacedBid {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     auction: instruction.accounts[5].account.to_string(),
                                     bidder: instruction.accounts[0].account.to_string(),
                                     bidder_paying_account: instruction.accounts[1].account.to_string(),
@@ -582,6 +605,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexAuction(
                             MetaplexAuctionDatum::CreateAuctionV2(
                                 CreatedAuctionV2 {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     auction: instruction.accounts[1].account.to_string(),
                                     creator: instruction.accounts[0].account.to_string(),
                                     auction_extended: instruction.accounts[2].account.to_string(),

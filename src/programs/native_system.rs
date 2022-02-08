@@ -21,6 +21,7 @@ lazy_static! {
         "type": "record",
         "name": "native_account_creation",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "address", "type": "string"},
             {"name": "lamports", "type": "long"},
             {"name": "owner", "type": "string"},
@@ -36,6 +37,7 @@ lazy_static! {
         "type": "record",
         "name": "native_account_assignment",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "program", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
@@ -50,6 +52,7 @@ lazy_static! {
         "type": "record",
         "name": "native_account_transfer",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "source", "type": "string"},
             {"name": "destination", "type": "string"},
             {"name": "amount", "type": "long"},
@@ -65,6 +68,7 @@ lazy_static! {
         "type": "record",
         "name": "native_nonce_advancement",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "nonce_account", "type": "string"},
             {"name": "nonce_authority", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
@@ -79,6 +83,7 @@ lazy_static! {
         "type": "record",
         "name": "native_nonce_withdrawal",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "nonce_account", "type": "string"},
             {"name": "recipient", "type": "string"},
             {"name": "nonce_authority", "type": "string"},
@@ -103,6 +108,7 @@ pub enum NativeSystemDatum {
 /// Records the state changes of the account at the time.
 #[derive(Serialize)]
 pub struct AccountCreation {
+    pub tx_hash: String,
     /// The new account's address
     pub address: String,
     /// Current lamport change in the account (+ve for deposit, -ve for withdraw)
@@ -115,6 +121,7 @@ pub struct AccountCreation {
 
 #[derive(Serialize)]
 pub struct AccountAssignment {
+    pub tx_hash: String,
     /// The account that is assigned to the program.
     pub account: String,
     /// The owner program of the account.
@@ -125,6 +132,7 @@ pub struct AccountAssignment {
 
 #[derive(Serialize)]
 pub struct AccountTransfer {
+    pub tx_hash: String,
     /// The source of the transfer
     pub source: String,
     /// The destination of the transfer
@@ -137,6 +145,7 @@ pub struct AccountTransfer {
 
 #[derive(Serialize)]
 pub struct NonceAdvancement {
+    pub tx_hash: String,
     /// The nonce account involved
     pub nonce_account: String,
     /// The account approving this advancement.
@@ -147,6 +156,7 @@ pub struct NonceAdvancement {
 
 #[derive(Serialize)]
 pub struct NonceWithdrawal {
+    pub tx_hash: String,
     /// The nonce account involved
     pub nonce_account: String,
     /// The account receiving the withdrawal amount.
@@ -197,6 +207,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(
                                 AccountCreation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     address: instruction.accounts[1].account.to_string(),
                                     lamports: lamports as i64,
                                     owner: owner.to_string(),
@@ -225,6 +236,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountAssignment(
                                 AccountAssignment {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.to_string(),
                                     program: owner.to_string(),
                                     timestamp: instruction.timestamp,
@@ -254,6 +266,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountTransfer(
                                 AccountTransfer {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
                                     destination: instruction.accounts[1].account.to_string(),
                                     amount: lamports as i64,
@@ -293,6 +306,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountCreation(
                                 AccountCreation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     address: instruction.accounts[1].account.to_string(),
                                     lamports: lamports as i64,
                                     owner: owner.to_string(),
@@ -323,6 +337,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::NonceAdvancement(
                                 NonceAdvancement {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     nonce_account: instruction.accounts[0].account.to_string(),
                                     nonce_authority: instruction.accounts[2].account.to_string(),
                                     timestamp: instruction.timestamp,
@@ -355,6 +370,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::NonceWithdrawal(
                                 NonceWithdrawal {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     nonce_account: instruction.accounts[0].account.to_string(),
                                     recipient: instruction.accounts[1].account.to_string(),
                                     nonce_authority: instruction.accounts[4].account.to_string(),
@@ -444,6 +460,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountAssignment(
                                 AccountAssignment {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.to_string(),
                                     program: owner.to_string(),
                                     timestamp: instruction.timestamp,
@@ -479,6 +496,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeSystem(
                             NativeSystemDatum::AccountTransfer(
                                 AccountTransfer {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     source: instruction.accounts[0].account.to_string(),
                                     destination: instruction.accounts[2].account.to_string(),
                                     amount: lamports as i64,

@@ -47,6 +47,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_token_metadata_created_metadata",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "mint", "type": "string"},
             {"name": "mint_authority", "type": "string"},
@@ -68,6 +69,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_token_metadata_creator",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "token_metadata", "type": "string"},
             {"name": "address", "type": "string"},
             {"name": "verified", "type": "boolean"},
@@ -84,6 +86,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_update_metadata_account",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "update_authority", "type": "string"},
             {"name": "name", "type": ["null", "string"]},
@@ -102,6 +105,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex-deprecated_mint_new_edition_from_master_edition_via_printing_token,
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "new_edition", "type": "string"},
             {"name": "master_record_edition", "type": "string"},
@@ -126,6 +130,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_update_primary_sale_happened_via_token",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "owner", "type": "string"},
             {"name": "metadata_mint_tokens_account", "type": "string"},
@@ -141,6 +146,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_set_reservation_list",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "master_edition", "type": "string"},
             {"name": "reservation_list", "type": "string"},
             {"name": "reservation_list_resource", "type": "string"},
@@ -168,6 +174,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_create_reservation_list",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "pda", "type": "string"},
             {"name": "payer", "type": "string"},
             {"name": "update_authority", "type": "string"},
@@ -186,6 +193,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_signed_metadata",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "creator", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
@@ -200,6 +208,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_token_metadata_mint_printing_tokens_via_token",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "destination", "type": "string"},
             {"name": "one_time_auth_token_account", "type": "string"},
             {"name": "one_time_auth_mint", "type": "string"},
@@ -220,6 +229,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_token_metadata_mint_printing_tokens",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "destination", "type": "string"},
             {"name": "printing_mint", "type": "string"},
             {"name": "update_authority", "type": "string"},
@@ -238,6 +248,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex-deprecated_create_master_edition,
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "metadata_mint", "type": "string"},
             {"name": "printing_mint", "type": "string"},
@@ -261,6 +272,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_token_metadata_minted_new_edition_from_master_edition_via_token,
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "new_edition", "type": "string"},
             {"name": "master_record_edition", "type": "string"},
@@ -285,6 +297,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_token_metadata_converted_master_edition_v1_to_v2,
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "master_record_edition", "type": "string"},
             {"name": "one_time_authorization_mint", "type": "string"},
             {"name": "printing_mint", "type": "string"},
@@ -300,6 +313,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_token_metadata_minted_new_edition_from_master_edition_via_vault_proxy,
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "new_edition", "type": "string"},
             {"name": "master_record_edition", "type": "string"},
@@ -324,6 +338,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_token_metadata_puffed_metadata",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
@@ -338,6 +353,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_create_master_edition_v2,
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "edition_account", "type": "string"},
             {"name": "metadata_mint", "type": "string"},
             {"name": "update_authority", "type": "string"},
@@ -358,6 +374,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_created_metadata_account_v2",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "update_authority", "type": "string"},
             {"name": "name", "type": ["null", "string"]},
@@ -384,6 +401,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_created_metadata_account_v2",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "mint", "type": "string"},
             {"name": "mint_authority", "type": "string"},
@@ -412,6 +430,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_minted_new_edition_from_master_edition_via_printing_token",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "new_edition", "type": "string"},
             {"name": "master_record_edition", "type": "string"},
@@ -437,6 +456,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_create_master_edition_v3",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "metadata_mint", "type": "string"},
             {"name": "update_authority", "type": "string"},
@@ -458,6 +478,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_verified_collection",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "update_authority", "type": "string"},
             {"name": "payer", "type": "string"},
@@ -477,6 +498,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_utilize",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "token_account", "type": "string"},
             {"name": "metadata_mint", "type": "string"},
@@ -495,6 +517,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_approved_use_authority",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "authority_record_pda", "type": "string"},
             {"name": "owned_token_account", "type": "string"},
             {"name": "owner", "type": "string"},
@@ -517,6 +540,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_revoked_use_authority",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "authority_record_pda", "type": "string"},
             {"name": "owned_token_account", "type": "string"},
             {"name": "owner", "type": "string"},
@@ -537,6 +561,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_unverified_collection",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "collection_authority", "type": "string"},
             {"name": "payer", "type": "string"},
@@ -556,6 +581,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_approved_collection_authority",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "collection_authority_pda", "type": "string"},
             {"name": "update_authority", "type": "string"},
             {"name": "payer", "type": "string"},
@@ -575,6 +601,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_revoked_collection_authority",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "use_authority_pda", "type": "string"},
             {"name": "owned_token_account", "type": "string"},
             {"name": "metadata", "type": "string"},
@@ -592,6 +619,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_set_and_verify_collection",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
             {"name": "collection_update_authority", "type": "string"},
             {"name": "payer", "type": "string"},
@@ -612,6 +640,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_frozen_delegated_account",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "delegate", "type": "string"},
             {"name": "frozen", "type": "string"},
             {"name": "edition", "type": "string"},
@@ -629,6 +658,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_thaw_delegated_account",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "delegate", "type": "string"},
             {"name": "thaw", "type": "string"},
             {"name": "edition", "type": "string"},
@@ -680,6 +710,7 @@ pub enum MetaplexTokenMetadataDatum {
 /// Struct tables
 #[derive(Serialize)]
 pub struct CreatedMetadata {
+    pub tx_hash: String,
     pub metadata: String,
     pub mint: String,
     pub mint_authority: String,
@@ -694,6 +725,7 @@ pub struct CreatedMetadata {
 
 #[derive(Serialize)]
 pub struct Creator {
+    pub tx_hash: String,
     pub token_metadata: String,
     pub address: String,
     pub verified: bool,
@@ -703,6 +735,7 @@ pub struct Creator {
 
 #[derive(Serialize)]
 pub struct UpdatedMetadata {
+    pub tx_hash: String,
     pub metadata: String,
     pub update_authority: String,
     pub name: Option<String>,
@@ -714,6 +747,7 @@ pub struct UpdatedMetadata {
 
 #[derive(Serialize)]
 pub struct MintedNewEditionFromMasterEditionViaPrintingToken {
+    pub tx_hash: String,
     pub metadata: String,
     pub new_edition: String,
     pub master_record_edition: String,
@@ -731,6 +765,7 @@ pub struct MintedNewEditionFromMasterEditionViaPrintingToken {
 
 #[derive(Serialize)]
 pub struct UpdatePrimarySaleHappenedViaToken {
+    pub tx_hash: String,
     pub metadata: String,
     pub owner: String,
     /// Account containing tokens from the metadata's mint
@@ -747,6 +782,7 @@ pub struct Reservation {
 
 #[derive(Serialize)]
 pub struct SetReservationList {
+    pub tx_hash: String,
     pub master_edition: String,
     pub reservation_list: String,
     pub reservation_list_resource: String,
@@ -759,6 +795,7 @@ pub struct SetReservationList {
 
 #[derive(Serialize)]
 pub struct CreateReservationList {
+    pub tx_hash: String,
     pub pda: String,
     pub payer: String,
     pub update_authority: String,
@@ -770,6 +807,7 @@ pub struct CreateReservationList {
 
 #[derive(Serialize)]
 pub struct SignedMetadata {
+    pub tx_hash: String,
     pub metadata: String,
     pub creator: String,
     pub timestamp: i64
@@ -777,6 +815,7 @@ pub struct SignedMetadata {
 
 #[derive(Serialize)]
 pub struct MintPrintingTokensViaToken {
+    pub tx_hash: String,
     pub destination: String,
     pub one_time_auth_token_account: String,
     pub one_time_auth_mint: String,
@@ -790,6 +829,7 @@ pub struct MintPrintingTokensViaToken {
 
 #[derive(Serialize)]
 pub struct MintPrintingTokens {
+    pub tx_hash: String,
     pub destination: String,
     pub printing_mint: String,
     pub update_authority: String,
@@ -801,6 +841,7 @@ pub struct MintPrintingTokens {
 
 #[derive(Serialize)]
 pub struct CreatedMasterEdition {
+    pub tx_hash: String,
     /// Unallocated edition V1 account with address as pda of ['metadata', program id, mint, 'edition']
     pub account: String,
     pub metadata_mint: String,
@@ -821,6 +862,7 @@ pub struct CreatedMasterEdition {
 
 #[derive(Serialize)]
 pub struct CreatedMasterEditionV2 {
+    pub tx_hash: String,
     pub edition_account: String,
     pub metadata_mint: String,
     pub update_authority: String,
@@ -833,6 +875,7 @@ pub struct CreatedMasterEditionV2 {
 
 #[derive(Serialize)]
 pub struct MintedNewEditionFromMasterEditionViaToken {
+    pub tx_hash: String,
     pub metadata: String,
     pub new_edition: String,
     pub master_record_edition: String,
@@ -850,6 +893,7 @@ pub struct MintedNewEditionFromMasterEditionViaToken {
 
 #[derive(Serialize)]
 pub struct ConvertedMasterEditionV1ToV2 {
+    pub tx_hash: String,
     pub master_record_edition: String,
     pub one_time_authorization_mint: String,
     pub printing_mint: String,
@@ -858,6 +902,7 @@ pub struct ConvertedMasterEditionV1ToV2 {
 
 #[derive(Serialize)]
 pub struct MintedNewEditionFromMasterEditionViaVaultProxy {
+    pub tx_hash: String,
     pub metadata: String,
     pub new_edition: String,
     pub master_record_edition: String,
@@ -877,18 +922,21 @@ pub struct MintedNewEditionFromMasterEditionViaVaultProxy {
 
 #[derive(Serialize)]
 pub struct PuffedMetadata {
+    pub tx_hash: String,
     pub metadata: String,
     pub timestamp: i64
 }
 
 #[derive(Serialize)]
 pub struct Collection {
+    pub tx_hash: String,
     pub verified: bool,
     pub key: String
 }
 
 #[derive(Serialize)]
 pub struct UpdatedMetadataAccountV2 {
+    pub tx_hash: String,
     pub metadata: String,
     pub update_authority: String,
     /// The name of the asset
@@ -911,6 +959,7 @@ pub struct UpdatedMetadataAccountV2 {
 
 #[derive(Serialize)]
 pub struct CreatedMetadataAccountV2 {
+    pub tx_hash: String,
     pub metadata: String,
     pub mint: String,
     pub mint_authority: String,
@@ -935,6 +984,7 @@ pub struct CreatedMetadataAccountV2 {
 
 #[derive(Serialize)]
 pub struct MintNewEditionFromMasterEditionViaPrintingToken {
+    pub tx_hash: String,
     /// New Metadata key (pda of ['metadata', program id, mint id])
     pub new_metadata_key: String,
     /// New Edition V1 (pda of ['metadata', program id, mint id, 'edition'])
@@ -959,6 +1009,7 @@ pub struct MintNewEditionFromMasterEditionViaPrintingToken {
 
 #[derive(Serialize)]
 pub struct CreateMasterEditionV3 {
+    pub tx_hash: String,
     pub account: String,
     pub metadata_mint: String,
     pub update_authority: String,
@@ -971,6 +1022,7 @@ pub struct CreateMasterEditionV3 {
 
 #[derive(Serialize)]
 pub struct VerifiedCollection {
+    pub tx_hash: String,
     pub metadata: String,
     pub update_authority: String,
     pub payer: String,
@@ -983,6 +1035,7 @@ pub struct VerifiedCollection {
 
 #[derive(Serialize)]
 pub struct Utilize {
+    pub tx_hash: String,
     pub metadata: String,
     pub token_account: String,
     pub metadata_mint: String,
@@ -994,6 +1047,7 @@ pub struct Utilize {
 
 #[derive(Serialize)]
 pub struct ApprovedUseAuthority {
+    pub tx_hash: String,
     pub authority_record_pda: String,
     pub owned_token_account: String,
     pub owner: String,
@@ -1008,6 +1062,7 @@ pub struct ApprovedUseAuthority {
 
 #[derive(Serialize)]
 pub struct RevokedUseAuthority {
+    pub tx_hash: String,
     pub authority_record_pda: String,
     pub owned_token_account: String,
     pub owner: String,
@@ -1020,6 +1075,7 @@ pub struct RevokedUseAuthority {
 
 #[derive(Serialize)]
 pub struct UnverifiedCollection {
+    pub tx_hash: String,
     pub metadata: String,
     pub collection_authority: String,
     pub payer: String,
@@ -1031,6 +1087,7 @@ pub struct UnverifiedCollection {
 
 #[derive(Serialize)]
 pub struct ApprovedCollectionAuthority {
+    pub tx_hash: String,
     pub collection_authority_pda: String,
     pub update_authority: String,
     pub payer: String,
@@ -1042,6 +1099,7 @@ pub struct ApprovedCollectionAuthority {
 
 #[derive(Serialize)]
 pub struct RevokedCollectionAuthority {
+    pub tx_hash: String,
     pub use_authority_pda: String,
     pub owned_token_account: String,
     pub metadata: String,
@@ -1051,6 +1109,7 @@ pub struct RevokedCollectionAuthority {
 
 #[derive(Serialize)]
 pub struct SetAndVerifyCollection {
+    pub tx_hash: String,
     pub metadata: String,
     pub collection_update_authority: String,
     pub payer: String,
@@ -1063,6 +1122,7 @@ pub struct SetAndVerifyCollection {
 
 #[derive(Serialize)]
 pub struct FrozenDelegatedAccount {
+    pub tx_hash: String,
     pub delegate: String,
     pub frozen: String,
     pub edition: String,
@@ -1072,6 +1132,7 @@ pub struct FrozenDelegatedAccount {
 
 #[derive(Serialize)]
 pub struct ThawDelegatedAccount {
+    pub tx_hash: String,
     pub delegate: String,
     pub thaw: String,
     pub edition: String,
@@ -1100,6 +1161,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_CREATED_METADATA_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::CreateMetadataAccount(CreatedMetadata {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 metadata: instruction.accounts[0].account.to_string(),
                                 mint: instruction.accounts[1].account.to_string(),
                                 mint_authority: instruction.accounts[2].account.to_string(),
@@ -1120,6 +1182,7 @@ pub async fn fragment_instruction(
                         for creator in creators {
                             creator_data.push(TypedDatum::MetaplexTokenMetadata(
                                 MetaplexTokenMetadataDatum::CreatorData(Creator {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     token_metadata: instruction.accounts[0].account.to_string(),
                                     address: creator.address.to_string(),
                                     verified: creator.verified,
@@ -1143,6 +1206,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_UPDATE_METADATA_ACCOUNT_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::UpdateMetadataAccount(UpdatedMetadata {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 metadata: instruction.accounts[0].account.to_string(),
                                 update_authority: instruction.accounts[1].account.to_string(),
                                 name: if let Some(data) = &mtm_ix.data {
@@ -1177,6 +1241,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_DEPRECATED_CREATE_MASTER_EDITION_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::DeprecatedCreateMasterEdition(CreatedMasterEdition {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 account: instruction.accounts[0].account.to_string(),
                                 metadata_mint: instruction.accounts[1].account.to_string(),
                                 printing_mint: instruction.accounts[2].account.to_string(),
@@ -1204,6 +1269,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_VIA_EDITION_PRINTING_TOKEN_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(MintNewEditionFromMasterEditionViaPrintingToken {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 new_metadata_key: instruction.accounts[0].account.to_string(),
                                 new_edition: instruction.accounts[1].account.to_string(),
                                 master_record_edition: instruction.accounts[2].account.to_string(),
@@ -1234,6 +1300,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_UPDATE_PRIMARY_SALE_HAPPENED_VIA_TOKEN_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::UpdatePrimarySaleHappenedViaToken(UpdatePrimarySaleHappenedViaToken {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 metadata: instruction.accounts[0].account.to_string(),
                                 owner: instruction.accounts[1].account.to_string(),
                                 metadata_mint_tokens_account: instruction.accounts[2].account.to_string(),
@@ -1250,6 +1317,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_SET_RESERVATION_LIST_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::DeprecatedSetReservationList(SetReservationList {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 master_edition: instruction.accounts[0].account.to_string(),
                                 reservation_list: instruction.accounts[1].account.to_string(),
                                 reservation_list_resource: instruction.accounts[2].account.to_string(),
@@ -1283,6 +1351,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::DeprecatedCreateReservationList(
                                 CreateReservationList {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     pda: instruction.accounts[0].account.to_string(),
                                     payer: instruction.accounts[1].account.to_string(),
                                     update_authority: instruction.accounts[2].account.to_string(),
@@ -1303,6 +1372,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::SignMetadata(
                                 SignedMetadata {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     metadata: instruction.accounts[0].account.to_string(),
                                     creator: instruction.accounts[1].account.to_string(),
                                     timestamp: instruction.timestamp
@@ -1319,6 +1389,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::DeprecatedMintPrintingTokensViaToken(
                                 MintPrintingTokensViaToken {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     destination: instruction.accounts[0].account.to_string(),
                                     one_time_auth_token_account: instruction.accounts[1].account.to_string(),
                                     one_time_auth_mint: instruction.accounts[2].account.to_string(),
@@ -1341,6 +1412,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::DeprecatedMintPrintingTokens(
                                 MintPrintingTokens {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     destination: instruction.accounts[0].account.to_string(),
                                     printing_mint: instruction.accounts[1].account.to_string(),
                                     update_authority: instruction.accounts[2].account.to_string(),
@@ -1361,6 +1433,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::CreateMasterEditionV2(
                                 CreatedMasterEditionV2 {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     edition_account: instruction.accounts[0].account.to_string(),
                                     metadata_mint: instruction.accounts[1].account.to_string(),
                                     update_authority: instruction.accounts[2].account.to_string(),
@@ -1386,6 +1459,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::MintNewEditionFromMasterEditionViaToken(
                                 MintedNewEditionFromMasterEditionViaToken {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     metadata: instruction.accounts[0].account.to_string(),
                                     new_edition: instruction.accounts[1].account.to_string(),
                                     master_record_edition: instruction.accounts[2].account.to_string(),
@@ -1412,6 +1486,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::ConvertMasterEditionV1ToV2(
                                 ConvertedMasterEditionV1ToV2 {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     master_record_edition: instruction.accounts[0].account.to_string(),
                                     one_time_authorization_mint: instruction.accounts[1].account.to_string(),
                                     printing_mint: instruction.accounts[2].account.to_string(),
@@ -1429,6 +1504,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::MintNewEditionFromMasterEditionViaVaultProxy(
                                 MintedNewEditionFromMasterEditionViaVaultProxy {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     metadata: instruction.accounts[0].account.to_string(),
                                     new_edition: instruction.accounts[1].account.to_string(),
                                     master_record_edition: instruction.accounts[2].account.to_string(),
@@ -1457,6 +1533,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::PuffMetadata(
                                 PuffedMetadata {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     metadata: instruction.accounts[0].account.to_string(),
                                     timestamp: instruction.timestamp,
                                 })
@@ -1472,6 +1549,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::UpdateMetadataAccountV2(
                                 UpdatedMetadataAccountV2 {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     metadata: instruction.accounts[0].account.to_string(),
                                     update_authority: instruction.accounts[1].account.to_string(),
                                     name: if let Some(data) = &mtm_ix.data {
@@ -1562,6 +1640,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_CREATED_METADATA_ACCOUNT_V2_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::CreateMetadataAccountV2(CreatedMetadataAccountV2 {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 metadata: instruction.accounts[0].account.to_string(),
                                 mint: instruction.accounts[1].account.to_string(),
                                 mint_authority: instruction.accounts[2].account.to_string(),
@@ -1608,6 +1687,7 @@ pub async fn fragment_instruction(
                         for creator in creators {
                             creator_data.push(TypedDatum::MetaplexTokenMetadata(
                                 MetaplexTokenMetadataDatum::CreatorData(Creator {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     token_metadata: instruction.accounts[0].account.to_string(),
                                     address: creator.address.to_string(),
                                     verified: creator.verified,
@@ -1631,6 +1711,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_CREATE_MASTER_EDITION_V3_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::CreateMasterEditionV3(CreateMasterEditionV3 {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 account: instruction.accounts[0].account.to_string(),
                                 metadata_mint: instruction.accounts[1].account.to_string(),
                                 update_authority: instruction.accounts[2].account.to_string(),
@@ -1655,6 +1736,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_VERIFIED_COLLECTION_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::VerifyCollection(VerifiedCollection {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 metadata: instruction.accounts[0].account.to_string(),
                                 update_authority: instruction.accounts[1].account.to_string(),
                                 payer: instruction.accounts[2].account.to_string(),
@@ -1674,6 +1756,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_UTILIZE_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::Utilize(Utilize {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 metadata: instruction.accounts[0].account.to_string(),
                                 token_account: instruction.accounts[1].account.to_string(),
                                 metadata_mint: instruction.accounts[2].account.to_string(),
@@ -1693,6 +1776,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_APPROVED_USE_AUTHORITY_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::ApproveUseAuthority(ApprovedUseAuthority {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 authority_record_pda: instruction.accounts[0].account.to_string(),
                                 owned_token_account: instruction.accounts[1].account.to_string(),
                                 owner: instruction.accounts[2].account.to_string(),
@@ -1715,6 +1799,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_REVOKED_USE_AUTHORITY_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::RevokeUseAuthority(RevokedUseAuthority {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 authority_record_pda: instruction.accounts[0].account.to_string(),
                                 owned_token_account: instruction.accounts[1].account.to_string(),
                                 owner: instruction.accounts[2].account.to_string(),
@@ -1735,6 +1820,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_UNVERFIED_COLLECTION_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::UnverifyCollection(UnverifiedCollection {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 metadata: instruction.accounts[0].account.to_string(),
                                 collection_authority: instruction.accounts[1].account.to_string(),
                                 payer: instruction.accounts[2].account.to_string(),
@@ -1754,6 +1840,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_APPROVED_COLLECION_AUTHORITY_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::ApproveCollectionAuthority(ApprovedCollectionAuthority {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 collection_authority_pda: instruction.accounts[0].account.to_string(),
                                 update_authority: instruction.accounts[1].account.to_string(),
                                 payer: instruction.accounts[2].account.to_string(),
@@ -1773,6 +1860,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_REVOKED_COLLECTION_AUTHORITY_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::RevokeCollectionAuthority(RevokedCollectionAuthority {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 use_authority_pda: instruction.accounts[0].account.to_string(),
                                 owned_token_account: instruction.accounts[1].account.to_string(),
                                 metadata: instruction.accounts[2].account.to_string(),
@@ -1790,6 +1878,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_SET_AND_VERIFY_COLLECTION_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::SetAndVerifyCollection(SetAndVerifyCollection {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 metadata: instruction.accounts[0].account.to_string(),
                                 collection_update_authority: instruction.accounts[1].account.to_string(),
                                 payer: instruction.accounts[2].account.to_string(),
@@ -1810,6 +1899,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_FROZEN_DELEGATED_ACCOUNT_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::FreezeDelegatedAccount(FrozenDelegatedAccount {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 delegate: instruction.accounts[0].account.to_string(),
                                 frozen: instruction.accounts[1].account.to_string(),
                                 edition: instruction.accounts[2].account.to_string(),
@@ -1827,6 +1917,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_TOKEN_METADATA_THAW_DELEGATED_ACCOUNT_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::ThawDelegatedAccount(ThawDelegatedAccount {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 delegate: instruction.accounts[0].account.to_string(),
                                 thaw: instruction.accounts[1].account.to_string(),
                                 edition: instruction.accounts[2].account.to_string(),

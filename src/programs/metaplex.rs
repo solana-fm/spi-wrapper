@@ -23,7 +23,7 @@ pub const METAPLEX_SET_STORE_V2_TABLE_NAME: &str = "metaplex_v2_set_stores";
 pub const METAPLEX_SET_WHITELISTED_CREATOR_TABLE_NAME: &str = "metaplex_set_whitelisted_creators";
 pub const METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_TABLE_NAME: &str = "metaplex_deprecated_validate_participations";
 pub const METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_TABLE_NAME: &str = "metaplex_populated_participation_printing_accounts";
-pub const METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
+pub const METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME: &str = "metaplex_redeem_unused_winning_config_items_as_auctioneers";
 pub const METAPLEX_DECOMMISSION_AUCTION_MANAGER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
 pub const METAPLEX_REDEEM_PRINTING_V2_BID_TABLE_NAME: &str = "metaplex_redeem_printing_v2_bids";
 pub const METAPLEX_WITHDRAW_MASTER_EDITION_TABLE_NAME: &str = "metaplex_withdraw_master_edition";
@@ -42,6 +42,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_init_auction_manager",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "vault_account", "type": "string"},
             {"name": "auction", "type": "string"},
@@ -74,6 +75,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_validated_safety_deposit",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "safety_deposit_validation_ticket", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "metadata", "type": "string"},
@@ -103,6 +105,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_redeemed_bid",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "safety_deposit_storage", "type": "string"},
             {"name": "destination", "type": "string"},
@@ -132,6 +135,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_redeemed_full_rights_transfer_bid",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "safety_deposit_storage", "type": "string"},
             {"name": "destination", "type": "string"},
@@ -161,6 +165,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_redeemed_participation_bid",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "safety_deposit_storage_account", "type": "string"},
             {"name": "destination_account", "type": "string"},
@@ -190,6 +195,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_started_auction",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "auction_manager_authority", "type": "string"},
@@ -207,6 +213,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_claimed_bid",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "accept_payment_account", "type": "string"},
             {"name": "bidder_pot_token_account", "type": "string"},
             {"name": "bidder_pot_pda", "type": "string"},
@@ -230,6 +237,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_emptied_payment_account",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "accept_payment_account", "type": "string"},
             {"name": "destination_account", "type": "string"},
             {"name": "auction_manager", "type": "string"},
@@ -257,6 +265,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_set_store",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "store_key", "type": "string"},
             {"name": "admin", "type": "string"},
             {"name": "payer", "type": "string"},
@@ -274,6 +283,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_v2_set_store",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "store_key", "type": "string"},
             {"name": "store_config_key", "type": "string"},
             {"name": "admin", "type": "string"},
@@ -292,6 +302,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_set_whitelisted_creator",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "whitelisted_creator", "type": "string"},
             {"name": "admin", "type": "string"},
             {"name": "payer", "type": "string"},
@@ -310,6 +321,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_deprecated_validate_participation",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "open_edition_metadata", "type": "string"},
             {"name": "open_edition_master_edition", "type": "string"},
@@ -332,6 +344,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_populated_participation_printing_account",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "safety_deposit_token_store", "type": "string"},
             {"name": "transient_account", "type": "string"},
             {"name": "printing_token_account", "type": "string"},
@@ -358,6 +371,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_redeem_unused_winning_config_items_as_auctioneer",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "winning_config_item_index", "type": "int"},
             {"name": "proxy_call", "type": "int"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
@@ -372,6 +386,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_decomission_auction_manager",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "authority", "type": "string"},
@@ -391,6 +406,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_redeem_printing_v2_bid",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "safety_deposit_token_storage", "type": "string"},
             {"name": "new_mint_type_account", "type": "string"},
@@ -426,6 +442,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_withdrawn_master_edition",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "safety_deposit_storage_account", "type": "string"},
             {"name": "new_mint_type_account", "type": "string"},
@@ -462,6 +479,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_redeemed_participation_bid_v2",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "safety_deposit_storage_account", "type": "string"},
             {"name": "new_mint_type_account", "type": "string"},
@@ -498,6 +516,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_init_auction_manager_v2",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager_account", "type": "string"},
             {"name": "auction_winner_token_type_tracker", "type": "string"},
             {"name": "combined_vault_account", "type": "string"},
@@ -521,6 +540,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_validated_safety_deposit_v2",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "key", "type": "int"},
             {"name": "order", "type": "long"},
             {"name": "winning_config_type", "type": "int"},
@@ -558,6 +578,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_redeemed_participation_bid_v3",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "win_index", "type": ["null","long"]},
             {"name": "auction_manager", "type": "string"},
             {"name": "safety_deposit_storage_account", "type": "string"},
@@ -595,6 +616,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_ended_auction",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_manager", "type": "string"},
             {"name": "auction", "type": "string"},
             {"name": "auction_extended_data_account", "type": "string"},
@@ -614,6 +636,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_set_store_index",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "store_index", "type": "string"},
             {"name": "payer", "type": "string"},
             {"name": "auction_cache", "type": "string"},
@@ -634,6 +657,7 @@ lazy_static! {
         "type": "record",
         "name": "metaplex_set_auction_cache",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "auction_cache", "type": "string"},
             {"name": "payer", "type": "string"},
             {"name": "auction", "type": "string"},
@@ -679,6 +703,7 @@ pub enum MetaplexMainDatum {
 /// Struct tables
 #[derive(Serialize)]
 pub struct WinningItem {
+    pub tx_hash : String,
     pub safety_deposit_box_index: i16,
     pub amount: i16,
     pub item_type: i16,
@@ -686,6 +711,7 @@ pub struct WinningItem {
 
 #[derive(Serialize)]
 pub struct InitAuctionManager {
+    pub tx_hash : String,
     /// Auction manager account with pda of ['metaplex', auction_key from auction referenced below]
     pub account: String,
     /// Combined vault account with authority set to auction manager account (this will be checked)
@@ -722,6 +748,7 @@ pub struct InitAuctionManager {
 
 #[derive(Serialize)]
 pub struct ValidateSafetyDepositBox {
+    pub tx_hash : String,
     pub safety_deposit_validation_ticket: String,
     pub auction_manager: String,
     pub metadata: String,
@@ -745,6 +772,7 @@ pub struct ValidateSafetyDepositBox {
 
 #[derive(Serialize)]
 pub struct RedeemedBid {
+    pub tx_hash : String,
     pub auction_manager: String,
     pub safety_deposit_storage: String,
     pub destination: String,
@@ -767,6 +795,7 @@ pub struct RedeemedBid {
 
 #[derive(Serialize)]
 pub struct RedeemedFullRightsTransferBid {
+    pub tx_hash : String,
     pub auction_manager: String,
     pub safety_deposit_storage: String,
     pub destination: String,
@@ -789,6 +818,7 @@ pub struct RedeemedFullRightsTransferBid {
 
 #[derive(Serialize)]
 pub struct RedeemedParticipationBid {
+    pub tx_hash : String,
     pub auction_manager: String,
     /// Safety deposit token storage account
     pub safety_deposit_storage: String,
@@ -818,6 +848,7 @@ pub struct RedeemedParticipationBid {
 
 #[derive(Serialize)]
 pub struct StartedAuction {
+    pub tx_hash : String,
     pub auction_manager: String,
     pub auction: String,
     pub auction_manager_authority: String,
@@ -828,6 +859,7 @@ pub struct StartedAuction {
 
 #[derive(Serialize)]
 pub struct ClaimedBid {
+    pub tx_hash : String,
     pub accept_payment_account: String,
     pub bidder_pot_token_account: String,
     pub bidder_pot_pda: String,
@@ -844,6 +876,7 @@ pub struct ClaimedBid {
 
 #[derive(Serialize)]
 pub struct EmptiedPaymentAccount {
+    pub tx_hash : String,
     pub accept_payment_account: String,
     pub destination_account: String,
     pub auction_manager: String,
@@ -864,6 +897,7 @@ pub struct EmptiedPaymentAccount {
 
 #[derive(Serialize)]
 pub struct SetStore {
+    pub tx_hash : String,
     pub store_key: String,
     pub admin: String,
     pub payer: String,
@@ -874,6 +908,7 @@ pub struct SetStore {
 
 #[derive(Serialize)]
 pub struct SetWhitelistedCreator {
+    pub tx_hash : String,
     pub whitelisted_creator: String,
     pub admin: String,
     pub payer: String,
@@ -885,6 +920,7 @@ pub struct SetWhitelistedCreator {
 
 #[derive(Serialize)]
 pub struct ValidatedParticipation {
+    pub tx_hash : String,
     pub auction_manager: String,
     pub open_edition_metadata: String,
     pub open_edition_master_edition: String,
@@ -900,6 +936,7 @@ pub struct ValidatedParticipation {
 
 #[derive(Serialize)]
 pub struct PopulatedParticipationPrintingAccount {
+    pub tx_hash : String,
     pub safety_deposit_token_store: String,
     /// Transient account with mint of one time authorization account on master edition - you can delete after this txn
     pub transient_account: String,
@@ -921,6 +958,8 @@ pub struct PopulatedParticipationPrintingAccount {
 
 #[derive(Serialize)]
 pub struct RedeemedUnusedWinningConfigItemsAsAuctioneer {
+    pub tx_hash : String,
+    pub winning_config_item: String,
     pub winning_config_item_index: i16,
     pub proxy_call: i16,
     pub timestamp: i64
@@ -928,6 +967,7 @@ pub struct RedeemedUnusedWinningConfigItemsAsAuctioneer {
 
 #[derive(Serialize)]
 pub struct DecommissionedAuctionManager {
+    pub tx_hash : String,
     pub auction_manager: String,
     pub auction: String,
     pub authority: String,
@@ -940,6 +980,7 @@ pub struct DecommissionedAuctionManager {
 
 #[derive(Serialize)]
 pub struct RedeemedPrintingV2Bid {
+    pub tx_hash : String,
     pub auction_manager: String,
     pub safety_deposit_token_storage: String,
     pub new_mint_type_account: String,
@@ -968,6 +1009,7 @@ pub struct RedeemedPrintingV2Bid {
 
 #[derive(Serialize)]
 pub struct WithdrawnMasterEdition {
+    pub tx_hash : String,
     pub auction_manager: String,
     pub safety_deposit_token_storage: String,
     /// Associated token account owned by auction manager authority of same mint as token storage account
@@ -986,6 +1028,7 @@ pub struct WithdrawnMasterEdition {
 
 #[derive(Serialize)]
 pub struct RedeemedParticipationBidV2 {
+    pub tx_hash : String,
     pub auction_manager: String,
     /// Safety deposit token storage account
     pub safety_deposit_storage_account: String,
@@ -1023,6 +1066,7 @@ pub struct RedeemedParticipationBidV2 {
 
 #[derive(Serialize)]
 pub struct InitAuctionManagerV2 {
+    pub tx_hash : String,
     pub auction_manager_account: String,
     pub auction_winner_token_type_tracker: String,
     pub combined_vault_account: String,
@@ -1039,6 +1083,7 @@ pub struct InitAuctionManagerV2 {
 
 #[derive(Serialize)]
 pub struct ValidatedSafetyDepositBoxV2 {
+    pub tx_hash : String,
     pub key: i16,
     /// safety deposit order
     pub order: i64,
@@ -1086,6 +1131,7 @@ pub struct ValidatedSafetyDepositBoxV2 {
 
 #[derive(Serialize)]
 pub struct RedeemedParticipationBidV3 {
+    pub tx_hash : String,
     pub win_index: Option<i64>,
     pub auction_manager: String,
     /// Safety deposit token storage account
@@ -1124,6 +1170,7 @@ pub struct RedeemedParticipationBidV3 {
 
 #[derive(Serialize)]
 pub struct EndedAuction {
+    pub tx_hash : String,
     pub auction_manager: String,
     pub auction: String,
     pub auction_extended_data_account: String,
@@ -1136,6 +1183,7 @@ pub struct EndedAuction {
 
 #[derive(Serialize)]
 pub struct SetStoreIndex {
+    pub tx_hash : String,
     pub store_index: String,
     pub payer: String,
     pub auction_cache: String,
@@ -1149,6 +1197,7 @@ pub struct SetStoreIndex {
 
 #[derive(Serialize)]
 pub struct SetAuctionCache {
+    pub tx_hash : String,
     pub auction_cache: String,
     pub payer: String,
     pub auction: String,
@@ -1160,6 +1209,7 @@ pub struct SetAuctionCache {
 
 #[derive(Serialize)]
 pub struct SetStoreV2 {
+    pub tx_hash : String,
     pub store_key: String,
     pub store_config_key: String,
     pub admin: String,
@@ -1196,6 +1246,7 @@ pub async fn fragment_instruction(
                     for wc_item_set in wc_item_sets {
                         for wci in wc_item_set {
                             wc_items.push(WinningItem {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 safety_deposit_box_index: wci.safety_deposit_box_index as i16,
                                 amount: wci.amount as i16,
                                 item_type: match wci.winning_config_type {
@@ -1214,6 +1265,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_INIT_AUCTION_MANAGER_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedInitAuctionManagerV1(
                             InitAuctionManager {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 account: instruction.accounts[0].account.to_string(),
                                 vault_account: instruction.accounts[1].account.to_string(),
                                 auction: instruction.accounts[2].account.to_string(),
@@ -1270,6 +1322,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_VALIDATED_SAFETY_DEPOSIT_BOX_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedValidateSafetyDepositBoxV1(
                             ValidateSafetyDepositBox {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 safety_deposit_validation_ticket: instruction.accounts[0].account.to_string(),
                                 auction_manager: instruction.accounts[1].account.to_string(),
                                 metadata: instruction.accounts[2].account.to_string(),
@@ -1304,6 +1357,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_REDEEMED_BID_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemBid(
                             RedeemedBid {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 safety_deposit_storage: instruction.accounts[1].account.to_string(),
                                 destination: instruction.accounts[2].account.to_string(),
@@ -1338,6 +1392,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_REDEEMED_FULL_RIGHTS_TRANSFER_BID_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemFullRightsTransferBid(
                             RedeemedFullRightsTransferBid {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 safety_deposit_storage: instruction.accounts[1].account.to_string(),
                                 destination: instruction.accounts[2].account.to_string(),
@@ -1372,6 +1427,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_REDEEMED_PARTICIPATION_BID_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedRedeemParticipationBid(
                             RedeemedParticipationBid {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 safety_deposit_storage: instruction.accounts[1].account.to_string(),
                                 destination_account: instruction.accounts[2].account.to_string(),
@@ -1438,6 +1494,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_START_AUCTION_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::StartAuction(
                             StartedAuction {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 auction: instruction.accounts[1].account.to_string(),
                                 auction_manager_authority: instruction.accounts[2].account.to_string(),
@@ -1460,6 +1517,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_CLAIMED_BID_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::ClaimBid(
                             ClaimedBid {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 accept_payment_account: instruction.accounts[0].account.to_string(),
                                 bidder_pot_token_account: instruction.accounts[1].account.to_string(),
                                 bidder_pot_pda: instruction.accounts[2].account.to_string(),
@@ -1488,6 +1546,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_EMPTIED_PAYMENT_ACCOUNT_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::EmptyPaymentAccount(
                             EmptiedPaymentAccount {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 accept_payment_account: instruction.accounts[0].account.to_string(),
                                 destination_account: instruction.accounts[1].account.to_string(),
                                 auction_manager: instruction.accounts[2].account.to_string(),
@@ -1556,6 +1615,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_SET_STORE_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetStore(
                             SetStore {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 store_key: instruction.accounts[0].account.to_string(),
                                 admin: instruction.accounts[1].account.to_string(),
                                 payer: instruction.accounts[2].account.to_string(),
@@ -1578,6 +1638,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_SET_STORE_V2_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetStoreV2(
                             SetStoreV2 {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 store_key: instruction.accounts[0].account.to_string(),
                                 store_config_key: instruction.accounts[1].account.to_string(),
                                 admin: instruction.accounts[2].account.to_string(),
@@ -1601,6 +1662,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_SET_WHITELISTED_CREATOR_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetWhitelistedCreator(
                             SetWhitelistedCreator {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 whitelisted_creator: instruction.accounts[0].account.to_string(),
                                 admin: instruction.accounts[1].account.to_string(),
                                 payer: instruction.accounts[2].account.to_string(),
@@ -1624,6 +1686,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedValidateParticipation(
                             ValidatedParticipation {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 open_edition_metadata: instruction.accounts[1].account.to_string(),
                                 open_edition_master_edition: instruction.accounts[2].account.to_string(),
@@ -1651,6 +1714,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedPopulateParticipationPrintingAccount(
                             PopulatedParticipationPrintingAccount {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 safety_deposit_token_store: instruction.accounts[0].account.to_string(),
                                 transient_account: instruction.accounts[1].account.to_string(),
                                 printing_token_account: instruction.accounts[2].account.to_string(),
@@ -1682,6 +1746,8 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemUnusedWinningConfigItemsAsAuctioneer(
                             RedeemedUnusedWinningConfigItemsAsAuctioneer {
+                                tx_hash: instruction.transaction_hash.to_string(),
+                                winning_config_item: instruction.accounts[args.winning_config_item_index as usize].account.to_string(),
                                 winning_config_item_index: (&args.winning_config_item_index).clone() as i16,
                                 proxy_call: (&args.proxy_call).clone() as i16,
                                 timestamp: instruction.timestamp,
@@ -1701,6 +1767,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_DECOMMISSION_AUCTION_MANAGER_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DecommissionAuctionManager(
                             DecommissionedAuctionManager {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 auction: instruction.accounts[1].account.to_string(),
                                 authority: instruction.accounts[2].account.to_string(),
@@ -1734,6 +1801,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_REDEEM_PRINTING_V2_BID_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemPrintingV2Bid(
                             RedeemedPrintingV2Bid {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 safety_deposit_token_storage: instruction.accounts[1].account.to_string(),
                                 new_mint_type_account: instruction.accounts[2].account.to_string(),
@@ -1774,6 +1842,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_WITHDRAW_MASTER_EDITION_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::WithdrawMasterEdition(
                             WithdrawnMasterEdition {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 safety_deposit_token_storage: instruction.accounts[1].account.to_string(),
                                 auction_manager_authority_ata: instruction.accounts[2].account.to_string(),
@@ -1803,6 +1872,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_REDEEMED_PARTICIPATION_BID_V2_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::DeprecatedRedeemParticipationBidV2(
                             RedeemedParticipationBidV2 {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 safety_deposit_storage_account: instruction.accounts[1].account.to_string(),
                                 new_mint_type_account: instruction.accounts[2].account.to_string(),
@@ -1852,6 +1922,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_INIT_AUCTION_MANAGER_V2_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::InitAuctionManagerV2(
                             InitAuctionManagerV2 {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager_account: instruction.accounts[0].account.to_string(),
                                 auction_winner_token_type_tracker: instruction.accounts[1].account.to_string(),
                                 combined_vault_account: instruction.accounts[2].account.to_string(),
@@ -1884,6 +1955,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_VALIDATED_SAFETY_DEPOSIT_V2_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::ValidateSafetyDepositBoxV2(
                             ValidatedSafetyDepositBoxV2 {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 key: safety_deposit_config.key as i16,
                                 order: safety_deposit_config.order as i64,
                                 winning_config_type: safety_deposit_config.winning_config_type as i16,
@@ -1954,6 +2026,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_REDEEMED_PARTICIPATION_BID_V3_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemParticipationBidV3(
                             RedeemedParticipationBidV3 {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 win_index: if let Some(win_index) = args.win_index {
                                     Some(win_index as i64)
                                 } else {
@@ -2000,6 +2073,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_ENDED_AUCTION_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::EndAuction(
                             EndedAuction {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_manager: instruction.accounts[0].account.to_string(),
                                 auction: instruction.accounts[1].account.to_string(),
                                 auction_extended_data_account: instruction.accounts[2].account.to_string(),
@@ -2028,6 +2102,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_SET_STORE_INDEX_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetStoreIndex(
                             SetStoreIndex {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 store_index: instruction.accounts[0].account.to_string(),
                                 auction_cache: instruction.accounts[2].account.to_string(),
                                 payer: instruction.accounts[1].account.to_string(),
@@ -2060,6 +2135,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_SET_AUCTION_CACHE_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::SetAuctionCache(
                             SetAuctionCache {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 auction_cache: instruction.accounts[0].account.to_string(),
                                 payer: instruction.accounts[1].account.to_string(),
                                 auction: instruction.accounts[2].account.to_string(),
