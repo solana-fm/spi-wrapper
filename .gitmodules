@@ -22,4 +22,6 @@
 [submodule "submodules/zeta-sdk"]
 	path = submodules/zeta-sdk
 	url = https://github.com/zetamarkets/sdk.git
-
+[submodule "submodules/raydium-contract-instructions"]
+	path = submodules/raydium-contract-instructions
+	url = https://github.com/raydium-io/raydium-contract-instructions.git

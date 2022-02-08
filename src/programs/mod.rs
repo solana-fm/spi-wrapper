@@ -15,5 +15,5 @@ pub mod native_token_lending;
 pub mod native_vote;
 pub mod serum_market;
 pub mod step_token_swap;
-pub mod zeta_market;
+pub mod zeta_fuze_vault;
 pub mod raydium_amm;

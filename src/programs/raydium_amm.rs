@@ -14,6 +14,10 @@ pub const RAYDIUM_AMM_WITHDRAW_TABLE: &str = "raydium_amm_withdraw";
 pub const RAYDIUM_AMM_SWAP_IN_TABLE: &str = "raydium_amm_swap_in";
 pub const RAYDIUM_AMM_SWAP_OUT_TABLE: &str = "raydium_amm_swap_out";
 
+/// Missing Raydium IDO Program
+/// Missing Ryadium LP v1 and v2 programs
+/// Missing Ryadium Staking Program
+
 lazy_static!{
     pub static ref RAYDIUM_AMM_INITALIZE_AMM_SCHEMA: Schema = Schema::parse_str(
         r#"
