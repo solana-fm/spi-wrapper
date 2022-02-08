@@ -23,7 +23,7 @@ pub const METAPLEX_SET_STORE_V2_TABLE_NAME: &str = "metaplex_v2_set_stores";
 pub const METAPLEX_SET_WHITELISTED_CREATOR_TABLE_NAME: &str = "metaplex_set_whitelisted_creators";
 pub const METAPLEX_DEPRECATED_VALIDATE_PARTICIPATION_TABLE_NAME: &str = "metaplex_deprecated_validate_participations";
 pub const METAPLEX_POPULATED_PARTICIPATION_PRINTING_ACCOUNT_TABLE_NAME: &str = "metaplex_populated_participation_printing_accounts";
-pub const METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
+pub const METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME: &str = "metaplex_redeem_unused_winning_config_items_as_auctioneers";
 pub const METAPLEX_DECOMMISSION_AUCTION_MANAGER_TABLE_NAME: &str = "metaplex_decomission_auction_managers";
 pub const METAPLEX_REDEEM_PRINTING_V2_BID_TABLE_NAME: &str = "metaplex_redeem_printing_v2_bids";
 pub const METAPLEX_WITHDRAW_MASTER_EDITION_TABLE_NAME: &str = "metaplex_withdraw_master_edition";
@@ -921,6 +921,7 @@ pub struct PopulatedParticipationPrintingAccount {
 
 #[derive(Serialize)]
 pub struct RedeemedUnusedWinningConfigItemsAsAuctioneer {
+    pub winning_config_item: String,
     pub winning_config_item_index: i16,
     pub proxy_call: i16,
     pub timestamp: i64
@@ -1682,6 +1683,7 @@ pub async fn fragment_instruction(
                         table_name: METAPLEX_REDEEM_UNUSED_WINNING_CONFIG_ITEMS_AS_AUCTIONEER_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::Metaplex(MetaplexMainDatum::RedeemUnusedWinningConfigItemsAsAuctioneer(
                             RedeemedUnusedWinningConfigItemsAsAuctioneer {
+                                winning_config_item: instruction.accounts[args.winning_config_item_index as usize].account.to_string(),
                                 winning_config_item_index: (&args.winning_config_item_index).clone() as i16,
                                 proxy_call: (&args.proxy_call).clone() as i16,
                                 timestamp: instruction.timestamp,
