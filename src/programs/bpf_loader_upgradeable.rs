@@ -184,7 +184,11 @@ pub async fn fragment_instruction(
                             BpfUpgradeableLoaderDatum::NativeBpfUpgradeableClosure(
                                 NativeBpfUpgradeableClosure {
                                     transaction_hash: instruction.transaction_hash.clone(),
-                                    program: Some(instruction.accounts[3].account.to_string()),
+                                    program: if instruction.accounts.len() > 3 {
+                                        Some(instruction.accounts[3].account.to_string())
+                                    } else {
+                                        None
+                                    },
                                     program_data: instruction.accounts[0].account.to_string(),
                                     program_authority: Some(instruction.accounts[2].account.to_string()),
                                     timestamp: instruction.timestamp.clone(),

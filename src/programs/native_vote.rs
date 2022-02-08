@@ -10,18 +10,71 @@ use crate::{Instruction, TableData, TypedDatum};
 
 pub const PROGRAM_ADDRESS: &str = "Vote111111111111111111111111111111111111111";
 
+pub const NATIVE_VOTE_NEW_VOTE_ACCOUNT_TABLE_NAME: &str = "native_vote_new_vote_accounts";
 pub const NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME: &str = "native_vote_node_commissions";
+pub const NATIVE_VOTE_UPDATED_VALIDATOR_IDENTITY_TABLE_NAME: &str = "native_vote_updated_validator_identities";
+pub const NATIVE_VOTE_VOTE_TABLE_NAME: &str = "native_vote_votes";
 pub const NATIVE_VOTE_ACCOUNT_WITHDRAWAL_TABLE_NAME: &str = "native_vote_account_withdrawals";
 
 lazy_static! {
+    pub static ref NATIVE_VOTE_NEW_VOTE_ACCOUNT_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "native_vote_new_vote_account",
+        "fields": [
+            {"name": "account", "type": "string"},
+            {"name": "node", "type": "string"},
+            {"name": "authorised_voter", "type": "string"},
+            {"name": "authorised_withdrawer", "type": "string"},
+            {"name": "commission", "type": "int"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref NATIVE_VOTE_UPDATED_VALIDATOR_IDENTITY_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "native_vote_updated_validator_identity",
+        "fields": [
+            {"name": "account", "type": "string"},
+            {"name": "new_identity", "type": "string"},
+            {"name": "withdraw_authority", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
     pub static ref NATIVE_VOTE_NODE_COMMISSION_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
         "name": "native_vote_node_commission",
         "fields": [
-            {"name": "node_pubkey", "type": "string"},
+            {"name": "vote_account", "type": "string"},
+            {"name": "withdraw_authority", "type": "string"},
             {"name": "commission", "type": "int"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
+    pub static ref NATIVE_VOTE_VOTE_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+        "type": "record",
+        "name": "native_vote_vote",
+        "fields": [
+            {"name": "account", "type": "string"},
+            {"name": "authority", "type": "string"},
+            {"name": "slots", "type": "array", "items": "long" },
+            {"name": "last_slot_sig", "type": "string"},
+            {"name": "last_slot_timestamp", "type": ["null", "long"]},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -48,15 +101,47 @@ lazy_static! {
 
 #[derive(Serialize)]
 pub enum VoteDatum {
+    InitialiseAccount(NewVoteAccount),
     NodeCommission(NodeCommission),
+    UpdatedValidatorIdentity(UpdatedValidatorIdentity),
+    Vote(Vote),
     VoteAccountWithdrawal(VoteAccountWithdrawal)
 }
 
 #[derive(Serialize)]
+pub struct NewVoteAccount {
+    pub account: String,
+    pub node: String,
+    pub authorised_voter: String,
+    pub authorised_withdrawer: String,
+    pub commission: i16,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
 pub struct NodeCommission {
-    pub node_pubkey: String,
+    pub vote_account: String,
+    pub withdraw_authority: String,
     pub commission: i16,
     pub timestamp: i64,
+}
+
+#[derive(Serialize)]
+pub struct UpdatedValidatorIdentity {
+    pub account: String,
+    pub new_identity: String,
+    pub withdraw_authority: String,
+    pub timestamp: i64
+}
+
+#[derive(Serialize)]
+pub struct Vote {
+    pub account: String,
+    pub authority: String,
+    pub slots: Vec<i64>,
+    pub last_slot_sig: String,
+    pub last_slot_timestamp: Option<i64>,
+    pub timestamp: i64
 }
 
 #[derive(Serialize)]
@@ -86,27 +171,19 @@ pub async fn fragment_instruction(
             let mut response: Vec<TableData> = Vec::new();
             let deserialized_instruction = di.clone();
             match deserialized_instruction {
-                // TODO: Consider indexing the vote account initialisation.
                 VoteInstruction::InitializeAccount(vote_init) => {
-                    // Source code
-                    // verify_rent_exemption(me, next_keyed_account(keyed_accounts)?)?;
-                    // let vs = vote_state::initialize_account(
-                    //     me,
-                    //     &vote_init,
-                    //     &signers,
-                    //     &from_keyed_account::<Clock>(next_keyed_account(keyed_accounts)?)?,
-                    //     invoke_context
-                    //         .is_feature_active(&feature_set::check_init_vote_data::id()),
-                    // );
                     let table_data = TableData {
-                        schema: (*NATIVE_VOTE_NODE_COMMISSION_SCHEMA).clone(),
-                        table_name: NATIVE_VOTE_NODE_COMMISSION_TABLE_NAME.to_string(),
+                        schema: (*NATIVE_VOTE_NEW_VOTE_ACCOUNT_SCHEMA).clone(),
+                        table_name: NATIVE_VOTE_NEW_VOTE_ACCOUNT_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::NativeVote(
-                            VoteDatum::NodeCommission(
-                                NodeCommission {
-                                    node_pubkey: vote_init.node_pubkey.to_string(),
+                            VoteDatum::InitialiseAccount(
+                                NewVoteAccount {
+                                    account: instruction.accounts[0].account.to_string(),
+                                    node: vote_init.node_pubkey.to_string(),
+                                    authorised_voter: vote_init.authorized_voter.to_string(),
+                                    authorised_withdrawer: vote_init.authorized_withdrawer.to_string(),
                                     commission: vote_init.commission as i16,
-                                    timestamp: instruction.timestamp,
+                                    timestamp: instruction.timestamp
                                 }
                             )
                         )]
@@ -131,14 +208,30 @@ pub async fn fragment_instruction(
                 VoteInstruction::AuthorizeChecked(_) => {
                     None
                 }
-                // TODO: To consider Vote spam attacks if it happens, should do so if we need to track the number of voters specific to each validator.
                 VoteInstruction::UpdateValidatorIdentity => {
                     // vote_state::update_validator_identity(
                     //     me,
                     //     next_keyed_account(keyed_accounts)?.unsigned_key(),
                     //     &signers,
                     // )
-                    None
+                    let table_data = TableData {
+                        schema: (*NATIVE_VOTE_UPDATED_VALIDATOR_IDENTITY_SCHEMA).clone(),
+                        table_name: NATIVE_VOTE_UPDATED_VALIDATOR_IDENTITY_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeVote(
+                            VoteDatum::UpdatedValidatorIdentity(
+                                UpdatedValidatorIdentity {
+                                    account: instruction.accounts[0].account.clone(),
+                                    new_identity: instruction.accounts[1].account.clone(),
+                                    withdraw_authority: instruction.accounts[2].account.clone(),
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 VoteInstruction::UpdateCommission(commission) => {
                     // vote_state::update_commission(me, commission, &signers)
@@ -148,7 +241,8 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeVote(
                             VoteDatum::NodeCommission(
                                 NodeCommission {
-                                    node_pubkey: instruction.accounts[0].account.clone(),
+                                    vote_account: instruction.accounts[0].account.clone(),
+                                    withdraw_authority: instruction.accounts[1].account.clone(),
                                     commission: commission as i16,
                                     timestamp: instruction.timestamp,
                                 }
@@ -164,8 +258,7 @@ pub async fn fragment_instruction(
                 VoteInstruction::VoteSwitch(_, _) => {
                     None
                 }
-                // TODO: Consider indexing specific votes
-                VoteInstruction::Vote(_) => {
+                VoteInstruction::Vote(vote) => {
                     // Source code execution
                     // vote_state::process_vote(
                     //     me,
@@ -174,7 +267,30 @@ pub async fn fragment_instruction(
                     //     &vote,
                     //     &signers,
                     // )
-                    None
+                    let table_data = TableData {
+                        schema: (*NATIVE_VOTE_VOTE_SCHEMA).clone(),
+                        table_name: NATIVE_VOTE_VOTE_TABLE_NAME.to_string(),
+                        data: vec![TypedDatum::NativeVote(
+                            VoteDatum::Vote(
+                                Vote {
+                                    account: instruction.accounts[0].account.to_string(),
+                                    authority: instruction.accounts[3].account.to_string(),
+                                    slots: vote.slots.as_slice().into_iter().map(|s| *s as i64).collect(),
+                                    last_slot_sig: vote.hash.to_string(),
+                                    last_slot_timestamp: if let Some(last_timestamp) = vote.timestamp {
+                                        Some(last_timestamp as i64)
+                                    } else {
+                                        None
+                                    },
+                                    timestamp: instruction.timestamp,
+                                }
+                            )
+                        )]
+                    };
+
+                    response.push(table_data);
+
+                    Some(response)
                 }
                 VoteInstruction::Withdraw(lamports) => {
                     // let to = next_keyed_account(keyed_accounts)?;
