@@ -81,6 +81,8 @@ lazy_static! {
             {"name": "auction_mint", "type": "string"},
             {"name": "token_program", "type": "string"},
             {"name": "auction_extended", "type": "string"},
+            {"name": "auction_program", "type": "string"},
+            {"name": "store", "type": ["null","string"]},
             {"name": "resource", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
@@ -274,6 +276,8 @@ pub struct ClaimedBid {
     pub token_program: String,
     /// Auction extended (pda relative to auction of ['auction', program id, vault key, 'extended'])
     pub auction_extended: String,
+    pub auction_program: String,
+    pub store: Option<String>,
     pub resource: String,
     pub timestamp: i64
 }
@@ -485,6 +489,8 @@ pub async fn fragment_instruction(
                                     auction_mint: instruction.accounts[6].account.to_string(),
                                     token_program: instruction.accounts[8].account.to_string(),
                                     auction_extended: instruction.accounts[9].account.to_string(),
+                                    auction_program: PROGRAM_ADDRESS.to_string(),
+                                    store: None,
                                     resource: claimed_bid.resource.to_string(),
                                     timestamp: instruction.timestamp
                                 }
