@@ -16,7 +16,7 @@ lazy_static! {
         "type": "record",
         "name": "native_bpf_upgradable_closure",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
+            {"name": "tx_hash", "type": "string"},
             {"name": "program", "type": ["null", "string"]},
             {"name": "program_data", "type": "string"},
             {"name": "program_authority", "type": ["null", "string"]},
@@ -32,7 +32,7 @@ lazy_static! {
         "type": "record",
         "name": "native_bpf_upgradable_deploy",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
+            {"name": "tx_hash", "type": "string"},
             {"name": "program", "type": "string"},
             {"name": "program_data", "type": "string"},
             {"name": "program_authority", "type": "string"},
@@ -48,7 +48,7 @@ lazy_static! {
         "type": "record",
         "name": "native_bpf_upgradable_upgrade",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
+            {"name": "tx_hash", "type": "string"},
             {"name": "program", "type": "string"},
             {"name": "program_data", "type": "string"},
             {"name": "program_buffer", "type": "string"},
@@ -72,7 +72,7 @@ pub enum BpfUpgradeableLoaderDatum {
 #[derive(Serialize)]
 pub struct NativeBpfUpgradeableDeploy {
     /// Which transaction was this deployment made?
-    pub transaction_hash: String,
+    pub tx_hash: String,
     /// Where's this program?
     pub program: String,
     /// Which account stores this program's bytecode?
@@ -86,7 +86,7 @@ pub struct NativeBpfUpgradeableDeploy {
 #[derive(Serialize)]
 pub struct NativeBpfUpgradeableUpgrade {
     /// Which transaction was this deployment made?
-    pub transaction_hash: String,
+    pub tx_hash: String,
     /// Where's this program?
     pub program: String,
     /// Which account stores this program's bytecode?
@@ -102,7 +102,7 @@ pub struct NativeBpfUpgradeableUpgrade {
 #[derive(Serialize)]
 pub struct NativeBpfUpgradeableClosure {
     /// Which transaction was this deployment made?
-    pub transaction_hash: String,
+    pub tx_hash: String,
     /// Where's this program?
     pub program: Option<String>,
     /// Which account stores this program's bytecode?
@@ -139,7 +139,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::BpfLoaderUpgradeable(
                             BpfUpgradeableLoaderDatum::NativeBpfUpgradeableDeploy(
                                 NativeBpfUpgradeableDeploy {
-                                    transaction_hash: instruction.transaction_hash.clone(),
+                                    tx_hash: instruction.transaction_hash.clone(),
                                     program: instruction.accounts[2].account.to_string(),
                                     program_data: instruction.accounts[1].account.to_string(),
                                     program_authority: instruction.accounts[7].account.to_string(),
@@ -160,7 +160,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::BpfLoaderUpgradeable(
                             BpfUpgradeableLoaderDatum::NativeBpfUpgradeableUpgrade(
                                 NativeBpfUpgradeableUpgrade {
-                                    transaction_hash: instruction.transaction_hash.clone(),
+                                    tx_hash: instruction.transaction_hash.clone(),
                                     program: instruction.accounts[1].account.to_string(),
                                     program_data: instruction.accounts[0].account.to_string(),
                                     program_buffer: instruction.accounts[2].account.to_string(),
@@ -183,7 +183,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::BpfLoaderUpgradeable(
                             BpfUpgradeableLoaderDatum::NativeBpfUpgradeableClosure(
                                 NativeBpfUpgradeableClosure {
-                                    transaction_hash: instruction.transaction_hash.clone(),
+                                    tx_hash: instruction.transaction_hash.clone(),
                                     program: if instruction.accounts.len() > 3 {
                                         Some(instruction.accounts[3].account.to_string())
                                     } else {
