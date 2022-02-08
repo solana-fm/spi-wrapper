@@ -138,7 +138,8 @@ pub enum TypedDatum {
     MetaplexCandyMachine,
     Metaplex(MetaplexMainDatum),
     MetaplexTokenMetadata(MetaplexTokenMetadataDatum),
-    MetaplexTokenVault
+    MetaplexTokenVault,
+    RaydiumAMM(RaydiumAMMDatum)
 
 }
 
@@ -209,8 +210,8 @@ pub async fn process(
                             .await
                     }
                     programs::serum_market::PROGRAM_ADDRESS_V1
-                        | programs::serum_market::PROGRAM_ADDRESS_V2
-                        | programs::serum_market::PROGRAM_ADDRESS_V3 => {
+                    | programs::serum_market::PROGRAM_ADDRESS_V2
+                    | programs::serum_market::PROGRAM_ADDRESS_V3 => {
                         crate::programs::serum_market::fragment_instruction(instruction)
                             .await
                     }
