@@ -7,7 +7,7 @@ use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
 
-pub const PROGRAM_ADDRESS: &str = "auctxRXPeJoc4817jDhf4HbjnhEcr1cCXenosMhK5R8";
+pub const PROGRAM_ADDRESS: &str = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
 
 pub const METAPLEX_TOKEN_METADATA_CREATED_METADATA_TABLE: &str = "metaplex_token_metadata_created_metadatas";
 pub const METAPLEX_TOKEN_METADATA_CREATOR_TABLE: &str = "metaplex_token_metadata_creators";
