@@ -18,7 +18,7 @@ lazy_static! {
         "type": "record",
         "name": "native_stake_split",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "amount", "type": "long"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
@@ -33,7 +33,7 @@ lazy_static! {
         "type": "record",
         "name": "native_stake_withdrawal",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
+            {"name": "tx_hash", "type": "string"},
             {"name": "amount", "type": "long"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
@@ -53,7 +53,7 @@ pub enum NativeStakeDatum {
 #[derive(Serialize)]
 pub struct NativeStakeWithdrawal {
     /// Which transaction was this?
-    pub transaction_hash: String,
+    pub tx_hash: String,
     /// Split amount
     pub amount: i64,
     /// Wen exit?
@@ -63,7 +63,7 @@ pub struct NativeStakeWithdrawal {
 #[derive(Serialize)]
 pub struct NativeStakeSplit {
     /// Which transaction was this?
-    pub transaction_hash: String,
+    pub tx_hash: String,
     /// Account involved for this amount.
     pub account: String,
     /// Amount of benefit/loss from split.
@@ -175,13 +175,13 @@ pub async fn fragment_instruction(
                         table_name: NATIVE_STAKE_SPLIT_TABLE_NAME.to_string(),
                         data: vec![
                             TypedDatum::NativeStake(NativeStakeDatum::Split(NativeStakeSplit {
-                                    transaction_hash: instruction.transaction_hash.clone(),
+                                    tx_hash: instruction.transaction_hash.clone(),
                                     account: instruction.accounts[0].account.to_string(),
                                     amount: (lamports as i64) * -1,
                                     timestamp: instruction.timestamp
                             })),
                             TypedDatum::NativeStake(NativeStakeDatum::Split(NativeStakeSplit {
-                                transaction_hash: instruction.transaction_hash.clone(),
+                                tx_hash: instruction.transaction_hash.clone(),
                                 account: instruction.accounts[1].account.to_string(),
                                 amount: lamports as i64,
                                 timestamp: instruction.timestamp
@@ -231,7 +231,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeStake(
                             NativeStakeDatum::Withdrawal(
                                 NativeStakeWithdrawal {
-                                    transaction_hash: instruction.transaction_hash,
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     amount: lamports as i64,
                                     timestamp: instruction.timestamp,
                                 }

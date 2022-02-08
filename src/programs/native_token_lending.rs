@@ -21,6 +21,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_lending_market",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "market_account", "type": "string"},
             {"name": "token_program", "type": "string"},
             {"name": "oracle_program", "type": "string"},
@@ -37,6 +38,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_lending_owner_state",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "new_owner", "type": "string"},
             {"name": "owner", "type": "string"},
@@ -52,6 +54,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_lending_market_reserve",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "source_liquidity_account", "type": "string"},
             {"name": "collateral_account", "type": "string"},
             {"name": "collateral_mint", "type": "string"},
@@ -79,6 +82,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_lending_reserve_liquidity",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "source", "type": "string"},
             {"name": "destination", "type": "string"},
             {"name": "amount", "type": "long"},
@@ -97,6 +101,7 @@ lazy_static! {
         "type": "record",
         "name": "native_token_lending_obligation",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "obligation_type", "type": "int"},
             {"name": "source", "type": "string"},
             {"name": "destination", "type": "string"},
@@ -121,6 +126,7 @@ pub enum TokenLendingDatum {
 
 #[derive(Serialize)]
 pub struct LendingMarket {
+    pub tx_hash : String,
     pub market_account: String,
     pub token_program: String,
     pub oracle_program: String,
@@ -130,6 +136,7 @@ pub struct LendingMarket {
 
 #[derive(Serialize)]
 pub struct LendingMarketOwnerState {
+    pub tx_hash : String,
     pub account: String,
     pub new_owner: String,
     pub owner: String,
@@ -138,6 +145,7 @@ pub struct LendingMarketOwnerState {
 
 #[derive(Serialize)]
 pub struct LendingMarketReserve {
+    pub tx_hash : String,
     pub source_liquidity_account: String,
     pub collateral_account: String,
     pub collateral_mint: String,
@@ -161,6 +169,7 @@ pub struct LendingMarketReserve {
 
 #[derive(Serialize)]
 pub struct ReserveLiquidity {
+    pub tx_hash : String,
     /// If this is a deposit, this will be the User transfer authority ($authority).
     /// If this is a withdrawal, this will be the Reserve collateral SPL Token mint.
     pub source: String,
@@ -196,6 +205,7 @@ pub enum ObligationType {
 
 #[derive(Serialize)]
 pub struct Obligation {
+    pub tx_hash : String,
     pub obligation_type: i16,
     /// If this is a withdraw, this will be the Source borrow reserve liquidity supply SPL Token account.
     /// If this is a borrow, this will be the Obligation owner.
@@ -234,6 +244,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Market(
                                 LendingMarket {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     market_account: instruction.accounts[0].account.to_string(),
                                     token_program: instruction.accounts[2].account.to_string(),
                                     oracle_program: instruction.accounts[3].account.to_string(),
@@ -252,6 +263,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::OwnerState(
                                 LendingMarketOwnerState {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.to_string(),
                                     new_owner: owner.to_string(),
                                     owner: "".to_string(),
@@ -272,6 +284,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::OwnerState(
                                 LendingMarketOwnerState {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.to_string(),
                                     new_owner: new_owner.to_string(),
                                     owner: instruction.accounts[1].account.to_string(),
@@ -295,6 +308,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::MarketReserve(
                                 LendingMarketReserve {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     source_liquidity_account: instruction.accounts[0].account.to_string(),
                                     collateral_account: instruction.accounts[1].account.to_string(),
                                     collateral_mint: instruction.accounts[6].account.to_string(),
@@ -324,6 +338,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::ReserveLiquidity(
                                 ReserveLiquidity {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     source: instruction.accounts[13].account.to_string(),
                                     destination: instruction.accounts[4].account.to_string(),
                                     amount: liquidity_amount as i64,
@@ -350,6 +365,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::ReserveLiquidity(
                                 ReserveLiquidity {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     source: instruction.accounts[7].account.to_string(),
                                     destination: instruction.accounts[3].account.to_string(),
                                     amount: liquidity_amount as i64,
@@ -373,6 +389,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::ReserveLiquidity(
                                 ReserveLiquidity {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     source: instruction.accounts[4].account.to_string(),
                                     destination: instruction.accounts[7].account.to_string(),
                                     amount: -1 * (collateral_amount as i64),
@@ -396,6 +413,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Obligation(
                                 Obligation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     obligation_type: ObligationType::Deposit as i16,
                                     source: instruction.accounts[0].account.to_string(),
                                     destination: instruction.accounts[2].account.to_string(),
@@ -419,6 +437,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Obligation(
                                 Obligation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     obligation_type: ObligationType::Deposit as i16,
                                     source: instruction.accounts[6].account.to_string(),
                                     destination: instruction.accounts[1].account.to_string(),
@@ -441,6 +460,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Obligation(
                                 Obligation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     obligation_type: ObligationType::Withdraw as i16,
                                     source: instruction.accounts[0].account.to_string(),
                                     destination: instruction.accounts[6].account.to_string(),
@@ -463,6 +483,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Obligation(
                                 Obligation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     obligation_type: ObligationType::Borrow as i16,
                                     source: instruction.accounts[0].account.to_string(),
                                     destination: instruction.accounts[7].account.to_string(),
@@ -485,6 +506,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Obligation(
                                 Obligation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     obligation_type: ObligationType::Repay as i16,
                                     source: instruction.accounts[5].account.to_string(),
                                     destination: instruction.accounts[1].account.to_string(),
@@ -507,6 +529,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Obligation(
                                 Obligation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     obligation_type: ObligationType::Liquidate as i16,
                                     source: instruction.accounts[6].account.to_string(),
                                     destination: instruction.accounts[3].account.to_string(),
@@ -529,6 +552,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeTokenLending(
                             TokenLendingDatum::Obligation(
                                 Obligation {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     obligation_type: ObligationType::FlashLoan as i16,
                                     source: instruction.accounts[0].account.to_string(),
                                     destination: instruction.accounts[1].account.to_string(),

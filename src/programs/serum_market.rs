@@ -24,6 +24,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_market",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "market", "type": "string"},
             {"name": "request_queue_account", "type": "string"},
             {"name": "event_queue_account", "type": "string"},
@@ -52,6 +53,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_order",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "client_order_id", "type": "string"},
             {"name": "order_type", "type": "int"},
             {"name": "side", "type": "int"},
@@ -76,6 +78,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_cancelled_order",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "market", "type": "string"},
             {"name": "side", "type": ["null", "int"]},
             {"name": "order_id", "type": "string"},
@@ -92,6 +95,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_send_take",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "market", "type": "string"},
             {"name": "side", "type": "int"},
             {"name": "limit_price", "type": "long"},
@@ -116,6 +120,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_prune",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "market", "type": "string"},
             {"name": "limit", "type": "int"},
             {"name": "open_orders", "type": "string"},
@@ -132,6 +137,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_fee_sweep",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "market", "type": "string"},
             {"name": "pc_vault", "type": "string"},
             {"name": "fee_authority", "type": "string"},
@@ -148,6 +154,7 @@ lazy_static! {
         "type": "record",
         "name": "serum_market_disable",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "market", "type": "string"},
             {"name": "authority", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
@@ -171,6 +178,7 @@ pub enum SerumMarketDatum {
 
 #[derive(Serialize)]
 pub struct SerumMarket {
+    pub tx_hash : String,
     pub market: String,
     pub request_queue_account: String,
     pub event_queue_account: String,
@@ -200,6 +208,7 @@ pub struct SerumMarket {
 
 #[derive(Serialize)]
 pub struct MarketDisable {
+    pub tx_hash : String,
     pub market: String,
     pub authority: String,
     pub timestamp: i64,
@@ -207,6 +216,7 @@ pub struct MarketDisable {
 
 #[derive(Serialize)]
 pub struct FeeSweep {
+    pub tx_hash : String,
     pub market: String,
     pub pc_vault: String,
     pub fee_authority: String,
@@ -217,6 +227,7 @@ pub struct FeeSweep {
 #[derive(Serialize)]
 pub struct SerumOrder {
     /// Legacy = client_id
+    pub tx_hash : String,
     pub client_order_id: String,
     pub order_type: i16,
     pub side: i16,
@@ -236,6 +247,7 @@ pub struct SerumOrder {
 
 #[derive(Serialize)]
 pub struct CancelledOrder {
+    pub tx_hash : String,
     pub market: String,
     pub side: Option<i16>,
     pub order_id: String,
@@ -245,6 +257,7 @@ pub struct CancelledOrder {
 
 #[derive(Serialize)]
 pub struct SendTake {
+    pub tx_hash : String,
     pub market: String,
     pub side: i16,
     pub limit_price: i64,
@@ -264,6 +277,7 @@ pub struct SendTake {
 
 #[derive(Serialize)]
 pub struct Prune {
+    pub tx_hash : String,
     pub market: String,
     pub limit: i16,
     pub open_orders: String,
@@ -291,6 +305,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Market(
                             SerumMarket {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
                                 request_queue_account: instruction.accounts[1].account.to_string(),
                                 event_queue_account: instruction.accounts[2].account.to_string(),
@@ -336,6 +351,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 client_order_id: order.client_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
@@ -379,6 +395,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::CancelledOrder(
                             CancelledOrder {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 side: Some(order.side as i16),
                                 order_id: order.order_id.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
@@ -418,6 +435,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::CancelledOrder(
                             CancelledOrder {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 side: None,
                                 order_id: client_id.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
@@ -441,6 +459,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Disable(
                             MarketDisable {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
                                 authority: instruction.accounts[1].account.to_string(),
                                 timestamp: instruction.timestamp
@@ -468,6 +487,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::FeeSweep(
                             FeeSweep {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
                                 pc_vault: instruction.accounts[1].account.to_string(),
                                 fee_authority: instruction.accounts[2].account.to_string(),
@@ -499,6 +519,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 client_order_id: order.client_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
@@ -532,6 +553,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Order(
                             SerumOrder {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 client_order_id: order.client_order_id.to_string(),
                                 order_type: order.order_type as i16,
                                 side: order.side as i16,
@@ -571,6 +593,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::CancelledOrder(
                             CancelledOrder {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 side: Some(order.side as i16),
                                 order_id: order.order_id.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
@@ -598,6 +621,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::CancelledOrder(
                             CancelledOrder {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 side: None,
                                 order_id: client_id.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
@@ -624,6 +648,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::SendTake(
                             SendTake {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
                                 side: sti.side as i16,
                                 limit_price: sti.limit_price.get() as i64,
@@ -672,6 +697,7 @@ pub async fn fragment_instruction(
                     data: vec![TypedDatum::SerumMarket(
                         SerumMarketDatum::Prune(
                             Prune {
+                                tx_hash: instruction.transaction_hash.to_string(),
                                 market: instruction.accounts[0].account.to_string(),
                                 limit: limit as i16,
                                 open_orders: instruction.accounts[4].account.to_string(),

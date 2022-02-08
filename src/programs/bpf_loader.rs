@@ -18,7 +18,7 @@ lazy_static! {
         "type": "record",
         "name": "native_bpf_write",
         "fields": [
-            {"name": "transaction_hash", "type": "string"},
+            {"name": "tx_hash", "type": "string"},
             {"name": "program", "type": "string"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
@@ -37,7 +37,7 @@ pub enum BpfLoaderDatum {
 #[derive(Serialize)]
 pub struct NativeBpfWrite {
     /// Which transaction was this?
-    pub transaction_hash: String,
+    pub tx_hash: String,
     /// Program Involved
     pub program: String,
     /// Wen exit?
@@ -66,7 +66,7 @@ pub async fn fragment_instruction(
                         table_name: NATIVE_BPF_LOADER_WRITE_TABLE_NAME.to_string(),
                         data: vec![TypedDatum::BpfLoader(BpfLoaderDatum::NativeBpfWrite(
                             NativeBpfWrite {
-                                transaction_hash: _instruction.transaction_hash,
+                                tx_hash: _instruction.transaction_hash,
                                 program: _instruction.program,
                                 timestamp: _instruction.timestamp,
                             }))]

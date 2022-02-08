@@ -23,6 +23,7 @@ lazy_static! {
         "type": "record",
         "name": "native_vote_new_vote_account",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "node", "type": "string"},
             {"name": "authorised_voter", "type": "string"},
@@ -40,6 +41,7 @@ lazy_static! {
         "type": "record",
         "name": "native_vote_updated_validator_identity",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "new_identity", "type": "string"},
             {"name": "withdraw_authority", "type": "string"},
@@ -55,6 +57,7 @@ lazy_static! {
         "type": "record",
         "name": "native_vote_node_commission",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "vote_account", "type": "string"},
             {"name": "withdraw_authority", "type": "string"},
             {"name": "commission", "type": "int"},
@@ -70,6 +73,7 @@ lazy_static! {
         "type": "record",
         "name": "native_vote_vote",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "authority", "type": "string"},
             {"name": "slots", "type": "array", "items": "long" },
@@ -87,6 +91,7 @@ lazy_static! {
         "type": "record",
         "name": "native_vote_account_withdrawal",
         "fields": [
+            {"name": "tx_hash", "type": "string"},
             {"name": "account", "type": "string"},
             {"name": "amount", "type": "long"},
             {"name": "recipient", "type": "string"},
@@ -110,6 +115,7 @@ pub enum VoteDatum {
 
 #[derive(Serialize)]
 pub struct NewVoteAccount {
+    pub tx_hash : String,
     pub account: String,
     pub node: String,
     pub authorised_voter: String,
@@ -120,6 +126,7 @@ pub struct NewVoteAccount {
 
 #[derive(Serialize)]
 pub struct NodeCommission {
+    pub tx_hash : String,
     pub vote_account: String,
     pub withdraw_authority: String,
     pub commission: i16,
@@ -128,6 +135,7 @@ pub struct NodeCommission {
 
 #[derive(Serialize)]
 pub struct UpdatedValidatorIdentity {
+    pub tx_hash : String,
     pub account: String,
     pub new_identity: String,
     pub withdraw_authority: String,
@@ -136,6 +144,7 @@ pub struct UpdatedValidatorIdentity {
 
 #[derive(Serialize)]
 pub struct Vote {
+    pub tx_hash : String,
     pub account: String,
     pub authority: String,
     pub slots: Vec<i64>,
@@ -146,6 +155,7 @@ pub struct Vote {
 
 #[derive(Serialize)]
 pub struct VoteAccountWithdrawal {
+    pub tx_hash : String,
     pub account: String,
     pub amount: i64,
     pub recipient: String,
@@ -178,6 +188,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeVote(
                             VoteDatum::InitialiseAccount(
                                 NewVoteAccount {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.to_string(),
                                     node: vote_init.node_pubkey.to_string(),
                                     authorised_voter: vote_init.authorized_voter.to_string(),
@@ -220,6 +231,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeVote(
                             VoteDatum::UpdatedValidatorIdentity(
                                 UpdatedValidatorIdentity {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.clone(),
                                     new_identity: instruction.accounts[1].account.clone(),
                                     withdraw_authority: instruction.accounts[2].account.clone(),
@@ -241,6 +253,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeVote(
                             VoteDatum::NodeCommission(
                                 NodeCommission {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     vote_account: instruction.accounts[0].account.clone(),
                                     withdraw_authority: instruction.accounts[1].account.clone(),
                                     commission: commission as i16,
@@ -273,6 +286,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeVote(
                             VoteDatum::Vote(
                                 Vote {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.to_string(),
                                     authority: instruction.accounts[3].account.to_string(),
                                     slots: vote.slots.as_slice().into_iter().map(|s| *s as i64).collect(),
@@ -302,6 +316,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::NativeVote(
                             VoteDatum::VoteAccountWithdrawal(
                                 VoteAccountWithdrawal {
+                                    tx_hash: instruction.transaction_hash.to_string(),
                                     account: instruction.accounts[0].account.clone(),
                                     amount: lamports as i64,
                                     recipient: instruction.accounts[1].account.clone(),
