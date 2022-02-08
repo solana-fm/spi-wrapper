@@ -139,6 +139,7 @@ pub enum TypedDatum {
     Metaplex(MetaplexMainDatum),
     MetaplexTokenMetadata(MetaplexTokenMetadataDatum),
     MetaplexTokenVault
+
 }
 
 #[derive(Serialize)]

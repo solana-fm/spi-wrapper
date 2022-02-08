@@ -16,3 +16,9 @@
 [submodule "submodules/solana"]
 	path = submodules/solana
 	url = https://github.com/nixxholas/solana.git
+[submodule "submodules/zeta-fuze"]
+	path = submodules/zeta-fuze
+	url = https://github.com/zetamarkets/fuze.git
+[submodule "submodules/zeta-sdk"]
+	path = submodules/zeta-sdk
+	url = https://github.com/zetamarkets/sdk.git
