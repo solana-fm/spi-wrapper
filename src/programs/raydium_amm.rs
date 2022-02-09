@@ -14,8 +14,9 @@ pub const PROGRAM_ADDRESS: &str = "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8"
 pub const RAYDIUM_AMM_INITALIZE_AMM_TABLE: &str = "raydium_amm_initialize_amm";
 pub const RAYDIUM_AMM_DEPOSIT_TABLE: &str = "raydium_amm_deposit";
 pub const RAYDIUM_AMM_WITHDRAW_TABLE: &str = "raydium_amm_withdraw";
-pub const RAYDIUM_AMM_SWAP_IN_TABLE: &str = "raydium_amm_swap_in";
-pub const RAYDIUM_AMM_SWAP_OUT_TABLE: &str = "raydium_amm_swap_out";
+pub const RAYDIUM_AMM_SWAP_TABLE: &str = "raydium_amm_swap";
+// pub const RAYDIUM_AMM_SWAP_IN_TABLE: &str = "raydium_amm_swap_in";
+// pub const RAYDIUM_AMM_SWAP_OUT_TABLE: &str = "raydium_amm_swap_out";
 
 /// Missing Raydium IDO Program
 /// Missing Raydium LP v1 and v2 programs
@@ -101,7 +102,7 @@ lazy_static!{
         )
     .unwrap();
 
-    pub static ref RAYDIUM_AMM_SWAP_IN_SCHEMA: Schema = Schema::parse_str(
+    pub static ref RAYDIUM_AMM_SWAP_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
@@ -123,36 +124,6 @@ lazy_static!{
             {"name": "user_destination_token_account", "type": "string"},
             {"name": "user_main_account", "type": "string"},
             {"name": "amount_in", "type": "long"},
-            {"name": "minimum_amount_out", "type": "long"},
-            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
-        ]
-    }
-    "#
-    )
-    .unwrap();
-
-     pub static ref RAYDIUM_AMM_SWAP_OUT_SCHEMA: Schema = Schema::parse_str(
-        r#"
-    {
-        "type": "record",
-        "name": "raydium_amm_swap_out",
-        "fields": [
-            {"name": "amm_account", "type": "string"},
-            {"name": "authority", "type": "string"},
-            {"name": "open_orders_account", "type": "string"},
-            {"name": "amm_target_account", "type": "string"},
-            {"name": "pool_token_swap_coin_account", "type": "string"},
-            {"name": "pool_token_withdraw_coin_account", "type": "string"},
-            {"name": "pool_token_swap_pc_account", "type": "string"},
-            {"name": "bids_account", "type": "string"},
-            {"name": "asks_account", "type": "string"},
-            {"name": "event_q", "type": "string"},
-            {"name": "coin_vault_account", "type": "string"},
-            {"name": "pc_vault_account", "type": "string"},
-            {"name": "user_source_token_account", "type": "string"},
-            {"name": "user_destination_token_account", "type": "string"},
-            {"name": "user_main_account", "type": "string"},
-            {"name": "max_amount_in", "type": "long"},
             {"name": "amount_out", "type": "long"},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
@@ -160,6 +131,66 @@ lazy_static!{
     "#
     )
     .unwrap();
+
+    // pub static ref RAYDIUM_AMM_SWAP_IN_SCHEMA: Schema = Schema::parse_str(
+    //     r#"
+    // {
+    //     "type": "record",
+    //     "name": "raydium_amm_swap_in",
+    //     "fields": [
+    //         {"name": "amm_account", "type": "string"},
+    //         {"name": "authority", "type": "string"},
+    //         {"name": "open_orders_account", "type": "string"},
+    //         {"name": "amm_target_account", "type": "string"},
+    //         {"name": "pool_token_swap_coin_account", "type": "string"},
+    //         {"name": "pool_token_withdraw_coin_account", "type": "string"},
+    //         {"name": "pool_token_swap_pc_account", "type": "string"},
+    //         {"name": "bids_account", "type": "string"},
+    //         {"name": "asks_account", "type": "string"},
+    //         {"name": "event_q", "type": "string"},
+    //         {"name": "coin_vault_account", "type": "string"},
+    //         {"name": "pc_vault_account", "type": "string"},
+    //         {"name": "user_source_token_account", "type": "string"},
+    //         {"name": "user_destination_token_account", "type": "string"},
+    //         {"name": "user_main_account", "type": "string"},
+    //         {"name": "amount_in", "type": "long"},
+    //         {"name": "minimum_amount_out", "type": "long"},
+    //         {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+    //     ]
+    // }
+    // "#
+    // )
+    // .unwrap();
+    //
+    //  pub static ref RAYDIUM_AMM_SWAP_OUT_SCHEMA: Schema = Schema::parse_str(
+    //     r#"
+    // {
+    //     "type": "record",
+    //     "name": "raydium_amm_swap_out",
+    //     "fields": [
+    //         {"name": "amm_account", "type": "string"},
+    //         {"name": "authority", "type": "string"},
+    //         {"name": "open_orders_account", "type": "string"},
+    //         {"name": "amm_target_account", "type": "string"},
+    //         {"name": "pool_token_swap_coin_account", "type": "string"},
+    //         {"name": "pool_token_withdraw_coin_account", "type": "string"},
+    //         {"name": "pool_token_swap_pc_account", "type": "string"},
+    //         {"name": "bids_account", "type": "string"},
+    //         {"name": "asks_account", "type": "string"},
+    //         {"name": "event_q", "type": "string"},
+    //         {"name": "coin_vault_account", "type": "string"},
+    //         {"name": "pc_vault_account", "type": "string"},
+    //         {"name": "user_source_token_account", "type": "string"},
+    //         {"name": "user_destination_token_account", "type": "string"},
+    //         {"name": "user_main_account", "type": "string"},
+    //         {"name": "max_amount_in", "type": "long"},
+    //         {"name": "amount_out", "type": "long"},
+    //         {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+    //     ]
+    // }
+    // "#
+    // )
+    // .unwrap();
 }
 
 
@@ -184,11 +215,11 @@ pub enum RaydiumAMMDatum {
 
     Reserved4,
 
-    SwapBaseIn(SwapInstructionIn),
+    SwapBaseIn(RaydiumSwapInstruction),
 
     PreInitialize,
 
-    SwapBaseOut(SwapInstructionOut),
+    SwapBaseOut(RaydiumSwapInstruction),
 
     Reserved5,
 }
@@ -307,7 +338,7 @@ pub struct WithdrawToken {
 }
 
 #[derive(Serialize)]
-pub struct SwapInstructionIn {
+pub struct RaydiumSwapInstruction {
     /// Swap coin or pc from pool
     pub tx_hash : String,
     ///   0. `[]` Spl Token program id
@@ -345,55 +376,99 @@ pub struct SwapInstructionIn {
     // SOURCE amount to transfer, output to DESTINATION is based on the exchange rate
     pub amount_in: i64,
     /// Minimum amount of DESTINATION token to output, prevents excessive slippage
-    pub minimum_amount_out: i64,
-
-    pub timestamp: i64
-}
-
-#[derive(Serialize)]
-pub struct SwapInstructionOut {
-    /// Swap coin or pc from pool, base amount_out with a slippage of max_amount_in
-    pub tx_hash : String,
-    ///   0. `[]` Spl Token program id
-    ///   1. `[writable]` amm Account
-    pub amm_account: String,
-    ///   2. `[]` $authority
-    pub authority: String,
-    ///   3. `[writable]` amm open_orders Account
-    pub open_orders_account: String,
-    ///   4. `[writable]` amm target_orders Account
-    pub target_orders_account: String,
-    ///   5. `[writable]` pool_token_coin Amm Account to swap FROM or To,
-    pub pool_token_swap_coin_account: String,
-    ///   6. `[writable]` pool_token_pc Amm Account to swap FROM or To,
-    pub pool_token_swap_pc_account: String,
-    ///   7. `[]` serum dex program id
-    ///   8. `[writable]` serum market Account. serum_dex program is the owner.
-    ///   9. `[writable]` bids Account
-    pub bids_account: String,
-    ///   10. `[writable]` asks Account
-    pub asks_account: String,
-    ///   11. `[writable]` event_q Account
-    pub event_q: String,
-    ///   12. `[writable]` coin_vault Account
-    pub coin_vault_account: String,
-    ///   13. `[writable]` pc_vault Account
-    pub pc_vault_account: String,
-    ///   14. '[]` vault_signer Account
-    ///   15. `[writable]` user source token Account. user Account to swap from.
-    pub user_source_token_account: String,
-    ///   16. `[writable]` user destination token Account. user Account to swap to.
-    pub user_destination_token_account: String,
-    ///   17. `[singer]` user owner Account
-    pub user_main_account: String,
-
-    // SOURCE amount to transfer, output to DESTINATION is based on the exchange rate
-    pub max_amount_in: i64,
-    /// Minimum amount of DESTINATION token to output, prevents excessive slippage
     pub amount_out: i64,
 
     pub timestamp: i64
 }
+
+// #[derive(Serialize)]
+// pub struct SwapInstructionIn {
+//     /// Swap coin or pc from pool
+//     pub tx_hash : String,
+//     ///   0. `[]` Spl Token program id
+//     ///   1. `[writable]` amm Account
+//     pub amm_account: String,
+//     ///   2. `[]` $authority
+//     pub authority: String,
+//     ///   3. `[writable]` amm open_orders Account
+//     pub open_orders_account: String,
+//     ///   4. `[writable]` amm target_orders Account
+//     pub target_orders_account: String,
+//     ///   5. `[writable]` pool_token_coin Amm Account to swap FROM or To,
+//     pub pool_token_swap_coin_account: String,
+//     ///   6. `[writable]` pool_token_pc Amm Account to swap FROM or To,
+//     pub pool_token_swap_pc_account: String,
+//     ///   7. `[]` serum dex program id
+//     ///   8. `[writable]` serum market Account. serum_dex program is the owner.
+//     ///   9. `[writable]` bids Account
+//     pub bids_account: String,
+//     ///   10. `[writable]` asks Account
+//     pub asks_account: String,
+//     ///   11. `[writable]` event_q Account
+//     pub event_q: String,
+//     ///   12. `[writable]` coin_vault Account
+//     pub coin_vault_account: String,
+//     ///   13. `[writable]` pc_vault Account
+//     pub pc_vault_account: String,
+//     ///   14. '[]` vault_signer Account
+//     ///   15. `[writable]` user source token Account. user Account to swap from.
+//     pub user_source_token_account: String,
+//     ///   16. `[writable]` user destination token Account. user Account to swap to.
+//     pub user_destination_token_account: String,
+//     ///   17. `[singer]` user owner Account
+//     pub user_main_account: String,
+//     // SOURCE amount to transfer, output to DESTINATION is based on the exchange rate
+//     pub amount_in: i64,
+//     /// Minimum amount of DESTINATION token to output, prevents excessive slippage
+//     pub minimum_amount_out: i64,
+//
+//     pub timestamp: i64
+// }
+//
+// #[derive(Serialize)]
+// pub struct SwapInstructionOut {
+//     /// Swap coin or pc from pool, base amount_out with a slippage of max_amount_in
+//     pub tx_hash : String,
+//     ///   0. `[]` Spl Token program id
+//     ///   1. `[writable]` amm Account
+//     pub amm_account: String,
+//     ///   2. `[]` $authority
+//     pub authority: String,
+//     ///   3. `[writable]` amm open_orders Account
+//     pub open_orders_account: String,
+//     ///   4. `[writable]` amm target_orders Account
+//     pub target_orders_account: String,
+//     ///   5. `[writable]` pool_token_coin Amm Account to swap FROM or To,
+//     pub pool_token_swap_coin_account: String,
+//     ///   6. `[writable]` pool_token_pc Amm Account to swap FROM or To,
+//     pub pool_token_swap_pc_account: String,
+//     ///   7. `[]` serum dex program id
+//     ///   8. `[writable]` serum market Account. serum_dex program is the owner.
+//     ///   9. `[writable]` bids Account
+//     pub bids_account: String,
+//     ///   10. `[writable]` asks Account
+//     pub asks_account: String,
+//     ///   11. `[writable]` event_q Account
+//     pub event_q: String,
+//     ///   12. `[writable]` coin_vault Account
+//     pub coin_vault_account: String,
+//     ///   13. `[writable]` pc_vault Account
+//     pub pc_vault_account: String,
+//     ///   14. '[]` vault_signer Account
+//     ///   15. `[writable]` user source token Account. user Account to swap from.
+//     pub user_source_token_account: String,
+//     ///   16. `[writable]` user destination token Account. user Account to swap to.
+//     pub user_destination_token_account: String,
+//     ///   17. `[singer]` user owner Account
+//     pub user_main_account: String,
+//
+//     // SOURCE amount to transfer, output to DESTINATION is based on the exchange rate
+//     pub max_amount_in: i64,
+//     /// Minimum amount of DESTINATION token to output, prevents excessive slippage
+//     pub amount_out: i64,
+//
+//     pub timestamp: i64
+// }
 
 /// Extracts the contents of an instruction into small bits and pieces, or what we would call,
 /// instruction_properties.
@@ -497,10 +572,10 @@ pub async fn fragment_instruction(
                 }
                 AmmInstruction::SwapBaseIn(ref raydium_amm_ix) => {
                     response.push(TableData {
-                        schema: (*RAYDIUM_AMM_SWAP_IN_SCHEMA).clone(),
-                        table_name: RAYDIUM_AMM_SWAP_IN_TABLE.to_string(),
+                        schema: (*RAYDIUM_AMM_SWAP_SCHEMA).clone(),
+                        table_name: RAYDIUM_AMM_SWAP_TABLE.to_string(),
                         data: vec![TypedDatum::RaydiumAMM(
-                            RaydiumAMMDatum::SwapBaseIn(SwapInstructionIn {
+                            RaydiumAMMDatum::SwapBaseIn(RaydiumSwapInstruction {
                                 tx_hash: instruction.transaction_hash.to_string(),
                                 amm_account: instruction.accounts[1].account.to_string(),
                                 authority: instruction.accounts[2].account.to_string(),
@@ -517,7 +592,7 @@ pub async fn fragment_instruction(
                                 user_destination_token_account: instruction.accounts[16].account.to_string(),
                                 user_main_account: instruction.accounts[17].account.to_string(),
                                 amount_in: raydium_amm_ix.amount_in as i64,
-                                minimum_amount_out: raydium_amm_ix.minimum_amount_out as i64,
+                                amount_out: raydium_amm_ix.minimum_amount_out as i64,
                                 timestamp: instruction.timestamp,
                             })
                         )],
@@ -530,7 +605,7 @@ pub async fn fragment_instruction(
                         schema: (*RAYDIUM_AMM_SWAP_OUT_SCHEMA).clone(),
                         table_name: RAYDIUM_AMM_SWAP_OUT_TABLE.to_string(),
                         data: vec![TypedDatum::RaydiumAMM(
-                            RaydiumAMMDatum::SwapBaseOut(SwapInstructionOut {
+                            RaydiumAMMDatum::SwapBaseOut(RaydiumSwapInstruction {
                                 tx_hash: instruction.transaction_hash.to_string(),
                                 amm_account: instruction.accounts[1].account.to_string(),
                                 authority: instruction.accounts[2].account.to_string(),
@@ -546,7 +621,7 @@ pub async fn fragment_instruction(
                                 user_source_token_account: instruction.accounts[15].account.to_string(),
                                 user_destination_token_account: instruction.accounts[16].account.to_string(),
                                 user_main_account: instruction.accounts[17].account.to_string(),
-                                max_amount_in: raydium_amm_ix.max_amount_in as i64,
+                                amount_in: raydium_amm_ix.max_amount_in as i64,
                                 amount_out: raydium_amm_ix.amount_out as i64,
                                 timestamp: instruction.timestamp,
                             })
