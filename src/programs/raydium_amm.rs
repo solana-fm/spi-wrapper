@@ -106,7 +106,7 @@ lazy_static!{
         r#"
     {
         "type": "record",
-        "name": "raydium_amm_swap_in",
+        "name": "raydium_amm_swap",
         "fields": [
             {"name": "amm_account", "type": "string"},
             {"name": "authority", "type": "string"},
