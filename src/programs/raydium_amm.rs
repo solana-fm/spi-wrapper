@@ -1,7 +1,10 @@
+use AmmInstruction::PreInitialize;
 use avro_rs::schema::Schema;
 use borsh::BorshDeserialize;
 use serde::Serialize;
 use step_token_swap::instruction::SwapInstruction;
+use raydium_contract_instructions::amm_instruction::AmmInstruction;
+use serum_dex::error::DexError::ProgramError;
 use tracing::error;
 
 use crate::{Instruction, TableData, TypedDatum};
@@ -15,8 +18,8 @@ pub const RAYDIUM_AMM_SWAP_IN_TABLE: &str = "raydium_amm_swap_in";
 pub const RAYDIUM_AMM_SWAP_OUT_TABLE: &str = "raydium_amm_swap_out";
 
 /// Missing Raydium IDO Program
-/// Missing Ryadium LP v1 and v2 programs
-/// Missing Ryadium Staking Program
+/// Missing Raydium LP v1 and v2 programs
+/// Missing Raydium Staking Program
 
 lazy_static!{
     pub static ref RAYDIUM_AMM_INITALIZE_AMM_SCHEMA: Schema = Schema::parse_str(
@@ -165,13 +168,29 @@ lazy_static!{
 pub enum RaydiumAMMDatum {
     Initialize(InitializeAMM),
 
+    Reserved,
+
+    Reserved0,
+
     Deposit(DepositToken),
 
     Withdraw(WithdrawToken),
 
+    Reserved1,
+
+    Reserved2,
+
+    Reserved3,
+
+    Reserved4,
+
     SwapBaseIn(SwapInstructionIn),
 
+    PreInitialize,
+
     SwapBaseOut(SwapInstructionOut),
+
+    Reserved5,
 }
 
 
@@ -213,7 +232,7 @@ pub struct DepositToken {
     ///   Deposit some tokens into the pool.  The output is a "pool" token representing ownership
     ///   into the pool. Inputs are converted to the current ratio.
     pub tx_hash : String,
-    ///   0. `[]` Spl Token program d
+    ///   1. `[]` Spl Token program d
     pub amm_account: String,
     /// 2. `[]` $authority
     pub authority: String,
@@ -279,6 +298,7 @@ pub struct WithdrawToken {
     ///   17. `[writable]` user token pc Account. user Account to credit.
     pub user_pc_token_account: String,
     ///   18. `[singer]` user owner Account
+     pub user_main_account: String,
     /// Pool token amount to transfer. token_a and token_b amount are set by
     /// the current exchange rate and size of the pool
     pub amount: i64,
@@ -379,119 +399,195 @@ pub struct SwapInstructionOut {
 /// instruction_properties.
 ///
 /// The function should return a list of instruction properties extracted from an instruction.
-// pub async fn fragment_instruction(
-//     // The instruction
-//     instruction: Instruction
-// ) -> Option<Vec<TableData>> {
-//     let raydium_amm_dr = AMMInstruction::try_from_slice(&instruction.data);
-//
-//     return match token_metadata_dr {
-//         Ok(ref bld) => {
-//             let deserialized_mtm_ix = bld.clone();
-//             let mut response: Vec<TableData> = Vec::new();
-//             return match deserialized_mtm_ix {
-//                 MetadataInstruction::CreateMetadataAccount(ref mtm_ix) => {
-//                     response.push(TableData {
-//                         schema: (*METAPLEX_TOKEN_METADATA_CREATED_METADATA_SCHEMA).clone(),
-//                         table_name: METAPLEX_TOKEN_METADATA_CREATED_METADATA_TABLE.to_string(),
-//                         data: vec![TypedDatum::MetaplexTokenMetadata(
-//                             MetaplexTokenMetadataDatum::CreateMetadataAccount(CreatedMetadata {
-//                                 metadata: instruction.accounts[0].account.to_string(),
-//                                 mint: instruction.accounts[1].account.to_string(),
-//                                 mint_authority: instruction.accounts[2].account.to_string(),
-//                                 payer: instruction.accounts[3].account.to_string(),
-//                                 update_authority: instruction.accounts[4].account.to_string(),
-//                                 name: mtm_ix.data.name.to_string(),
-//                                 symbol: mtm_ix.data.symbol.to_string(),
-//                                 uri: mtm_ix.data.uri.to_string(),
-//                                 seller_fee_bips: mtm_ix.data.seller_fee_basis_points as i32,
-//                                 timestamp: instruction.timestamp,
-//                             })
-//                         )],
-//                     });
-//
-//                     let mut creator_data = Vec::new();
-//
-//                     if let Some(creators) = &mtm_ix.data.creators {
-//                         for creator in creators {
-//                             creator_data.push(TypedDatum::MetaplexTokenMetadata(
-//                                 MetaplexTokenMetadataDatum::CreatorData(Creator {
-//                                     token_metadata: instruction.accounts[0].account.to_string(),
-//                                     address: creator.address.to_string(),
-//                                     verified: creator.verified,
-//                                     share: creator.share as i16,
-//                                     timestamp: instruction.timestamp
-//                                 })));
-//                         }
-//                     }
-//
-//                     response.push(TableData {
-//                         schema: (*METAPLEX_CREATOR_SCHEMA).clone(),
-//                         table_name: METAPLEX_TOKEN_METADATA_CREATOR_TABLE.to_string(),
-//                         data: creator_data
-//                     });
-//
-//                     Some(response)
-//                 }
-//                 MetadataInstruction::UpdateMetadataAccount(ref mtm_ix) => {
-//                     response.push(TableData {
-//                         schema: (*METAPLEX_UPDATE_METADATA_ACCOUNT).clone(),
-//                         table_name: METAPLEX_UPDATE_METADATA_ACCOUNT_TABLE.to_string(),
-//                         data: vec![TypedDatum::MetaplexTokenMetadata(
-//                             MetaplexTokenMetadataDatum::UpdateMetadataAccount(UpdatedMetadata {
-//                                 metadata: instruction.accounts[0].account.to_string(),
-//                                 update_authority: instruction.accounts[1].account.to_string(),
-//                                 name: if let Some(data) = &mtm_ix.data {
-//                                     Some(data.name.to_string())
-//                                 } else {
-//                                     None
-//                                 },
-//                                 symbol: if let Some(data) = &mtm_ix.data {
-//                                     Some(data.symbol.to_string())
-//                                 } else {
-//                                     None
-//                                 },
-//                                 uri: if let Some(data) = &mtm_ix.data {
-//                                     Some(data.uri.to_string())
-//                                 } else {
-//                                     None
-//                                 },
-//                                 seller_fee_bips: if let Some(data) = &mtm_ix.data {
-//                                     Some(data.seller_fee_basis_points as i32)
-//                                 } else {
-//                                     None
-//                                 },
-//                                 timestamp: instruction.timestamp,
-//                             })
-//                         )],
-//                     });
-//                     Some(response)
-//                 }
-//                 MetadataInstruction::DeprecatedCreateMasterEdition(ref mtm_ix) => {
-//                     response.push(TableData {
-//                         schema: (*METAPLEX_DEPRECATED_CREATE_MASTER_EDITION_SCHEMA).clone(),
-//                         table_name: METAPLEX_DEPRECATED_CREATE_MASTER_EDITION_TABLE.to_string(),
-//                         data: vec![TypedDatum::MetaplexTokenMetadata(
-//                             MetaplexTokenMetadataDatum::DeprecatedCreateMasterEdition(CreatedMasterEdition {
-//                                 account: instruction.accounts[0].account.to_string(),
-//                                 metadata_mint: instruction.accounts[1].account.to_string(),
-//                                 printing_mint: instruction.accounts[2].account.to_string(),
-//                                 one_time_authorization_printing_mint: instruction.accounts[3].account.to_string(),
-//                                 update_authority: instruction.accounts[4].account.to_string(),
-//                                 printing_mint_authority: instruction.accounts[5].account.to_string(),
-//                                 metadata_mint_authority: instruction.accounts[6].account.to_string(),
-//                                 metadata: instruction.accounts[7].account.to_string(),
-//                                 payer: instruction.accounts[8].account.to_string(),
-//                                 one_time_authorization_printing_mint_authority: instruction.accounts[9].account.to_string(),
-//                                 max_supply: if let Some(ms) = mtm_ix.max_supply {
-//                                     Some(ms as i64)
-//                                 } else {
-//                                     None
-//                                 },
-//                                 timestamp: instruction.timestamp,
-//                             })
-//                         )],
-//                     });
-//                     Some(response)
-//                 }
-//             }
+pub async fn fragment_instruction(
+    // The instruction
+    instruction: Instruction
+) -> Option<Vec<TableData>> {
+    let raydium_amm_dr = AmmInstruction::unpack(
+        instruction.data.as_slice());
+
+    return match raydium_amm_dr {
+        Ok(ref rald) => {
+            let deserialized_raydium_amm_ix = rald.clone();
+            let mut response: Vec<TableData> = Vec::new();
+            return match deserialized_raydium_amm_ix {
+                AmmInstruction::Initialize(ref raydium_amm_ix) => {
+                    response.push(TableData {
+                        schema: (*RAYDIUM_AMM_INITALIZE_AMM_SCHEMA).clone(),
+                        table_name: RAYDIUM_AMM_INITALIZE_AMM_TABLE.to_string(),
+                        data: vec![TypedDatum::RaydiumAMM(
+                            RaydiumAMMDatum::Initialize(InitializeAMM {
+                                tx_hash: instruction.transaction_hash.to_string(),
+                                amm_account: instruction.accounts[1].account.to_string(),
+                                authority: instruction.accounts[2].account.to_string(),
+                                open_orders_account: instruction.accounts[3].account.to_string(),
+                                pool_lp_mint_address: instruction.accounts[4].account.to_string(),
+                                coin_mint_address: instruction.accounts[5].account.to_string(),
+                                pc_mint_address: instruction.accounts[6].account.to_string(),
+                                pool_token_coin_account: instruction.accounts[7].account.to_string(),
+                                pool_token_pc_account: instruction.accounts[8].account.to_string(),
+                                withdraw_queue_account: instruction.accounts[9].account.to_string(),
+                                token_dest_lp_account: instruction.accounts[10].account.to_string(),
+                                token_temp_lp_account: instruction.accounts[11].account.to_string(),
+                                timestamp: instruction.timestamp,
+                            })
+                        )],
+                    });
+
+                    Some(response)
+                }
+                AmmInstruction::Deposit(ref raydium_amm_ix) => {
+                    response.push(TableData {
+                        schema: (*RAYDIUM_AMM_DEPOSIT_SCHEMA).clone(),
+                        table_name: RAYDIUM_AMM_DEPOSIT_TABLE.to_string(),
+                        data: vec![TypedDatum::RaydiumAMM(
+                            RaydiumAMMDatum::Deposit(DepositToken {
+                                tx_hash: instruction.transaction_hash.to_string(),
+                                amm_account: instruction.accounts[1].account.to_string(),
+                                authority: instruction.accounts[2].account.to_string(),
+                                open_orders_account: instruction.accounts[3].account.to_string(),
+                                target_orders_account: instruction.accounts[4].account.to_string(),
+                                pool_lp_mint_address: instruction.accounts[5].account.to_string(),
+                                pool_token_authority: instruction.accounts[6].account.to_string(),
+                                pool_token_pc_authority: instruction.accounts[7].account.to_string(),
+                                user_coin_token_account: instruction.accounts[9].account.to_string(),
+                                user_pc_token_account: instruction.accounts[10].account.to_string(),
+                                user_lp_token_account: instruction.accounts[11].account.to_string(),
+                                user_main_account: instruction.accounts[12].account.to_string(),
+                                max_coin_amount: raydium_amm_ix.max_coin_amount as i64,
+                                max_pc_amount: raydium_amm_ix.max_pc_amount as i64,
+                                base_side: raydium_amm_ix.base_side as i64,
+                                timestamp: instruction.timestamp,
+                            })
+                        )],
+                    });
+
+                    Some(response)
+                }
+
+                AmmInstruction::Withdraw(ref raydium_amm_ix) => {
+                    response.push(TableData {
+                        schema: (*RAYDIUM_AMM_WITHDRAW_SCHEMA).clone(),
+                        table_name: RAYDIUM_AMM_WITHDRAW_TABLE.to_string(),
+                        data: vec![TypedDatum::RaydiumAMM(
+                            RaydiumAMMDatum::Withdraw(WithdrawToken {
+                                tx_hash: instruction.transaction_hash.to_string(),
+                                amm_account: instruction.accounts[1].account.to_string(),
+                                authority: instruction.accounts[2].account.to_string(),
+                                open_orders_account: instruction.accounts[3].account.to_string(),
+                                target_orders_account: instruction.accounts[4].account.to_string(),
+                                pool_lp_mint_address: instruction.accounts[5].account.to_string(),
+                                pool_token_withdraw_coin_account: instruction.accounts[6].account.to_string(),
+                                pool_token_withdraw_pc_account: instruction.accounts[7].account.to_string(),
+                                withdraw_queue_account: instruction.accounts[8].account.to_string(),
+                                token_temp_lp_account: instruction.accounts[9].account.to_string(),
+                                coin_vault_account: instruction.accounts[12].account.to_string(),
+                                pc_vault_account: instruction.accounts[13].account.to_string(),
+                                user_lp_token_account: instruction.accounts[15].account.to_string(),
+                                user_coin_token_account: instruction.accounts[16].account.to_string(),
+                                user_pc_token_account: instruction.accounts[17].account.to_string(),
+                                user_main_account: instruction.accounts[18].account.to_string(),
+                                amount: raydium_amm_ix.amount as i64,
+                                timestamp: instruction.timestamp,
+                            })
+                        )],
+                    });
+
+                    Some(response)
+                }
+                AmmInstruction::SwapBaseIn(ref raydium_amm_ix) => {
+                    response.push(TableData {
+                        schema: (*RAYDIUM_AMM_SWAP_IN_SCHEMA).clone(),
+                        table_name: RAYDIUM_AMM_SWAP_IN_TABLE.to_string(),
+                        data: vec![TypedDatum::RaydiumAMM(
+                            RaydiumAMMDatum::SwapBaseIn(SwapInstructionIn {
+                                tx_hash: instruction.transaction_hash.to_string(),
+                                amm_account: instruction.accounts[1].account.to_string(),
+                                authority: instruction.accounts[2].account.to_string(),
+                                open_orders_account: instruction.accounts[3].account.to_string(),
+                                target_orders_account: instruction.accounts[4].account.to_string(),
+                                pool_token_swap_coin_account: instruction.accounts[5].account.to_string(),
+                                pool_token_swap_pc_account: instruction.accounts[6].account.to_string(),
+                                bids_account: instruction.accounts[9].account.to_string(),
+                                asks_account: instruction.accounts[10].account.to_string(),
+                                event_q: instruction.accounts[11].account.to_string(),
+                                coin_vault_account: instruction.accounts[12].account.to_string(),
+                                pc_vault_account: instruction.accounts[13].account.to_string(),
+                                user_source_token_account: instruction.accounts[15].account.to_string(),
+                                user_destination_token_account: instruction.accounts[16].account.to_string(),
+                                user_main_account: instruction.accounts[17].account.to_string(),
+                                amount_in: raydium_amm_ix.amount_in as i64,
+                                minimum_amount_out: raydium_amm_ix.minimum_amount_out as i64,
+                                timestamp: instruction.timestamp,
+                            })
+                        )],
+                    });
+
+                    Some(response)
+                }
+                AmmInstruction::SwapBaseOut(ref raydium_amm_ix) => {
+                    response.push(TableData {
+                        schema: (*RAYDIUM_AMM_SWAP_OUT_SCHEMA).clone(),
+                        table_name: RAYDIUM_AMM_SWAP_OUT_TABLE.to_string(),
+                        data: vec![TypedDatum::RaydiumAMM(
+                            RaydiumAMMDatum::SwapBaseOut(SwapInstructionOut {
+                                tx_hash: instruction.transaction_hash.to_string(),
+                                amm_account: instruction.accounts[1].account.to_string(),
+                                authority: instruction.accounts[2].account.to_string(),
+                                open_orders_account: instruction.accounts[3].account.to_string(),
+                                target_orders_account: instruction.accounts[4].account.to_string(),
+                                pool_token_swap_coin_account: instruction.accounts[5].account.to_string(),
+                                pool_token_swap_pc_account: instruction.accounts[6].account.to_string(),
+                                bids_account: instruction.accounts[9].account.to_string(),
+                                asks_account: instruction.accounts[10].account.to_string(),
+                                event_q: instruction.accounts[11].account.to_string(),
+                                coin_vault_account: instruction.accounts[12].account.to_string(),
+                                pc_vault_account: instruction.accounts[13].account.to_string(),
+                                user_source_token_account: instruction.accounts[15].account.to_string(),
+                                user_destination_token_account: instruction.accounts[16].account.to_string(),
+                                user_main_account: instruction.accounts[17].account.to_string(),
+                                max_amount_in: raydium_amm_ix.max_amount_in as i64,
+                                amount_out: raydium_amm_ix.amount_out as i64,
+                                timestamp: instruction.timestamp,
+                            })
+                        )],
+                    });
+
+                    Some(response)
+                }
+                AmmInstruction::Reserved => {
+                    None
+                }
+                AmmInstruction::Reserved0 => {
+                    None
+                }
+                AmmInstruction::Reserved1 => {
+                    None
+                }
+                AmmInstruction::Reserved2 => {
+                    None
+                }
+                AmmInstruction::Reserved3 => {
+                    None
+                }
+                AmmInstruction::Reserved4 => {
+                    None
+                }
+                AmmInstruction::Reserved5 => {
+                    None
+                }
+                AmmInstruction::PreInitialize(raydium_amm_ix) => {
+                    None
+                }
+            }
+        }
+        Err(_) => {
+            // Error provided has no utility at the moment.
+            error!("[spi-wrapper/programs/raydium_amm] Error deserializing this system \
+        instruction! tx: {}, tx_instruction_id: {}, parent_idx: {}", instruction.transaction_hash,
+                                     instruction.tx_instruction_id, instruction.parent_index);
+
+            None
+        }
+    }
+}

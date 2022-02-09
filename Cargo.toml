@@ -69,3 +69,4 @@ thiserror = "1.0.30"
 uint = "0.9.1"
 #zeta-sdk = {path = "submodules/zeta-sdk", version = "0.9.1"}
 vault = { path = "submodules/zeta-fuze/vault/programs/vault", version = "0.1.0" }
+raydium-contract-instructions = {path = "submodules/raydium-contract-instructions", version = "0.1.0"}

@@ -27,6 +27,7 @@ use crate::programs::native_token::NativeTokenDatum;
 use crate::programs::native_token_lending::TokenLendingDatum;
 use crate::programs::native_token_swap::NativeTokenSwapDatum;
 use crate::programs::native_vote::VoteDatum;
+use crate::programs::raydium_amm::RaydiumAMMDatum;
 use crate::programs::serum_market::SerumMarketDatum;
 use crate::programs::step_token_swap::StepTokenSwapDatum;
 
