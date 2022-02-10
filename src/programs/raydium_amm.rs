@@ -309,7 +309,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::RaydiumAMM(
                             RaydiumAMMDatum::Deposit(RaydiumLiquidity {
                                 tx_hash: instruction.transaction_hash.to_string(),
-                                liquidity_type: 0,
+                                liquidity_type: 0 as i16,
                                 amm_account: instruction.accounts[1].account.to_string(),
                                 authority: instruction.accounts[2].account.to_string(),
                                 open_orders_account: instruction.accounts[3].account.to_string(),
@@ -344,7 +344,7 @@ pub async fn fragment_instruction(
                         data: vec![TypedDatum::RaydiumAMM(
                             RaydiumAMMDatum::Withdraw(RaydiumLiquidity {
                                 tx_hash: instruction.transaction_hash.to_string(),
-                                liquidity_type: 1,
+                                liquidity_type: 1 as i16,
                                 amm_account: instruction.accounts[1].account.to_string(),
                                 authority: instruction.accounts[2].account.to_string(),
                                 open_orders_account: instruction.accounts[3].account.to_string(),
