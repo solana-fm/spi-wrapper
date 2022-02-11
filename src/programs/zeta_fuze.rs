@@ -20,6 +20,7 @@ pub const ZETA_FUZE_MARKET_ACCOUNTS_TABLE: &str = "zeta_fuze_market_accounts";
 pub const ZETA_FUZE_PLACE_ORDER_TABLE: &str = "zeta_fuze_place_order";
 pub const ZETA_FUZE_CANCEL_ACCOUNTS_TABLE: &str = "zeta_fuze_cancel_accounts";
 pub const ZETA_FUZE_CANCEL_ORDER_TABLE: &str = "zeta_fuze_cancel_order";
+pub const ZETA_FUZE_LIQUIDATE_TABLE: &str = "zeta_fuze_liquidate";
 
 lazy_static! {
     pub static ref ZETA_FUZE_INIT_MARGIN_ACCOUNT_SCHEMA: Schema = Schema::parse_str(
@@ -211,6 +212,25 @@ lazy_static! {
     )
     .unwrap();
 
+    pub static ref ZETA_FUZE_LIQUIDATE_SCHEMA: Schema = Schema::parse_str(
+        r#"
+    {
+       "type": "record",
+       "name": "zeta_fuze_liquidate",
+       "fields": [
+            {"name": "tx_hash", "type": "string"},
+            {"name": "state", "type": "string"},
+            {"name": "liquidator", "type": "string"},
+            {"name": "greeks", "type": "string"},
+            {"name": "oracle", "type": "string"},
+            {"name": "market", "type": "string"},
+            {"name": "liquidated_margin_account", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
+        ]
+    }
+    "#
+    )
+    .unwrap();
 }
 
 #[derive(Serialize)]
@@ -223,6 +243,7 @@ pub enum ZetaFuzeDatum {
     PlaceOrder(ZetaPlaceOrder),
     CancelAccounts(CancelSharedAccount),
     CancelOrder(ZetaCancelOrder),
+    Liquidate(ZetaLiquidate)
 }
 
 pub enum LiquidityType {
@@ -324,6 +345,19 @@ pub struct ZetaCancelOrder {
     pub timestamp: i64,
 }
 
+#[derive(Serialize)]
+pub struct ZetaLiquidate {
+    pub tx_hash: String,
+    pub state: String,
+    pub liquidator_margin_account: String,
+    pub greeks: String,
+    pub oracle: String,
+    pub market: String,
+    pub liquidated_margin_account: String,
+    pub timestamp: i64,
+
+}
+
 pub async fn fragment_instruction(
     instruction: Instruction
 ) -> Option<Vec<TableData>> {
@@ -389,8 +423,8 @@ pub async fn fragment_instruction(
                         authority: instruction.accounts[6].account.to_string(),
                         greeks: instruction.accounts[7].account.to_string(),
                         socialized_loss_account: instruction.accounts[9].account.to_string(),
-                        timestamp: instruction.timestamp,
                         oracle: Some(instruction.accounts[8].account.to_string()),
+                        timestamp: instruction.timestamp,
                     })
                 )],
             });
@@ -461,6 +495,28 @@ pub async fn fragment_instruction(
         [245, 2, 171, 103, 213, 126, 76, 207] => {
             // __private::__global::read_program_data(program_id, accounts, ix_data)
             None
+        }
+        ///Liquidate
+        [223, 179, 226, 125, 48, 46, 39, 74] => {
+            // __private::__global::liquidate(program_id, accounts, ix_data)
+            response.push(TableData {
+                schema: (*ZETA_FUZE_LIQUIDATE_SCHEMA).clone(),
+                table_name: ZETA_FUZE_LIQUIDATE_TABLE.to_string(),
+                data: vec![TypedDatum::ZetaFuze(
+                    ZetaFuzeDatum::Liquidate(ZetaLiquidate {
+                        tx_hash: instruction.transaction_hash.to_string(),
+                        state: instruction.accounts[0].account.to_string(),
+                        greeks: instruction.accounts[3].account.to_string(),
+                        oracle: instruction.accounts[4].account.to_string(),
+                        market: instruction.accounts[5].account.to_string(),
+                        liquidator_margin_account: instruction.accounts[2].account.to_string(),
+                        liquidated_margin_account: instruction.accounts[8].account.to_string(),
+                        timestamp: instruction.timestamp,
+
+                    })
+                )],
+            });
+            Some(response)
         }
         _ => {
             error!("[spi-wrapper/programs/zeta_fuze] Error deserializing this system \
