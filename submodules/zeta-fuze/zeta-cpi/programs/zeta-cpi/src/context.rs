@@ -48,3 +48,9 @@ pub struct ReadProgramData<'info> {
     pub greeks: AccountInfo<'info>,
     pub oracle: AccountInfo<'info>,
 }
+
+#[derive(Accounts)]
+pub struct LiquidateCaller<'info> {
+    pub zeta_program: AccountInfo<'info>,
+    pub liquidate_cpi_accounts: Liquidate<'info>,
+}

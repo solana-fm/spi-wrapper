@@ -79,6 +79,16 @@ pub mod zeta_cpi {
         )
     }
 
+    pub fn liquidate(
+        ctx: Context<LiquidateCaller>,
+        size: u64,
+    ) -> ProgramResult {
+        zeta_client::liquidate(
+            ctx.accounts.zeta_program.clone(),
+            ctx.accounts.liquidate_cpi_accounts.clone(),
+            size)
+    }
+
     pub fn read_program_data(ctx: Context<ReadProgramData>) -> ProgramResult {
         let zeta_group =
             deserialize_account_info_zerocopy::<ZetaGroup>(&ctx.accounts.zeta_group).unwrap();

@@ -158,3 +158,15 @@ pub struct CancelOrder<'info> {
     pub authority: Signer<'info>,
     pub cancel_accounts: CancelAccounts<'info>,
 }
+
+#[derive(Accounts)]
+pub struct Liquidate<'info> {
+    pub state: Loader<'info, State>,
+    pub liquidator: Signer<'info>,
+    pub liquidator_margin_account: Loader<'info, MarginAccount>,
+    pub greeks: Loader<'info, Greeks>,
+    pub oracle: AccountInfo<'info>,
+    pub market: AccountInfo<'info>,
+    pub zeta_group: Loader<'info, ZetaGroup>,
+    pub liquidated_margin_account: Loader<'info, MarginAccount>,
+}

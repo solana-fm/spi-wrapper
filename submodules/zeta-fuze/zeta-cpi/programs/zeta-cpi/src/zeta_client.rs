@@ -14,6 +14,7 @@ pub trait ZetaInterface<'info, T: Accounts<'info>> {
     fn initialize_open_orders(ctx: Context<T>, nonce: u8, _map_nonce: u8) -> ProgramResult;
     fn place_order(ctx: Context<T>, price: u64, size: u64, side: Side, client_order_id: Option<u64>) -> ProgramResult;
     fn cancel_order(ctx: Context<T>, side: Side, order_id: u128) -> ProgramResult;
+    fn liquidate(ctx: Context<T>, size: u64) -> ProgramResult;
 }
 
 pub fn initialize_margin_account<'info>(
@@ -91,4 +92,13 @@ pub fn cancel_order<'info>(
 ) -> ProgramResult {
     let cpi_ctx = CpiContext::new(zeta_program, cpi_accounts);
     zeta_interface::cancel_order(cpi_ctx, side, order_id)
+}
+
+pub fn liquidate<'info>(
+    zeta_program: AccountInfo<'info>,
+    cpi_accounts: Liquidate<'info>,
+    size: u64,
+) -> ProgramResult {
+    let cpi_ctx = CpiContext::new(zeta_program, cpi_accounts);
+    zeta_interface::liquidate(cpi_ctx, size)
 }
