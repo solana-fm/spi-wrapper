@@ -496,7 +496,6 @@ pub async fn fragment_instruction(
             // __private::__global::read_program_data(program_id, accounts, ix_data)
             None
         }
-        ///Liquidate
         [223, 179, 226, 125, 48, 46, 39, 74] => {
             // __private::__global::liquidate(program_id, accounts, ix_data)
             response.push(TableData {
