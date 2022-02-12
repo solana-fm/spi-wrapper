@@ -2,6 +2,7 @@
 extern crate lazy_static;
 extern crate core;
 
+pub mod utils;
 pub mod programs;
 
 use avro_rs::{Codec, Writer, Schema};
@@ -27,8 +28,10 @@ use crate::programs::native_token::NativeTokenDatum;
 use crate::programs::native_token_lending::TokenLendingDatum;
 use crate::programs::native_token_swap::NativeTokenSwapDatum;
 use crate::programs::native_vote::VoteDatum;
+use crate::programs::raydium_amm::RaydiumAMMDatum;
 use crate::programs::serum_market::SerumMarketDatum;
 use crate::programs::step_token_swap::StepTokenSwapDatum;
+use crate::programs::zeta_fuze::ZetaFuzeDatum;
 
 #[derive(Clone, Serialize)]
 pub struct AccountInstruction {
@@ -138,7 +141,9 @@ pub enum TypedDatum {
     MetaplexCandyMachine,
     Metaplex(MetaplexMainDatum),
     MetaplexTokenMetadata(MetaplexTokenMetadataDatum),
-    MetaplexTokenVault
+    MetaplexTokenVault,
+    RaydiumAMM(RaydiumAMMDatum),
+    ZetaFuze(ZetaFuzeDatum),
 }
 
 #[derive(Serialize)]
@@ -208,8 +213,8 @@ pub async fn process(
                             .await
                     }
                     programs::serum_market::PROGRAM_ADDRESS_V1
-                        | programs::serum_market::PROGRAM_ADDRESS_V2
-                        | programs::serum_market::PROGRAM_ADDRESS_V3 => {
+                    | programs::serum_market::PROGRAM_ADDRESS_V2
+                    | programs::serum_market::PROGRAM_ADDRESS_V3 => {
                         crate::programs::serum_market::fragment_instruction(instruction)
                             .await
                     }

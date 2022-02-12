@@ -16,3 +16,9 @@
 [submodule "submodules/solana"]
 	path = submodules/solana
 	url = https://github.com/nixxholas/solana.git
+[submodule "submodules/zeta-fuze"]
+	path = submodules/zeta-fuze
+	url = https://github.com/zetamarkets/fuze.git
+[submodule "submodules/raydium-contract-instructions"]
+	path = submodules/raydium-contract-instructions
+	url = https://github.com/raydium-io/raydium-contract-instructions.git

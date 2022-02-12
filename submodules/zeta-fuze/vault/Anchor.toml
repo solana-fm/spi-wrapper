@@ -1,0 +1,12 @@
+[programs.localnet]
+vault = "stdcqm7Cc8Bj1JZfBPYY8Hyzqqjabm7ugk6k74QEm1B"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn test"
