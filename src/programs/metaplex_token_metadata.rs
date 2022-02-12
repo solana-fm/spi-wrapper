@@ -99,11 +99,11 @@ lazy_static! {
         "#
     )
     .unwrap();
-    pub static ref METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN: Schema = Schema::parse_str(
+    pub static ref METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN_SCHEMA: Schema = Schema::parse_str(
         r#"
     {
         "type": "record",
-        "name": "metaplex-deprecated_mint_new_edition_from_master_edition_via_printing_token,
+        "name": "metaplex_deprecated_mint_new_edition_from_master_edition_via_printing_token,
         "fields": [
             {"name": "tx_hash", "type": "string"},
             {"name": "metadata", "type": "string"},
@@ -111,8 +111,9 @@ lazy_static! {
             {"name": "master_record_edition", "type": "string"},
             {"name": "mint", "type": "string"},
             {"name": "mint_authority", "type": "string"},
-            {"name": "master_record_printing_mint", "type": "string"},
-            {"name": "edition_pda_mark_creation", "type": "string"},
+            {"name": "printing_mint_master", "type": "string"},
+            {"name": "printing_mint_token_account", "type": "string"},
+            {"name": "marked_creation_edition_pda", "type": "string"},
             {"name": "burn_authority", "type": "string"},
             {"name": "payer", "type": "string"},
             {"name": "update_authority", "type": "string"},
@@ -259,7 +260,7 @@ lazy_static! {
             {"name": "metadata", "type": "string"},
             {"name": "payer", "type": "string"},
             {"name": "one_time_authorization_printing_mint_authority", "type": "string"},
-            {"name": "max_supply", "type": ["null", "int"]},
+            {"name": "max_supply", "type": ["null", "long"]},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
@@ -986,13 +987,13 @@ pub struct CreatedMetadataAccountV2 {
 pub struct MintNewEditionFromMasterEditionViaPrintingToken {
     pub tx_hash: String,
     /// New Metadata key (pda of ['metadata', program id, mint id])
-    pub new_metadata_key: String,
+    pub metadata: String,
     /// New Edition V1 (pda of ['metadata', program id, mint id, 'edition'])
     pub new_edition: String,
     /// Master Record Edition V1 (pda of ['metadata', program id, master metadata mint id, 'edition'])
     pub master_record_edition: String,
     /// Mint of new token - THIS WILL TRANSFER AUTHORITY AWAY FROM THIS KEY
-    pub new_token_mint: String,
+    pub mint: String,
     /// Mint authority of new mint
     pub mint_authority: String,
     /// Printing Mint of master record edition
@@ -1265,15 +1266,15 @@ pub async fn fragment_instruction(
                 }
                 MetadataInstruction::DeprecatedMintNewEditionFromMasterEditionViaPrintingToken => {
                     response.push(TableData{
-                        schema: (*METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN).clone(),
+                        schema: (*METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_EDITION_VIA_PRINTING_TOKEN_SCHEMA).clone(),
                         table_name: METAPLEX_DEPRECATED_MINT_NEW_EDITION_FROM_MASTER_VIA_EDITION_PRINTING_TOKEN_TABLE.to_string(),
                         data: vec![TypedDatum::MetaplexTokenMetadata(
                             MetaplexTokenMetadataDatum::DeprecatedMintNewEditionFromMasterEditionViaPrintingToken(MintNewEditionFromMasterEditionViaPrintingToken {
                                 tx_hash: instruction.transaction_hash.to_string(),
-                                new_metadata_key: instruction.accounts[0].account.to_string(),
+                                metadata: instruction.accounts[0].account.to_string(),
                                 new_edition: instruction.accounts[1].account.to_string(),
                                 master_record_edition: instruction.accounts[2].account.to_string(),
-                                new_token_mint: instruction.accounts[3].account.to_string(),
+                                mint: instruction.accounts[3].account.to_string(),
                                 mint_authority: instruction.accounts[4].account.to_string(),
                                 printing_mint_master: instruction.accounts[5].account.to_string(),
                                 printing_mint_token_account: instruction.accounts[6].account.to_string(),

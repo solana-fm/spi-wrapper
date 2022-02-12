@@ -1,6 +1,6 @@
 [package]
 name = "spi-wrapper"
-version = "0.1.7"
+version = "0.1.8"
 authors = ["Nicholas Chen <nixholas@icloud.com>"]
 edition = "2018"
 description = "The Solana Program Indexing Wrapper based on Solana FM's indexing infrastructure."
@@ -39,7 +39,7 @@ libsecp256k1 = "0.5.0"
 mpl-auction = { path = "submodules/metaplex-program-library/auction/program", version = "0.0.1" }
 mpl-auction-house = { path = "submodules/metaplex-program-library/auction-house/program", version = "0.1.0" }
 mpl-candy-machine = "2.0.1"
-mpl-metaplex = { path = "submodules/metaplex-program-library/metaplex/program", version = "0.0.1" }
+mpl-metaplex = { path = "submodules/metaplex-program-library/metaplex/program", version = "*" }
 mpl-token-metadata = "1.2.3"
 mpl-token-vault = "0.1.0"
 proptest = "1.0.0"
