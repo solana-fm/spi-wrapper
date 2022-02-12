@@ -259,7 +259,7 @@ lazy_static! {
             {"name": "metadata", "type": "string"},
             {"name": "payer", "type": "string"},
             {"name": "one_time_authorization_printing_mint_authority", "type": "string"},
-            {"name": "max_supply", "type": ["null", "int"]},
+            {"name": "max_supply", "type": ["null", "long"]},
             {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"}
         ]
     }
