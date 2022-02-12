@@ -230,8 +230,6 @@ pub struct CancelledBid {
 #[derive(Serialize)]
 pub struct CreatedAuction {
     pub tx_hash : String,
-    /// The account creating the auction, which is authorised to make changes.
-    pub auction_owner: String,
     /// Account holding this auction.
     pub auction: String,
     /// Auction extended data account (pda relative to auction of ['auction', program id, vault key, 'extended']).
@@ -254,6 +252,8 @@ pub struct CreatedAuction {
     pub tick_size: Option<i64>,
     /// Add a minimum percentage increase each bid must meet.
     pub gap_tick_size_percentage: Option<i16>,
+    /// The account creating the auction, which is authorised to make changes.
+    pub auction_owner: String,
     pub timestamp: i64
 }
 
