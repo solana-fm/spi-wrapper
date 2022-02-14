@@ -717,6 +717,8 @@ pub async fn fragment_instruction(
                 ProgramError::UnsupportedSysvar => "UnsupportedSysvar".to_string(),
                 ProgramError::IllegalOwner => "IllegalOwner".to_string(),
                 ProgramError::AccountsDataBudgetExceeded => "AccountsDataBudgetExceeded".to_string(),
+                ProgramError::ActiveVoteAccountClose => "ActiveVoteAccountClose".to_string()
+
             };
 
             error!("{} Reason: {}", "[processors/programs/native_token_swap] FATAL: Unrecognised instruction.".to_string(),

@@ -386,6 +386,7 @@ pub async fn fragment_instruction(
                 InstructionError::UnsupportedSysvar => "UnsupportedSysvar".to_string(),
                 InstructionError::IllegalOwner => "IllegalOwner".to_string(),
                 InstructionError::AccountsDataBudgetExceeded => "AccountsDataBudgetExceeded".to_string(),
+                InstructionError::ActiveVoteAccountClose => "ActiveVoteAccountClose".to_string()
             };
 
             error!("{} Reason: {}", "Invalid instruction for the vote program.".to_string(), err_msg);
