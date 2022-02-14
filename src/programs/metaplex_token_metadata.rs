@@ -4,6 +4,7 @@ use serde::Serialize;
 use mpl_token_metadata::instruction::MetadataInstruction;
 use solana_sdk::precompiles::Verify;
 use tracing::error;
+use tracing::warn;
 
 use crate::{Instruction, TableData, TypedDatum};
 
@@ -1156,6 +1157,10 @@ pub async fn fragment_instruction(
             let deserialized_mtm_ix = bld.clone();
             let mut response: Vec<TableData> = Vec::new();
             return match deserialized_mtm_ix {
+                MetadataInstruction::RemoveCreatorVerification => {
+                    warn!("RemoveCreatorVerification not supported.");
+                    None
+                }
                 MetadataInstruction::CreateMetadataAccount(ref mtm_ix) => {
                     response.push(TableData {
                         schema: (*METAPLEX_TOKEN_METADATA_CREATED_METADATA_SCHEMA).clone(),
